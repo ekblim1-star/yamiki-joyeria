@@ -2186,12 +2186,20 @@ function openProductModal(productId, defaultSize = null, defaultVariantId = null
   state.modalPhotos = photoList;
   state.currentModalPhotoIdx = 0;
 
-  // La foto inicial SIEMPRE es foto_01.jpg (photoList[0])
-  const initPhoto = photoList[0] ? photoList[0].url : product.image;
-  if (modalImage) modalImage.src = initPhoto;
+  // Foto inicial: Si hay variante activa con foto, mostrar su foto directamente; si no, foto_01
+  let initPhoto = photoList[0] ? photoList[0].url : product.image;
+  if (activeVariant && activeVariant.photo) {
+    const vPhotoIdx = photoList.findIndex(p => p.url === activeVariant.photo);
+    if (vPhotoIdx !== -1) {
+      initPhoto = photoList[vPhotoIdx].url;
+      state.currentModalPhotoIdx = vPhotoIdx;
+    }
+  }
 
-  const foundInitIdx = photoList.findIndex(p => p.url === initPhoto);
-  if (foundInitIdx !== -1) state.currentModalPhotoIdx = foundInitIdx;
+  if (modalImage) {
+    modalImage.src = initPhoto;
+    modalImage.style.opacity = "1";
+  }
 
   // Control de flechas anterior/siguiente y contador de fotos
   const prevBtn = document.getElementById("modal-prev-photo-btn");
@@ -2292,18 +2300,21 @@ function openProductModal(productId, defaultSize = null, defaultVariantId = null
   lucide.createIcons();
 }
 
-function selectModalPhoto(idx) {
+function selectModalPhoto(idx, syncVariant = true) {
   if (!state.modalPhotos || !state.modalPhotos[idx]) return;
   state.currentModalPhotoIdx = idx;
   const photo = state.modalPhotos[idx];
 
   const modalImg = document.getElementById("modal-product-image");
   if (modalImg) {
-    modalImg.style.opacity = "0.75";
     modalImg.src = photo.url;
-    modalImg.onload = () => {
+    if (modalImg.complete) {
       modalImg.style.opacity = "1";
-    };
+    } else {
+      modalImg.style.opacity = "0.85";
+      modalImg.onload = () => { modalImg.style.opacity = "1"; };
+      modalImg.onerror = () => { modalImg.style.opacity = "1"; };
+    }
   }
 
   const counter = document.getElementById("modal-photo-counter");
@@ -2325,10 +2336,14 @@ function selectModalPhoto(idx) {
     }
   });
 
-  if (photo.variantId && state.selectedProductForModal && state.selectedProductForModal.variants) {
-    const v = state.selectedProductForModal.variants.find(item => String(item.id) === String(photo.variantId));
-    if (v && (!state.selectedModalVariant || String(state.selectedModalVariant.id) !== String(v.id))) {
-      selectModalVariant(v.id, false);
+  // Solo sincronizar la variante si fue una acción de navegación de fotos (swipe o click en miniatura),
+  // y solo si la variante actualmente seleccionada no tiene ya esta misma foto asignada.
+  if (syncVariant && photo.variantId && state.selectedProductForModal && state.selectedProductForModal.variants) {
+    if (!state.selectedModalVariant || state.selectedModalVariant.photo !== photo.url) {
+      const v = state.selectedProductForModal.variants.find(item => String(item.id) === String(photo.variantId));
+      if (v && (!state.selectedModalVariant || String(state.selectedModalVariant.id) !== String(v.id))) {
+        selectModalVariant(v.id, false);
+      }
     }
   }
 }
@@ -2337,14 +2352,14 @@ function prevModalPhoto() {
   if (!state.modalPhotos || state.modalPhotos.length <= 1) return;
   let newIdx = state.currentModalPhotoIdx - 1;
   if (newIdx < 0) newIdx = state.modalPhotos.length - 1;
-  selectModalPhoto(newIdx);
+  selectModalPhoto(newIdx, true);
 }
 
 function nextModalPhoto() {
   if (!state.modalPhotos || state.modalPhotos.length <= 1) return;
   let newIdx = state.currentModalPhotoIdx + 1;
   if (newIdx >= state.modalPhotos.length) newIdx = 0;
-  selectModalPhoto(newIdx);
+  selectModalPhoto(newIdx, true);
 }
 
 function selectModalVariant(variantId, changePhoto = true) {
@@ -2402,10 +2417,13 @@ function selectModalVariant(variantId, changePhoto = true) {
   if (changePhoto && variant.photo) {
     const photoIdx = state.modalPhotos ? state.modalPhotos.findIndex(p => p.url === variant.photo) : -1;
     if (photoIdx !== -1) {
-      selectModalPhoto(photoIdx);
+      selectModalPhoto(photoIdx, false);
     } else {
       const modalImg = document.getElementById("modal-product-image");
-      if (modalImg) modalImg.src = variant.photo;
+      if (modalImg) {
+        modalImg.src = variant.photo;
+        modalImg.style.opacity = "1";
+      }
     }
   }
 
