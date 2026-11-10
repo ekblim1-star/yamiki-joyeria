@@ -1867,10 +1867,18 @@ function openEditProductModal(productId) {
       if (u && !allPhotos.includes(u)) allPhotos.push(u);
     });
   }
-  if (prod.foto_principal && !allPhotos.includes(prod.foto_principal)) {
+  allPhotos.sort((a, b) => getNum(a) - getNum(b));
+
+  // Incluir fotos de todas las variantes para que salgan TODAS las fotos de la joya
+  if (prod.variants && prod.variants.length > 0) {
+    prod.variants.forEach(v => {
+      if (v.foto_principal && !allPhotos.includes(v.foto_principal)) {
+        allPhotos.push(v.foto_principal);
+      }
+    });
+  } else if (prod.foto_principal && !allPhotos.includes(prod.foto_principal)) {
     allPhotos.push(prod.foto_principal);
   }
-  allPhotos.sort((a, b) => getNum(a) - getNum(b));
   state.currentEditPhotos = allPhotos;
   renderEditPhotosGrid();
   updateEditDiscountNotice();
