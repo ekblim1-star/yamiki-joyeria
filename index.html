@@ -1183,9 +1183,21 @@
               id="product-page-main-img" 
               src="" 
               alt="Joya Yamiki" 
-              class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.02]" 
+              onclick="openProductPageLightbox()"
+              class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.02] cursor-zoom-in" 
               onerror="this.onerror=null; this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 fill=%22%23222%22/></svg>';" 
             />
+
+            <!-- Botón Zoom / Pantalla Completa -->
+            <button
+              type="button"
+              onclick="openProductPageLightbox()"
+              class="absolute bottom-3 left-3 z-10 px-2.5 py-1 rounded-full bg-black/60 hover:bg-black/90 text-white backdrop-blur-md text-[11px] font-bold border border-white/20 flex items-center gap-1.5 transition opacity-90 cursor-pointer"
+              title="Ver foto en tamaño completo"
+            >
+              <i data-lucide="zoom-in" class="w-3.5 h-3.5"></i>
+              <span>Ampliar</span>
+            </button>
 
             <!-- Badge Superior Izquierdo (Descuento o Plata S925) -->
             <div id="product-page-badge-wrapper" class="absolute top-3.5 left-3.5 z-10 pointer-events-none">

@@ -538,7 +538,7 @@ function initCarousel() {
           <div class="pt-2 sm:pt-3 border-t border-gray-100 mt-2 flex items-center justify-between gap-1">
             <span class="text-xs sm:text-base font-bold text-sage-900 font-sans">${formatCurrency(prod.price)}</span>
             <button 
-              onclick="handleQuickAddToCart(${prod.id}, event)"
+              onclick="handleQuickAddToCart('${prod.id}', event)"
               class="add-to-cart-btn btn-press px-2.5 py-1.5 sm:px-3 sm:py-1.5 rounded-lg sm:rounded-xl text-[10px] sm:text-xs font-bold flex items-center gap-1 transition shadow-xs"
               title="Agregar al pedido"
             >
@@ -1596,7 +1596,7 @@ function renderProducts() {
             </div>
 
             <button 
-              onclick="handleQuickAddToCart(${prod.id}, event)"
+              onclick="handleQuickAddToCart('${prod.id}', event)"
               class="add-to-cart-btn btn-press px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-lg sm:rounded-xl text-[10px] sm:text-xs font-bold flex items-center justify-center gap-1.5 transition shadow-xs flex-shrink-0"
               title="Agregar al pedido"
             >
@@ -1683,7 +1683,7 @@ function getCategoryLabel(catId) {
 
 function handleQuickAddToCart(productId, event) {
   if (event) event.stopPropagation();
-  const prod = PRODUCTS.find(p => p.id === productId);
+  const prod = PRODUCTS.find(p => String(p.id) === String(productId) || (p.groupId && String(p.groupId) === String(productId)));
   if (!prod) return;
 
   // Si la joya tiene varios modelos o tallas de anillo, abrir modal para que elija su favorito
@@ -1737,7 +1737,10 @@ function cleanOrderTitle(title) {
   const parts = t.split(/,\s+(?![0-9])/);
   let main = parts[0].trim();
   // Quitar coletillas de búsqueda de AliExpress
-  main = main.replace(/\s+(para mujer|de lujo|de alta calidad|regalo de joyería|regalo de boda|joyería fina|sortija de compromiso)$/i, "").trim();
+  main = main.replace(/\s+(para mujer(?:es)?(?:\s+y\s+(?:adolescentes|ni[ñn]as))?|para adolescentes|de lujo|de alta calidad|regalo de joyería|regalo de boda|joyería fina|sortija de compromiso)$/i, "").trim();
+  if (main.length > 0) {
+    main = main.charAt(0).toUpperCase() + main.slice(1);
+  }
   return main.length > 5 ? main : t;
 }
 
@@ -2649,6 +2652,12 @@ function navigateToProduct(productId, defaultSize = null, defaultVariantId = nul
   // Renderizar la joya en view-producto
   renderProductPage(prod, defaultSize, defaultVariantId);
 
+  // Actualizar título de la pestaña del navegador
+  try {
+    const cleanT = cleanOrderTitle(prod.name);
+    document.title = `${cleanT} | Yamiki Joyería S925`;
+  } catch (e) {}
+
   // Actualizar URL limpia para compartir
   if (options.pushState !== false) {
     const slug = encodeURIComponent(prod.groupId || prod.code || prod.id);
@@ -2662,6 +2671,7 @@ function navigateToProduct(productId, defaultSize = null, defaultVariantId = nul
  * Regresa suavemente al catálogo o a la vista de origen restaurando la posición de scroll
  */
 function returnToCatalog() {
+  document.title = "Yamiki Joyería | Plata Esterlina Ley S925";
   const target = state.sourceViewBeforeProduct || "catalogo";
   const savedY = state.catalogScrollPosition || 0;
 
@@ -3072,8 +3082,17 @@ function handleProductPageWhatsAppOrder() {
   msg += `💰 *Total:* *$${total} MXN*\n\n`;
   msg += `¿Me podrían confirmar disponibilidad y datos para realizar mi pedido? ¡Muchas gracias!`;
 
-  const waUrl = `https://wa.me/529932902704?text=${encodeURIComponent(msg)}`;
+  const waUrl = `https://api.whatsapp.com/send?phone=${BUSINESS_CONFIG.whatsappNumber}&text=${encodeURIComponent(msg)}`;
   window.open(waUrl, "_blank");
+}
+
+function openProductPageLightbox() {
+  const pState = state.currentProductPage;
+  if (!pState || !pState.photos || pState.photos.length === 0) return;
+  const currentPhoto = pState.photos[pState.currentPhotoIndex];
+  const prod = pState.product;
+  const caption = prod ? `${cleanOrderTitle(prod.name)} (Foto ${pState.currentPhotoIndex + 1} de ${pState.photos.length})` : "Yamiki Joyería S925";
+  openLightbox(currentPhoto, caption);
 }
 
 function shareCurrentProduct() {

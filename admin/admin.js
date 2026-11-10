@@ -2380,7 +2380,6 @@ async function handleEditProductSubmit(e) {
     const esNovedad = document.getElementById("edit-es-novedad").checked;
     const activo = document.getElementById("edit-activo").checked;
 
-    const esDescuento = document.getElementById("edit-es-descuento") ? document.getElementById("edit-es-descuento").checked : false;
     const promoInput = document.getElementById("edit-precio-oferta");
     const promoPrice = promoInput ? parseFloat(promoInput.value || 0) : 0;
     const badgeOferta = document.getElementById("edit-badge-oferta") ? document.getElementById("edit-badge-oferta").value.trim() : "";
@@ -2391,7 +2390,7 @@ async function handleEditProductSubmit(e) {
 
     finalEspec = finalEspec.replace(/\b\[?PrecioOriginal:\s*[\d.]+\]?\s*\|?\s*/gi, "").trim();
 
-    if (esDescuento && promoPrice > 0 && promoPrice < normalPrice) {
+    if (promoPrice > 0 && promoPrice < normalPrice) {
       finalSellingPrice = promoPrice;
       finalEspec = `[PrecioOriginal: ${normalPrice}] ${finalEspec}`.trim();
       const pct = Math.round(((normalPrice - promoPrice) / normalPrice) * 100);
@@ -2465,7 +2464,7 @@ async function handleEditProductSubmit(e) {
         foto_principal: mainPhotoUrl,
         galeria_fotos: newGallery,
         es_novedad: esNovedad,
-        es_destacado: esDescuento && promoPrice > 0 && promoPrice < normalPrice,
+        es_destacado: promoPrice > 0 && promoPrice < normalPrice,
         badge: finalBadge,
         especificaciones: finalEspec || null,
         activo: stock === "Agotada" ? false : activo,
