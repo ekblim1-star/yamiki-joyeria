@@ -84,23 +84,29 @@ async function syncProductsFromSupabase() {
           };
         });
 
-        function getNum(u) {
-          if (!u) return 999;
-          const m = u.match(/foto_0*(\d+)/i) || u.match(/_0*(\d+)\.[a-z0-9]+$/i);
-          return m ? parseInt(m[1], 10) : 900;
-        }
+        // 1. La foto de portada guardada en base de datos es la fuente de verdad absoluta
+        const coverPhoto = primaryRow.foto_principal || (variants[0] ? variants[0].photo : "");
 
-        // Galería de fotos combinada ordenada estrictamente (1 al 5...)
+        // 2. Construir la galería completa preservando el orden exacto configurado por el admin
         const generalGalleries = [];
+        if (coverPhoto) {
+          generalGalleries.push(coverPhoto);
+        }
+        if (Array.isArray(primaryRow.galeria_fotos)) {
+          primaryRow.galeria_fotos.forEach(u => {
+            if (u && !generalGalleries.includes(u)) generalGalleries.push(u);
+          });
+        }
         rows.forEach(r => {
+          if (r.foto_principal && !generalGalleries.includes(r.foto_principal)) {
+            generalGalleries.push(r.foto_principal);
+          }
           if (Array.isArray(r.galeria_fotos)) {
             r.galeria_fotos.forEach(u => {
               if (u && !generalGalleries.includes(u)) generalGalleries.push(u);
             });
           }
         });
-        generalGalleries.sort((a, b) => getNum(a) - getNum(b));
-        const coverPhoto = (generalGalleries.length > 0) ? generalGalleries[0] : (primaryRow.foto_principal || variants[0].photo);
 
         const activeVariants = variants.filter(v => v.stock);
         const minPrice = Math.min(...variants.map(v => v.price));
@@ -2165,31 +2171,35 @@ function openProductModal(productId, defaultSize = null, defaultVariantId = null
     if (modalDiscBadge) modalDiscBadge.classList.add("hidden");
   }
 
-  // Coleccionar todas las fotos para la galería en orden numérico estricto (1 al 5...)
+  // Coleccionar todas las fotos respetando el orden guardado (Foto 1 = Portada)
   const photoList = [];
   const seenUrls = new Set();
 
-  function getPhotoNum(u) {
-    if (!u) return 999;
-    const m = u.match(/foto_0*(\d+)/i) || u.match(/_0*(\d+)\.[a-z0-9]+$/i);
-    return m ? parseInt(m[1], 10) : 900;
+  // 1. La portada siempre es la primera foto (Foto 1)
+  if (product.image && !seenUrls.has(product.image)) {
+    seenUrls.add(product.image);
+    photoList.push({
+      url: product.image,
+      label: "Foto 1",
+      variantId: null
+    });
   }
 
-  // 1. Fotos de galería general ordenadas numéricamente (foto_01, foto_02...)
-  const sortedGallery = [...(product.gallery || [])].sort((a, b) => getPhotoNum(a) - getPhotoNum(b));
-  sortedGallery.forEach((url, idx) => {
-    if (url && !seenUrls.has(url)) {
-      seenUrls.add(url);
-      const num = getPhotoNum(url);
-      photoList.push({
-        url: url,
-        label: num < 900 ? `Foto ${num}` : `Foto ${idx + 1}`,
-        variantId: null
-      });
-    }
-  });
+  // 2. Galería de fotos en el orden exacto configurado
+  if (Array.isArray(product.gallery)) {
+    product.gallery.forEach((url, idx) => {
+      if (url && !seenUrls.has(url)) {
+        seenUrls.add(url);
+        photoList.push({
+          url: url,
+          label: `Foto ${photoList.length + 1}`,
+          variantId: null
+        });
+      }
+    });
+  }
 
-  // 2. Fotos de variantes
+  // 3. Fotos de variantes
   if (product.variants && product.variants.length > 0) {
     product.variants.forEach((v, idx) => {
       if (v.photo) {
@@ -2214,12 +2224,18 @@ function openProductModal(productId, defaultSize = null, defaultVariantId = null
     photoList.push({ url: product.image, label: "Foto 1", variantId: String(product.id) });
   }
 
+  // Fallback si por alguna razón no hubiera fotos
+  if (photoList.length === 0 && product.image) {
+    photoList.push({ url: product.image, label: "Foto 1", variantId: String(product.id) });
+  }
+
   state.modalPhotos = photoList;
   state.currentModalPhotoIdx = 0;
 
-  // Foto inicial: Si hay variante activa con foto, mostrar su foto directamente; si no, foto_01
+  // Foto inicial: Si el usuario seleccionó una variante específica explícitamente (defaultVariantId),
+  // mostrar su foto. De lo contrario, SIEMPRE abrir en Foto 1 (Foto de portada).
   let initPhoto = photoList[0] ? photoList[0].url : product.image;
-  if (activeVariant && activeVariant.photo) {
+  if (defaultVariantId && activeVariant && activeVariant.photo) {
     const vPhotoIdx = photoList.findIndex(p => p.url === activeVariant.photo);
     if (vPhotoIdx !== -1) {
       initPhoto = photoList[vPhotoIdx].url;

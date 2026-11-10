@@ -17,6 +17,9 @@
   <!-- SheetJS / XLSX para parsear Excel del Scraper en el navegador -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
+  <!-- heic2any para convertir fotos HEIC de iPhone automáticamente a JPEG -->
+  <script src="https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js"></script>
+
   <!-- Estilos Custom -->
   <link rel="stylesheet" href="admin.css" />
 </head>
@@ -728,6 +731,25 @@
       <form id="edit-product-form" onsubmit="handleEditProductSubmit(event)" class="space-y-5 text-xs">
         <input type="hidden" id="edit-product-id" />
 
+        <!-- Selector de Variantes / Modelos (Visible cuando la joya tiene más de 1 modelo) -->
+        <div id="edit-variant-selector-wrapper" class="hidden space-y-2 p-3.5 bg-black/40 border border-[#e72380]/30 rounded-2xl">
+          <div class="flex items-center justify-between">
+            <span class="text-[11px] font-bold text-white flex items-center gap-1.5">
+              <i data-lucide="layers" class="w-3.5 h-3.5 text-[#e72380]"></i>
+              <span>¿Qué deseas modificar?</span>
+            </span>
+            <span id="edit-variant-mode-badge" class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-[#e72380]/20 text-[#e72380] border border-[#e72380]/30">
+              🌟 Todo el Grupo
+            </span>
+          </div>
+          <div id="edit-variant-pills-list" class="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+            <!-- Píldoras de variantes generadas dinámicamente -->
+          </div>
+          <p id="edit-variant-tip" class="text-[10px] text-gray-400">
+            Toca una variante para editar exclusivamente su foto, tallas y precio. O selecciona "Todo el Grupo" para ajustes generales.
+          </p>
+        </div>
+
         <!-- Estructura Adaptada: 2 Columnas en Desktop (PC) y 1 Columna en Celular -->
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
 
@@ -739,7 +761,7 @@
                   <i data-lucide="image" class="w-4 h-4 text-[#e72380]"></i>
                   <span>Fotos de la Joya</span>
                 </h4>
-                <p class="text-[11px] text-gray-400 mt-0.5">La primera es la portada principal. Puedes eliminar fotos o subir nuevas.</p>
+                <p class="text-[11px] text-gray-400 mt-0.5">Arrastra o usa ◀ ▶ para ordenar. La #1 es la Portada.</p>
               </div>
               <span id="edit-photos-count" class="text-[11px] font-bold px-2 py-0.5 rounded-full bg-[#e72380]/20 text-[#e72380]">0 fotos</span>
             </div>
@@ -794,6 +816,12 @@
 
           <!-- COLUMNA DERECHA: DATOS, PRECIOS, DESCUENTOS Y TALLAS (lg:col-span-7) -->
           <div class="lg:col-span-7 space-y-4">
+
+            <!-- Fila de SKU / Código de la Variante (Visible cuando se edita variante específica) -->
+            <div id="edit-variant-sku-row" class="hidden p-2.5 rounded-xl bg-rose-950/30 border border-rose-500/20">
+              <label class="block font-bold text-rose-300 text-[11px] mb-1">Modelo / SKU de esta Variante</label>
+              <input type="text" id="edit-variant-sku" class="w-full px-3 py-1.5 bg-black/50 border border-rose-500/30 rounded-xl text-white text-xs font-mono font-bold focus:outline-none focus:border-[#e72380]" />
+            </div>
 
             <!-- Nombre / Título -->
             <div>

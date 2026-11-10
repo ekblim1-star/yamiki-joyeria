@@ -97,18 +97,29 @@ async function loadProductsFromSupabase() {
     groupMap.forEach((rows, groupId) => {
       const primaryRow = rows.find(r => r.activo !== false && r.estado_stock !== "Agotada") || rows[0];
 
-      // Galería consolidada y ordenada numéricamente del 1 al 5...
+      // La foto de portada guardada en base de datos es la fuente de verdad absoluta
+      const coverPhoto = primaryRow.foto_principal || "";
+
+      // Galería consolidada respetando el orden exacto configurado por el admin (foto_principal primero)
       const generalGalleries = [];
+      if (coverPhoto) {
+        generalGalleries.push(coverPhoto);
+      }
+      if (Array.isArray(primaryRow.galeria_fotos)) {
+        primaryRow.galeria_fotos.forEach(u => {
+          if (u && !generalGalleries.includes(u)) generalGalleries.push(u);
+        });
+      }
       rows.forEach(r => {
+        if (r.foto_principal && !generalGalleries.includes(r.foto_principal)) {
+          generalGalleries.push(r.foto_principal);
+        }
         if (Array.isArray(r.galeria_fotos)) {
           r.galeria_fotos.forEach(u => {
             if (u && !generalGalleries.includes(u)) generalGalleries.push(u);
           });
         }
       });
-      generalGalleries.sort((a, b) => getNum(a) - getNum(b));
-
-      const coverPhoto = (generalGalleries.length > 0) ? generalGalleries[0] : (primaryRow.foto_principal || "");
       const isNovedad = rows.some(r => r.es_novedad === true);
       const isOferta = rows.some(r => r.es_destacado === true || (r.badge && (r.badge.includes("%") || r.badge.includes("🔥"))));
       const allAgotado = rows.every(r => r.estado_stock === "Agotada" || r.activo === false);
@@ -301,9 +312,15 @@ function renderProductsTable() {
                 📏 ${prod.tallas || 'Ajustable'}
               </span>
               ${prod.hasMultipleVariants ? `
-                <span class="text-[10px] text-purple-300 font-bold bg-purple-950/60 px-2 py-0.5 rounded-full border border-purple-800/40">
-                  ${prod.variants.length} modelos
-                </span>
+                <button 
+                  type="button" 
+                  onclick="toggleVariantsPreview('desk-${prod.id}')"
+                  class="text-[10px] text-purple-300 hover:text-white font-bold bg-purple-950/60 hover:bg-purple-900/60 px-2 py-0.5 rounded-full border border-purple-800/40 transition flex items-center gap-1"
+                >
+                  <i data-lucide="layers" class="w-3 h-3 text-[#e72380]"></i>
+                  <span>${prod.variants.length} modelos</span>
+                  <span id="variant-arrow-desk-${prod.id}" class="text-[9px]">▾</span>
+                </button>
               ` : ''}
               ${prod.color_modelo && prod.color_modelo !== 'Única' ? `
                 <span class="text-[10px] text-purple-300 font-medium bg-purple-950/40 px-1.5 py-0.5 rounded border border-purple-800/40">
@@ -311,6 +328,26 @@ function renderProductsTable() {
                 </span>
               ` : ''}
             </div>
+
+            ${prod.hasMultipleVariants ? `
+              <div id="variants-preview-desk-${prod.id}" class="hidden mt-2 p-2 rounded-xl bg-black/50 border border-white/10 space-y-1.5">
+                ${prod.variants.map((v, vIdx) => `
+                  <div class="flex items-center justify-between gap-2 text-[11px] py-1 px-1.5 rounded-lg hover:bg-white/5">
+                    <div class="flex items-center gap-2 min-w-0">
+                      <img src="${v.foto_principal || prod.foto_principal}" class="w-7 h-7 rounded-md object-cover border border-white/10 shrink-0" onerror="this.onerror=null; this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 fill=%22%23222%22/></svg>';" />
+                      <span class="font-extrabold text-white text-[10px] truncate max-w-[120px]">${v.codigo_sku || v.color_modelo || ('Mod ' + (vIdx + 1))}</span>
+                      <span class="text-[9px] text-gray-400">Talla: ${v.tallas || 'Ajustable'}</span>
+                    </div>
+                    <div class="flex items-center gap-1.5 shrink-0">
+                      <span class="font-bold text-emerald-400 text-xs">$${Math.round(v.precio_venta || 0)}</span>
+                      <button type="button" onclick="openEditProductModal('${prod.id}', '${v.id}')" class="px-2 py-0.5 rounded bg-[#e72380]/20 hover:bg-[#e72380] text-[#e72380] hover:text-white font-bold text-[9px] transition">
+                        Editar
+                      </button>
+                    </div>
+                  </div>
+                `).join("")}
+              </div>
+            ` : ''}
           </td>
 
           <!-- 3. Precio de Venta (Editable en 1 clic) -->
@@ -477,6 +514,42 @@ function renderProductsTable() {
               </p>
             </div>
           </div>
+
+          <!-- Desplegable de Variantes en Móvil -->
+          ${prod.hasMultipleVariants ? `
+            <div class="pt-0.5">
+              <button 
+                type="button" 
+                onclick="toggleVariantsPreview('mob-${prod.id}')"
+                class="w-full py-1.5 px-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-[11px] font-bold text-gray-300 flex items-center justify-between transition"
+              >
+                <span class="flex items-center gap-1.5">
+                  <i data-lucide="layers" class="w-3.5 h-3.5 text-[#e72380]"></i>
+                  <span>${prod.variants.length} modelos / variantes</span>
+                </span>
+                <span id="variant-arrow-mob-${prod.id}" class="text-xs text-rose-300 font-bold">Ver ▾</span>
+              </button>
+              <div id="variants-preview-mob-${prod.id}" class="hidden mt-2 space-y-1.5 pl-1.5 border-l-2 border-[#e72380]/40">
+                ${prod.variants.map((v, vIdx) => `
+                  <div class="flex items-center justify-between p-2 rounded-xl bg-black/40 border border-white/5 text-[11px]">
+                    <div class="flex items-center gap-2 min-w-0">
+                      <img src="${v.foto_principal || prod.foto_principal}" class="w-8 h-8 rounded-lg object-cover border border-white/10 shrink-0" onerror="this.onerror=null; this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 fill=%22%23222%22/></svg>';" />
+                      <div class="truncate">
+                        <div class="font-extrabold text-white text-[11px] truncate">${v.codigo_sku || v.color_modelo || ('Modelo ' + (vIdx + 1))}</div>
+                        <div class="text-[9px] text-gray-400">📏 ${v.tallas || 'Ajustable'}</div>
+                      </div>
+                    </div>
+                    <div class="flex items-center gap-2 shrink-0">
+                      <span class="font-bold text-emerald-400 text-xs">$${Math.round(v.precio_venta || 0)}</span>
+                      <button type="button" onclick="openEditProductModal('${prod.id}', '${v.id}')" class="px-2.5 py-1 rounded-lg bg-[#e72380]/20 hover:bg-[#e72380] text-[#e72380] hover:text-white font-bold text-[10px] transition">
+                        Editar
+                      </button>
+                    </div>
+                  </div>
+                `).join("")}
+              </div>
+            </div>
+          ` : ''}
 
           <!-- Fila de Precios Táctil y Directo -->
           <div class="flex items-center justify-between bg-black/30 p-2.5 rounded-xl border border-white/5">
@@ -1594,8 +1667,239 @@ function showToast(title, message, type = "success") {
 }
 
 // ==============================================================================
-// GESTOR DE FOTOS Y MODAL DE EDICIÓN COMPLETA DE JOYAS
+// GESTOR DE FOTOS, SUBIDA OPTIMIZADA (HEIC/COMPRESIÓN) Y REORDENAMIENTO
 // ==============================================================================
+
+let draggedPhotoIdx = null;
+
+function handlePhotoDragStart(e, idx) {
+  draggedPhotoIdx = idx;
+  e.dataTransfer.effectAllowed = "move";
+  try {
+    e.dataTransfer.setData("text/plain", idx);
+  } catch (err) {}
+  e.currentTarget.classList.add("dragging");
+}
+
+function handlePhotoDragOver(e, idx) {
+  e.preventDefault();
+  e.dataTransfer.dropEffect = "move";
+  e.currentTarget.classList.add("drag-over");
+}
+
+function handlePhotoDragLeave(e) {
+  e.currentTarget.classList.remove("drag-over");
+}
+
+function handlePhotoDrop(e, targetIdx) {
+  e.preventDefault();
+  e.currentTarget.classList.remove("drag-over");
+  if (draggedPhotoIdx === null || draggedPhotoIdx === targetIdx) return;
+
+  const [moved] = state.currentEditPhotos.splice(draggedPhotoIdx, 1);
+  state.currentEditPhotos.splice(targetIdx, 0, moved);
+  draggedPhotoIdx = null;
+  renderEditPhotosGrid();
+}
+
+function handlePhotoDragEnd(e) {
+  draggedPhotoIdx = null;
+  document.querySelectorAll(".photo-drag-item").forEach(el => {
+    el.classList.remove("dragging", "drag-over");
+  });
+}
+
+function handleMoveEditPhoto(idx, delta) {
+  if (!state.currentEditPhotos) return;
+  const target = idx + delta;
+  if (target < 0 || target >= state.currentEditPhotos.length) return;
+  const [moved] = state.currentEditPhotos.splice(idx, 1);
+  state.currentEditPhotos.splice(target, 0, moved);
+  renderEditPhotosGrid();
+}
+
+function handleSetMainEditPhoto(idx) {
+  if (!state.currentEditPhotos || idx <= 0 || idx >= state.currentEditPhotos.length) return;
+  const [photo] = state.currentEditPhotos.splice(idx, 1);
+  state.currentEditPhotos.unshift(photo);
+  renderEditPhotosGrid();
+  showToast("Portada Seleccionada", "Esta foto ahora es la portada principal (#1).", "info");
+}
+
+function handleAssignPhotoToVariant(photoUrl) {
+  if (!state.currentEditingProduct || !state.currentEditingVariantId || state.currentEditingVariantId === "all") return;
+  const v = state.currentEditingProduct.variants.find(x => x.id === state.currentEditingVariantId);
+  if (!v) return;
+  v.foto_principal = photoUrl;
+  renderEditPhotosGrid();
+  renderEditVariantPills();
+  showToast("Foto Asignada", `Foto vinculada al modelo "${v.codigo_sku || v.color_modelo}".`, "success");
+}
+
+function handleDeleteEditPhoto(idx) {
+  if (!state.currentEditPhotos || idx < 0 || idx >= state.currentEditPhotos.length) return;
+  state.currentEditPhotos.splice(idx, 1);
+  renderEditPhotosGrid();
+}
+
+// Preprocesador de imágenes: Resuelve el bug de fotos de iPhone (HEIC) y comprime a JPEG para subidas ultra-rápidas
+async function processImageForUpload(file) {
+  let imageBlob = file;
+  const fileName = file.name || "foto.jpg";
+  const ext = (fileName.split('.').pop() || '').toLowerCase();
+  const isHeic = ext === 'heic' || ext === 'heif' || file.type === 'image/heic' || file.type === 'image/heif';
+
+  // 1. Conversión de HEIC a JPEG si está disponible la librería heic2any
+  if (isHeic && window.heic2any) {
+    try {
+      const converted = await window.heic2any({
+        blob: file,
+        toType: "image/jpeg",
+        quality: 0.85
+      });
+      imageBlob = Array.isArray(converted) ? converted[0] : converted;
+    } catch (err) {
+      console.warn("Fallo conversión heic2any, continuando:", err);
+    }
+  }
+
+  // 2. Redimensionar en Canvas a máx 1600px y comprimir a JPEG optimizado (evita timeout y fotos de 20MB)
+  return new Promise((resolve) => {
+    if (!file.type.startsWith('image/') && !isHeic) {
+      return resolve(file);
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        const MAX_DIM = 1600;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > MAX_DIM || height > MAX_DIM) {
+          if (width > height) {
+            height = Math.round((height * MAX_DIM) / width);
+            width = MAX_DIM;
+          } else {
+            width = Math.round((width * MAX_DIM) / height);
+            height = MAX_DIM;
+          }
+        }
+
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0, width, height);
+
+        canvas.toBlob((blob) => {
+          if (blob) {
+            const cleanBase = fileName.replace(/\.[^/.]+$/, "").replace(/[^a-zA-Z0-9_-]/g, "_");
+            const cleanFile = new File([blob], `${cleanBase}.jpg`, { type: "image/jpeg" });
+            resolve(cleanFile);
+          } else {
+            resolve(file);
+          }
+        }, "image/jpeg", 0.85);
+      };
+      img.onerror = () => resolve(file);
+      img.src = e.target.result;
+    };
+    reader.onerror = () => resolve(file);
+    reader.readAsDataURL(imageBlob);
+  });
+}
+
+async function handleEditAddFiles(files) {
+  if (!files || files.length === 0) return;
+  const prod = state.currentEditingProduct;
+  const prodId = prod ? prod.id : document.getElementById("edit-product-id").value;
+  const statusEl = document.getElementById("edit-photo-upload-status");
+  
+  if (statusEl) {
+    statusEl.classList.remove("hidden");
+    statusEl.innerHTML = `<span class="animate-pulse">⏳ Optimizando y subiendo ${files.length} foto(s)...</span>`;
+  }
+
+  const folder = (prod && prod.id_aliexpress) ? prod.id_aliexpress : (prod && prod.codigo_sku ? prod.codigo_sku : prodId);
+
+  for (let i = 0; i < files.length; i++) {
+    const rawFile = files[i];
+    const file = await processImageForUpload(rawFile);
+    const cleanName = `foto_${Date.now()}_${i + 1}.jpg`;
+    const storagePath = `${folder}/galeria/${cleanName}`;
+
+    try {
+      const { data, error } = await supabaseClient.storage
+        .from("joyas")
+        .upload(storagePath, file, { 
+          upsert: true,
+          contentType: "image/jpeg"
+        });
+
+      let publicUrl = "";
+      if (error) {
+        console.warn("Fallo subiendo a subcarpeta, probando ruta plana:", error);
+        const flatPath = `subida_${Date.now()}_${i + 1}.jpg`;
+        const { error: flatErr } = await supabaseClient.storage
+          .from("joyas")
+          .upload(flatPath, file, { 
+            upsert: true,
+            contentType: "image/jpeg"
+          });
+
+        if (!flatErr) {
+          publicUrl = `${SUPABASE_URL}/storage/v1/object/public/joyas/${flatPath}`;
+        } else {
+          console.error("Error al subir foto:", flatErr);
+        }
+      } else {
+        publicUrl = `${SUPABASE_URL}/storage/v1/object/public/joyas/${storagePath}`;
+      }
+
+      if (publicUrl) {
+        state.currentEditPhotos.push(publicUrl);
+        // Si se está editando una variante específica, auto-asignarla
+        if (state.currentEditingVariantId !== "all" && prod && prod.variants) {
+          const v = prod.variants.find(x => x.id === state.currentEditingVariantId);
+          if (v && (!v.foto_principal || files.length === 1)) {
+            v.foto_principal = publicUrl;
+          }
+        }
+      }
+    } catch (e) {
+      console.error("Error en upload:", e);
+    }
+  }
+
+  if (statusEl) {
+    statusEl.innerHTML = `<span class="text-emerald-400 font-bold">✅ ¡Fotos optimizadas y subidas con éxito!</span>`;
+    setTimeout(() => statusEl.classList.add("hidden"), 3000);
+  }
+
+  const fileInp = document.getElementById("edit-add-photos-file");
+  if (fileInp) fileInp.value = "";
+
+  renderEditPhotosGrid();
+  renderEditVariantPills();
+}
+
+function handleEditAddUrl() {
+  const input = document.getElementById("edit-add-photo-url-input");
+  if (!input) return;
+  const url = input.value.trim();
+  if (!url) return;
+  if (!url.startsWith("http://") && !url.startsWith("https://")) {
+    showToast("URL Inválida", "La URL de la imagen debe comenzar con https://", "error");
+    return;
+  }
+  if (!state.currentEditPhotos) state.currentEditPhotos = [];
+  state.currentEditPhotos.push(url);
+  input.value = "";
+  renderEditPhotosGrid();
+  renderEditVariantPills();
+}
 
 function renderEditPhotosGrid() {
   const grid = document.getElementById("edit-photos-grid");
@@ -1616,16 +1920,43 @@ function renderEditPhotosGrid() {
     return;
   }
 
+  const prod = state.currentEditingProduct;
+  const activeVariant = (prod && prod.variants && state.currentEditingVariantId !== "all") 
+    ? prod.variants.find(x => x.id === state.currentEditingVariantId) 
+    : null;
+
   grid.innerHTML = photos.map((url, idx) => {
     const isMain = idx === 0;
+    const isVariantPhoto = activeVariant && activeVariant.foto_principal === url;
+
     return `
-      <div class="relative group rounded-xl overflow-hidden bg-black/50 border ${isMain ? 'border-amber-400 ring-1 ring-amber-400/50 shadow-md shadow-amber-500/10' : 'border-white/10'}">
-        <div class="aspect-square w-full overflow-hidden bg-black/40">
-          <img src="${url}" alt="Foto ${idx + 1}" class="w-full h-full object-cover" onerror="this.src='https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=400&q=80'" />
+      <div 
+        class="photo-drag-item relative group rounded-xl overflow-hidden bg-black/50 border ${isMain ? 'border-amber-400 ring-1 ring-amber-400/50 shadow-md shadow-amber-500/10' : (isVariantPhoto ? 'border-[#e72380] ring-1 ring-[#e72380]/60' : 'border-white/10')}"
+        draggable="true"
+        data-idx="${idx}"
+        ondragstart="handlePhotoDragStart(event, ${idx})"
+        ondragover="handlePhotoDragOver(event, ${idx})"
+        ondragleave="handlePhotoDragLeave(event)"
+        ondrop="handlePhotoDrop(event, ${idx})"
+        ondragend="handlePhotoDragEnd(event)"
+      >
+        <div class="aspect-square w-full overflow-hidden bg-black/40 relative">
+          <img 
+            src="${url}" 
+            alt="Foto ${idx + 1}" 
+            class="w-full h-full object-cover pointer-events-none" 
+            onerror="this.onerror=null; this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 fill=%22%23222%22/><text x=%2250%22 y=%2255%22 font-size=%2212%22 fill=%22%23888%22 text-anchor=%22middle%22>Foto ${idx + 1}</text></svg>';" 
+          />
+          
+          <!-- Grip / Orden -->
+          <div class="absolute bottom-1 left-1 px-1.5 py-0.5 rounded bg-black/80 text-gray-300 text-[9px] flex items-center gap-0.5 pointer-events-none">
+            <i data-lucide="grip-vertical" class="w-3 h-3 text-gray-400"></i>
+            <span class="font-mono font-bold">#${idx + 1}</span>
+          </div>
         </div>
 
-        <!-- Badge Principal o Botón para Hacer Principal -->
-        <div class="absolute top-1 left-1 z-10">
+        <!-- Badge Portada o Botón para Hacer Principal -->
+        <div class="absolute top-1 left-1 z-10 flex flex-col gap-1">
           ${isMain ? `
             <span class="px-1.5 py-0.5 rounded-md bg-amber-500 text-black font-extrabold text-[9px] shadow-sm flex items-center gap-1">
               ⭐ Portada
@@ -1635,117 +1966,66 @@ function renderEditPhotosGrid() {
               type="button" 
               onclick="handleSetMainEditPhoto(${idx})" 
               class="px-1.5 py-0.5 rounded-md bg-black/80 hover:bg-amber-500 hover:text-black text-amber-300 font-bold text-[9px] backdrop-blur-xs transition shadow-sm border border-white/10"
-              title="Convertir en foto de portada principal"
+              title="Convertir en foto de portada principal (#1)"
             >
               ⭐ Portada
             </button>
           `}
+
+          ${activeVariant ? (
+            isVariantPhoto ? `
+              <span class="px-1.5 py-0.5 rounded-md bg-[#e72380] text-white font-extrabold text-[8px] shadow-sm flex items-center gap-0.5">
+                🎯 Modelo
+              </span>
+            ` : `
+              <button 
+                type="button" 
+                onclick="handleAssignPhotoToVariant('${url}')" 
+                class="px-1.5 py-0.5 rounded-md bg-black/85 hover:bg-[#e72380] text-rose-300 hover:text-white font-bold text-[8px] backdrop-blur-xs transition shadow-sm border border-rose-500/30"
+                title="Asignar esta foto a la variante activa"
+              >
+                🎯 Asignar
+              </button>
+            `
+          ) : ''}
         </div>
 
-        <!-- Botón Eliminar Foto -->
-        <button 
-          type="button" 
-          onclick="handleDeleteEditPhoto(${idx})" 
-          class="absolute top-1 right-1 z-10 w-6 h-6 rounded-md bg-red-600/85 hover:bg-red-600 text-white flex items-center justify-center transition shadow-sm"
-          title="Eliminar esta foto"
-        >
-          <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-        </button>
-
-        <!-- Número de orden -->
-        <span class="absolute bottom-1 right-1 z-10 px-1 py-0.2 rounded bg-black/70 text-gray-300 text-[8px] font-mono">
-          #${idx + 1}
-        </span>
+        <!-- Botones de Reordenar (◀ ▶) táctiles y Eliminar -->
+        <div class="absolute top-1 right-1 z-10 flex items-center gap-1">
+          ${idx > 0 ? `
+            <button 
+              type="button" 
+              onclick="handleMoveEditPhoto(${idx}, -1)" 
+              class="w-5 h-5 rounded-md bg-black/80 hover:bg-white/20 text-white flex items-center justify-center transition border border-white/10"
+              title="Mover a la izquierda (antes)"
+            >
+              <i data-lucide="chevron-left" class="w-3 h-3"></i>
+            </button>
+          ` : ''}
+          ${idx < photos.length - 1 ? `
+            <button 
+              type="button" 
+              onclick="handleMoveEditPhoto(${idx}, 1)" 
+              class="w-5 h-5 rounded-md bg-black/80 hover:bg-white/20 text-white flex items-center justify-center transition border border-white/10"
+              title="Mover a la derecha (después)"
+            >
+              <i data-lucide="chevron-right" class="w-3 h-3"></i>
+            </button>
+          ` : ''}
+          <button 
+            type="button" 
+            onclick="handleDeleteEditPhoto(${idx})" 
+            class="w-5 h-5 rounded-md bg-red-600/85 hover:bg-red-600 text-white flex items-center justify-center transition shadow-sm"
+            title="Eliminar esta foto"
+          >
+            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+          </button>
+        </div>
       </div>
     `;
   }).join("");
 
   lucide.createIcons();
-}
-
-function handleSetMainEditPhoto(idx) {
-  if (!state.currentEditPhotos || idx <= 0 || idx >= state.currentEditPhotos.length) return;
-  const [photo] = state.currentEditPhotos.splice(idx, 1);
-  state.currentEditPhotos.unshift(photo);
-  renderEditPhotosGrid();
-}
-
-function handleDeleteEditPhoto(idx) {
-  if (!state.currentEditPhotos || idx < 0 || idx >= state.currentEditPhotos.length) return;
-  state.currentEditPhotos.splice(idx, 1);
-  renderEditPhotosGrid();
-}
-
-async function handleEditAddFiles(files) {
-  if (!files || files.length === 0) return;
-  const prodId = document.getElementById("edit-product-id").value;
-  const prod = state.products.find(p => p.id === prodId);
-  const statusEl = document.getElementById("edit-photo-upload-status");
-  
-  if (statusEl) {
-    statusEl.classList.remove("hidden");
-    statusEl.innerHTML = `<span class="animate-pulse">⏳ Subiendo ${files.length} foto(s) a Supabase...</span>`;
-  }
-
-  const folder = (prod && prod.id_aliexpress) ? prod.id_aliexpress : (prod && prod.codigo_sku ? prod.codigo_sku : prodId);
-
-  for (let i = 0; i < files.length; i++) {
-    const file = files[i];
-    const cleanExt = (file.name.split('.').pop() || 'jpg').toLowerCase();
-    const cleanName = `foto_${Date.now()}_${i + 1}.${cleanExt}`;
-    const storagePath = `${folder}/galeria/${cleanName}`;
-
-    try {
-      const { data, error } = await supabaseClient.storage
-        .from("joyas")
-        .upload(storagePath, file, { upsert: true });
-
-      if (error) {
-        console.warn("Fallo subiendo a subcarpeta, probando ruta plana:", error);
-        const flatPath = `subida_${Date.now()}_${i + 1}.${cleanExt}`;
-        const { error: flatErr } = await supabaseClient.storage
-          .from("joyas")
-          .upload(flatPath, file, { upsert: true });
-
-        if (!flatErr) {
-          const url = `${SUPABASE_URL}/storage/v1/object/public/joyas/${flatPath}`;
-          state.currentEditPhotos.push(url);
-        } else {
-          console.error("Error al subir foto:", flatErr);
-        }
-      } else {
-        const url = `${SUPABASE_URL}/storage/v1/object/public/joyas/${storagePath}`;
-        state.currentEditPhotos.push(url);
-      }
-    } catch (e) {
-      console.error("Error en upload:", e);
-    }
-  }
-
-  if (statusEl) {
-    statusEl.innerHTML = `<span class="text-emerald-400 font-bold">✅ ¡Fotos agregadas con éxito!</span>`;
-    setTimeout(() => statusEl.classList.add("hidden"), 3000);
-  }
-
-  const fileInp = document.getElementById("edit-add-photos-file");
-  if (fileInp) fileInp.value = "";
-
-  renderEditPhotosGrid();
-}
-
-function handleEditAddUrl() {
-  const input = document.getElementById("edit-add-photo-url-input");
-  if (!input) return;
-  const url = input.value.trim();
-  if (!url) return;
-  if (!url.startsWith("http://") && !url.startsWith("https://")) {
-    showToast("URL Inválida", "La URL de la imagen debe comenzar con https://", "error");
-    return;
-  }
-  if (!state.currentEditPhotos) state.currentEditPhotos = [];
-  state.currentEditPhotos.push(url);
-  input.value = "";
-  renderEditPhotosGrid();
 }
 
 function updateEditDiscountNotice() {
@@ -1795,96 +2075,242 @@ function updateEditDiscountNotice() {
   }
 }
 
-function openEditProductModal(productId) {
-  const prod = state.products.find(p => p.id === productId);
+// ==============================================================================
+// MODAL DE EDICIÓN CON SELECTOR DE VARIANTES ESPECÍFICAS
+// ==============================================================================
+
+function openEditProductModal(productId, targetVariantId = null) {
+  const prod = state.products.find(p => p.id === productId || (p.variants && p.variants.some(v => v.id === productId)));
   if (!prod) {
     showToast("Error", "No se encontró la joya seleccionada.", "error");
     return;
   }
 
+  state.currentEditingProduct = prod;
+  state.currentEditingProductId = prod.id;
+
   const modal = document.getElementById("edit-product-modal");
   if (!modal) return;
 
-  // Poblar campos
-  document.getElementById("edit-product-id").value = prod.id;
-  document.getElementById("edit-sku-badge").textContent = `SKU: ${prod.codigo_sku || 'S/C'}`;
-  document.getElementById("edit-titulo").value = prod.titulo || "";
-  document.getElementById("edit-descripcion").value = prod.descripcion || "";
-  document.getElementById("edit-categoria").value = prod.categoria || "anillos";
-  
-  // Limpiar tallas si tienen "(Agotadas: ...)"
-  const cleanT = (prod.tallas || "Ajustable").replace(/\(.*?agotad.*?\)/gi, "").trim();
-  document.getElementById("edit-tallas").value = cleanT;
-  
-  document.getElementById("edit-costo").value = prod.costo_real ? Math.round(prod.costo_real) : "";
-  document.getElementById("edit-stock").value = prod.estado_stock || "Disponible";
-  document.getElementById("edit-enlace").value = prod.enlace_aliexpress || "";
-  
-  document.getElementById("edit-es-novedad").checked = prod.es_novedad === true;
-  document.getElementById("edit-activo").checked = prod.activo !== false && prod.estado_stock !== "Agotada";
-
-  // Manejo inteligente de Precios (Normal vs Oferta)
-  let normalPrice = Math.round(prod.precio_venta || 0);
-  let promoPrice = "";
-  const isOferta = prod.es_destacado === true || (prod.badge && (prod.badge.includes("%") || prod.badge.includes("🔥")));
-
-  let origInSpec = null;
-  if (prod.especificaciones) {
-    const m = prod.especificaciones.match(/\[?PrecioOriginal:\s*([\d.]+)\]?/i);
-    if (m) origInSpec = Math.round(parseFloat(m[1]));
-  }
-
-  if (origInSpec && isOferta) {
-    // Si ya estaba en oferta, origInSpec es el precio normal, y prod.precio_venta es el precio en oferta
-    normalPrice = origInSpec;
-    promoPrice = Math.round(prod.precio_venta || 0);
-  } else if (!origInSpec && isOferta) {
-    // Si estaba marcado en oferta pero no tenía PrecioOriginal guardado
-    normalPrice = Math.round(prod.precio_venta * 1.25);
-    promoPrice = Math.round(prod.precio_venta);
-  }
-
-  document.getElementById("edit-precio").value = normalPrice;
-
-  const promoInput = document.getElementById("edit-precio-oferta");
-  if (promoInput) promoInput.value = promoPrice;
-
-  const checkDesc = document.getElementById("edit-es-descuento");
-  if (checkDesc) checkDesc.checked = isOferta;
-
-  const inputBadge = document.getElementById("edit-badge-oferta");
-  if (inputBadge) inputBadge.value = prod.badge && prod.badge !== "PLATA S925" ? prod.badge : (isOferta ? "-20% OFF" : "");
-
-  // Recopilar todas las fotos de la joya (principal + galería) ordenadas del 1 al 5...
-  function getNum(u) {
-    if (!u) return 999;
-    const m = u.match(/foto_0*(\d+)/i) || u.match(/_0*(\d+)\.[a-z0-9]+$/i);
-    return m ? parseInt(m[1], 10) : 900;
-  }
+  // Recopilar todas las fotos preservando el orden guardado (foto_principal primero)
   const allPhotos = [];
+  if (prod.foto_principal) {
+    allPhotos.push(prod.foto_principal);
+  }
   if (Array.isArray(prod.galeria_fotos)) {
     prod.galeria_fotos.forEach(u => {
       if (u && !allPhotos.includes(u)) allPhotos.push(u);
     });
   }
-  allPhotos.sort((a, b) => getNum(a) - getNum(b));
-
-  // Incluir fotos de todas las variantes para que salgan TODAS las fotos de la joya
   if (prod.variants && prod.variants.length > 0) {
     prod.variants.forEach(v => {
       if (v.foto_principal && !allPhotos.includes(v.foto_principal)) {
         allPhotos.push(v.foto_principal);
       }
+      if (Array.isArray(v.galeria_fotos)) {
+        v.galeria_fotos.forEach(u => {
+          if (u && !allPhotos.includes(u)) allPhotos.push(u);
+        });
+      }
     });
-  } else if (prod.foto_principal && !allPhotos.includes(prod.foto_principal)) {
-    allPhotos.push(prod.foto_principal);
   }
   state.currentEditPhotos = allPhotos;
-  renderEditPhotosGrid();
-  updateEditDiscountNotice();
+
+  // Determinar variante inicial a editar
+  if (targetVariantId) {
+    state.currentEditingVariantId = targetVariantId;
+  } else if (prod.variants && prod.variants.length > 1) {
+    state.currentEditingVariantId = "all";
+  } else if (prod.variants && prod.variants[0]) {
+    state.currentEditingVariantId = prod.variants[0].id;
+  } else {
+    state.currentEditingVariantId = prod.id;
+  }
+
+  renderEditVariantPills();
+  selectEditVariant(state.currentEditingVariantId);
 
   modal.classList.remove("hidden");
   requestAnimationFrame(() => modal.classList.add("modal-active"));
+  lucide.createIcons();
+}
+
+function renderEditVariantPills() {
+  const wrapper = document.getElementById("edit-variant-selector-wrapper");
+  const list = document.getElementById("edit-variant-pills-list");
+  if (!wrapper || !list) return;
+
+  const prod = state.currentEditingProduct;
+  if (!prod || !prod.variants || prod.variants.length <= 1) {
+    wrapper.classList.add("hidden");
+    return;
+  }
+
+  wrapper.classList.remove("hidden");
+
+  let pillsHtml = `
+    <button 
+      type="button" 
+      onclick="selectEditVariant('all')" 
+      class="variant-pill-btn px-3 py-1.5 rounded-xl font-bold text-xs flex items-center gap-1.5 shrink-0 border ${state.currentEditingVariantId === 'all' ? 'active' : 'bg-white/5 border-white/10 text-gray-300 hover:bg-white/10'}"
+    >
+      <i data-lucide="sparkles" class="w-3.5 h-3.5 text-amber-400"></i>
+      <span>🌟 Todo el Grupo</span>
+    </button>
+  `;
+
+  prod.variants.forEach((v, idx) => {
+    const isSelected = state.currentEditingVariantId === v.id;
+    const vPhoto = v.foto_principal || prod.foto_principal || '';
+    const vName = v.codigo_sku || v.color_modelo || `Modelo ${idx + 1}`;
+    const vPrice = Math.round(v.precio_venta || prod.precio_venta || 0);
+
+    pillsHtml += `
+      <button 
+        type="button" 
+        onclick="selectEditVariant('${v.id}')" 
+        class="variant-pill-btn px-2.5 py-1.5 rounded-xl font-bold text-xs flex items-center gap-2 shrink-0 border ${isSelected ? 'active' : 'bg-white/5 border-white/10 text-gray-300 hover:bg-white/10'}"
+      >
+        <img src="${vPhoto}" class="w-6 h-6 rounded-lg object-cover border border-white/10 shrink-0" onerror="this.onerror=null; this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 fill=%22%23222%22/></svg>';" />
+        <span class="truncate max-w-[120px]">${vName}</span>
+        <span class="px-1.5 py-0.2 rounded text-[10px] ${isSelected ? 'bg-white/20 text-white' : 'bg-black/50 text-emerald-400 font-mono'}">$${vPrice}</span>
+      </button>
+    `;
+  });
+
+  list.innerHTML = pillsHtml;
+  lucide.createIcons();
+}
+
+function selectEditVariant(variantId) {
+  state.currentEditingVariantId = variantId;
+  const prod = state.currentEditingProduct;
+  if (!prod) return;
+
+  const skuRow = document.getElementById("edit-variant-sku-row");
+  const skuInput = document.getElementById("edit-variant-sku");
+  const modeBadge = document.getElementById("edit-variant-mode-badge");
+  const tipEl = document.getElementById("edit-variant-tip");
+
+  // Actualizar selector visual de píldoras
+  document.querySelectorAll(".variant-pill-btn").forEach(btn => {
+    btn.classList.remove("active");
+  });
+
+  if (variantId === "all") {
+    if (skuRow) skuRow.classList.add("hidden");
+    if (modeBadge) {
+      modeBadge.textContent = `🌟 Todo el Grupo (${prod.variants ? prod.variants.length : 1} variantes)`;
+      modeBadge.className = "px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-500/20 text-amber-300 border border-amber-500/30";
+    }
+    if (tipEl) {
+      tipEl.textContent = "Los cambios generales de nombre, descripción y categoría se guardarán para todo el grupo.";
+    }
+
+    document.getElementById("edit-product-id").value = prod.id;
+    document.getElementById("edit-sku-badge").textContent = `ID Grupo: ${prod.id_aliexpress || prod.codigo_sku || 'S/C'}`;
+    document.getElementById("edit-titulo").value = prod.titulo || "";
+    document.getElementById("edit-descripcion").value = prod.descripcion || "";
+    document.getElementById("edit-categoria").value = prod.categoria || "anillos";
+    
+    const cleanT = (prod.tallas || "Ajustable").replace(/\(.*?agotad.*?\)/gi, "").trim();
+    document.getElementById("edit-tallas").value = cleanT;
+    
+    document.getElementById("edit-costo").value = prod.costo_real ? Math.round(prod.costo_real) : "";
+    document.getElementById("edit-stock").value = prod.estado_stock || "Disponible";
+    document.getElementById("edit-enlace").value = prod.enlace_aliexpress || "";
+    
+    document.getElementById("edit-es-novedad").checked = prod.es_novedad === true;
+    document.getElementById("edit-activo").checked = prod.activo !== false && prod.estado_stock !== "Agotada";
+
+    let normalPrice = Math.round(prod.precio_venta || 0);
+    let promoPrice = "";
+    const isOferta = prod.es_destacado === true || (prod.badge && (prod.badge.includes("%") || prod.badge.includes("🔥")));
+
+    let origInSpec = null;
+    if (prod.especificaciones) {
+      const m = prod.especificaciones.match(/\[?PrecioOriginal:\s*([\d.]+)\]?/i);
+      if (m) origInSpec = Math.round(parseFloat(m[1]));
+    }
+    if (origInSpec && isOferta) {
+      normalPrice = origInSpec;
+      promoPrice = Math.round(prod.precio_venta || 0);
+    } else if (!origInSpec && isOferta) {
+      normalPrice = Math.round(prod.precio_venta * 1.25);
+      promoPrice = Math.round(prod.precio_venta);
+    }
+
+    document.getElementById("edit-precio").value = normalPrice;
+    const promoInput = document.getElementById("edit-precio-oferta");
+    if (promoInput) promoInput.value = promoPrice;
+
+    const checkDesc = document.getElementById("edit-es-descuento");
+    if (checkDesc) checkDesc.checked = isOferta;
+
+    const inputBadge = document.getElementById("edit-badge-oferta");
+    if (inputBadge) inputBadge.value = prod.badge && prod.badge !== "PLATA S925" ? prod.badge : (isOferta ? "-20% OFF" : "");
+
+  } else {
+    // Modo Variante Específica
+    const v = (prod.variants || []).find(x => x.id === variantId) || prod;
+
+    if (skuRow) skuRow.classList.remove("hidden");
+    if (skuInput) skuInput.value = v.codigo_sku || v.color_modelo || "";
+    if (modeBadge) {
+      modeBadge.textContent = `🎨 Variante: ${v.codigo_sku || v.color_modelo || 'Específica'}`;
+      modeBadge.className = "px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-[#e72380]/20 text-[#e72380] border border-[#e72380]/30";
+    }
+    if (tipEl) {
+      tipEl.textContent = `Editando exclusivamente "${v.codigo_sku || v.color_modelo}". Los cambios de foto, tallas y precio afectarán solo a este modelo.`;
+    }
+
+    document.getElementById("edit-product-id").value = v.id;
+    document.getElementById("edit-sku-badge").textContent = `Variante: ${v.codigo_sku || 'S/C'}`;
+    document.getElementById("edit-titulo").value = v.titulo || prod.titulo || "";
+    document.getElementById("edit-descripcion").value = v.descripcion || prod.descripcion || "";
+    document.getElementById("edit-categoria").value = v.categoria || prod.categoria || "anillos";
+    
+    const cleanT = (v.tallas || prod.tallas || "Ajustable").replace(/\(.*?agotad.*?\)/gi, "").trim();
+    document.getElementById("edit-tallas").value = cleanT;
+    
+    document.getElementById("edit-costo").value = v.costo_real ? Math.round(v.costo_real) : (prod.costo_real ? Math.round(prod.costo_real) : "");
+    document.getElementById("edit-stock").value = v.estado_stock || "Disponible";
+    document.getElementById("edit-enlace").value = v.enlace_aliexpress || prod.enlace_aliexpress || "";
+    
+    document.getElementById("edit-es-novedad").checked = v.es_novedad === true;
+    document.getElementById("edit-activo").checked = v.activo !== false && v.estado_stock !== "Agotada";
+
+    let normalPrice = Math.round(v.precio_venta || prod.precio_venta || 0);
+    let promoPrice = "";
+    const isOferta = v.es_destacado === true || (v.badge && (v.badge.includes("%") || v.badge.includes("🔥")));
+
+    let origInSpec = null;
+    if (v.especificaciones) {
+      const m = v.especificaciones.match(/\[?PrecioOriginal:\s*([\d.]+)\]?/i);
+      if (m) origInSpec = Math.round(parseFloat(m[1]));
+    }
+    if (origInSpec && isOferta) {
+      normalPrice = origInSpec;
+      promoPrice = Math.round(v.precio_venta || 0);
+    } else if (!origInSpec && isOferta) {
+      normalPrice = Math.round(v.precio_venta * 1.25);
+      promoPrice = Math.round(v.precio_venta);
+    }
+
+    document.getElementById("edit-precio").value = normalPrice;
+    const promoInput = document.getElementById("edit-precio-oferta");
+    if (promoInput) promoInput.value = promoPrice;
+
+    const checkDesc = document.getElementById("edit-es-descuento");
+    if (checkDesc) checkDesc.checked = isOferta;
+
+    const inputBadge = document.getElementById("edit-badge-oferta");
+    if (inputBadge) inputBadge.value = v.badge && v.badge !== "PLATA S925" ? v.badge : (isOferta ? "-20% OFF" : "");
+  }
+
+  renderEditPhotosGrid();
+  renderEditVariantPills();
+  updateEditDiscountNotice();
   lucide.createIcons();
 }
 
@@ -1898,8 +2324,7 @@ function closeEditProductModal() {
 
 async function handleEditProductSubmit(e) {
   e.preventDefault();
-  const productId = document.getElementById("edit-product-id").value;
-  const prod = state.products.find(p => p.id === productId);
+  const prod = state.currentEditingProduct;
   if (!prod) return;
 
   const saveBtn = document.getElementById("edit-save-btn");
@@ -1922,18 +2347,6 @@ async function handleEditProductSubmit(e) {
     const esNovedad = document.getElementById("edit-es-novedad").checked;
     const activo = document.getElementById("edit-activo").checked;
 
-    // Validar límite si se intenta marcar como novedad
-    if (esNovedad && !prod.es_novedad) {
-      const currentNovs = state.products.filter(p => p.es_novedad).length;
-      if (currentNovs >= MAX_NOVEDADES) {
-        showToast("Límite de Portada", `Solo puedes tener máximo ${MAX_NOVEDADES} joyas en novedades. Desmarca una primero.`, "error");
-        saveBtn.disabled = false;
-        saveBtn.innerHTML = origBtnContent;
-        lucide.createIcons();
-        return;
-      }
-    }
-
     const esDescuento = document.getElementById("edit-es-descuento") ? document.getElementById("edit-es-descuento").checked : false;
     const promoInput = document.getElementById("edit-precio-oferta");
     const promoPrice = promoInput ? parseFloat(promoInput.value || 0) : 0;
@@ -1943,69 +2356,115 @@ async function handleEditProductSubmit(e) {
     let finalBadge = prod.badge || "PLATA S925";
     let finalEspec = prod.especificaciones || "";
 
-    // Limpiar previo PrecioOriginal
     finalEspec = finalEspec.replace(/\b\[?PrecioOriginal:\s*[\d.]+\]?\s*\|?\s*/gi, "").trim();
 
     if (esDescuento && promoPrice > 0 && promoPrice < normalPrice) {
-      // Promoción ACTIVA: se vende al precio rebajado y se guarda el precio normal como PrecioOriginal
       finalSellingPrice = promoPrice;
       finalEspec = `[PrecioOriginal: ${normalPrice}] ${finalEspec}`.trim();
       const pct = Math.round(((normalPrice - promoPrice) / normalPrice) * 100);
       finalBadge = badgeOferta || `-${pct}% OFF`;
     } else {
-      // Promoción INACTIVA: se vende a su precio normal habitual
       finalSellingPrice = normalPrice;
       if (finalBadge.includes("%") || finalBadge.includes("🔥")) {
         finalBadge = "PLATA S925";
       }
     }
 
-    // Manejar lista de fotos (principal + galería)
     const currentPhotos = state.currentEditPhotos || [];
     let mainPhotoUrl = currentPhotos[0] || prod.foto_principal;
     let newGallery = currentPhotos.slice(1);
 
-    const updates = {
-      titulo: titulo,
-      descripcion: descripcion,
-      categoria: categoria,
-      tallas: tallas,
-      precio_venta: finalSellingPrice,
-      costo_real: costo > 0 ? costo : null,
-      estado_stock: stock,
-      enlace_aliexpress: enlace || null,
-      foto_principal: mainPhotoUrl,
-      galeria_fotos: newGallery,
-      es_novedad: esNovedad,
-      es_destacado: esDescuento && promoPrice > 0 && promoPrice < normalPrice,
-      badge: finalBadge,
-      especificaciones: finalEspec || null,
-      activo: stock === "Agotada" ? false : activo,
-      updated_at: new Date().toISOString()
-    };
+    if (state.currentEditingVariantId !== "all") {
+      // 1. Guardar exclusivamente variante específica
+      const variantSku = document.getElementById("edit-variant-sku") ? document.getElementById("edit-variant-sku").value.trim() : "";
+      const v = (prod.variants || []).find(x => x.id === state.currentEditingVariantId);
+      if (!v) throw new Error("No se encontró la variante a actualizar.");
 
-    const targetIds = prod.rowIds && prod.rowIds.length > 0 ? prod.rowIds : [productId];
-    const { error } = await supabaseClient
-      .from("productos")
-      .update(updates)
-      .in("id", targetIds);
+      const variantPhoto = v.foto_principal || mainPhotoUrl;
 
-    if (error) throw error;
+      const variantUpdates = {
+        titulo: titulo,
+        descripcion: descripcion,
+        categoria: categoria,
+        tallas: tallas,
+        precio_venta: finalSellingPrice,
+        costo_real: costo > 0 ? costo : null,
+        estado_stock: stock,
+        enlace_aliexpress: enlace || null,
+        foto_principal: variantPhoto,
+        activo: stock === "Agotada" ? false : activo,
+        codigo_sku: variantSku || v.codigo_sku,
+        color_modelo: variantSku || v.color_modelo,
+        updated_at: new Date().toISOString()
+      };
 
-    // Actualizar producto en estado local
-    Object.assign(prod, updates);
+      const { error } = await supabaseClient
+        .from("productos")
+        .update(variantUpdates)
+        .eq("id", v.id);
+
+      if (error) throw error;
+
+      Object.assign(v, variantUpdates);
+
+      // Recalcular precios del grupo
+      const prices = prod.variants.map(item => item.precio_venta).filter(pr => !isNaN(pr));
+      if (prices.length > 0) {
+        prod.precio_venta = Math.min(...prices);
+      }
+
+      showToast("Variante Actualizada", `Modelo "${variantSku || v.codigo_sku}" guardado con éxito.`, "success");
+
+    } else {
+      // 2. Guardar Grupo Completo
+      const updates = {
+        titulo: titulo,
+        descripcion: descripcion,
+        categoria: categoria,
+        tallas: tallas,
+        precio_venta: finalSellingPrice,
+        costo_real: costo > 0 ? costo : null,
+        estado_stock: stock,
+        enlace_aliexpress: enlace || null,
+        foto_principal: mainPhotoUrl,
+        galeria_fotos: newGallery,
+        es_novedad: esNovedad,
+        es_destacado: esDescuento && promoPrice > 0 && promoPrice < normalPrice,
+        badge: finalBadge,
+        especificaciones: finalEspec || null,
+        activo: stock === "Agotada" ? false : activo,
+        updated_at: new Date().toISOString()
+      };
+
+      const targetIds = prod.rowIds && prod.rowIds.length > 0 ? prod.rowIds : [prod.id];
+      const { error } = await supabaseClient
+        .from("productos")
+        .update(updates)
+        .in("id", targetIds);
+
+      if (error) throw error;
+
+      Object.assign(prod, updates);
+      if (prod.variants) {
+        prod.variants.forEach(v => Object.assign(v, {
+          titulo: titulo,
+          descripcion: descripcion,
+          categoria: categoria,
+          es_novedad: esNovedad,
+          activo: updates.activo,
+          estado_stock: updates.estado_stock
+        }));
+      }
+
+      showToast("Joya Actualizada", `"${titulo.slice(0, 30)}..." se guardó con éxito.`, "success");
+    }
 
     calculateStats();
     applyFilters();
-    if (state.activeTab === "portada") {
-      renderPortadaView();
-    }
-    if (state.activeTab === "ofertas") {
-      renderOfertasView();
-    }
+    if (state.activeTab === "portada") renderPortadaView();
+    if (state.activeTab === "ofertas") renderOfertasView();
 
     closeEditProductModal();
-    showToast("Joya Actualizada", `"${titulo.slice(0, 30)}..." se guardó con éxito.`, "success");
 
   } catch (err) {
     console.error("Error al guardar cambios:", err);
@@ -2014,6 +2473,20 @@ async function handleEditProductSubmit(e) {
     saveBtn.disabled = false;
     saveBtn.innerHTML = origBtnContent;
     lucide.createIcons();
+  }
+}
+
+function toggleVariantsPreview(productId) {
+  const list = document.getElementById(`variants-preview-${productId}`);
+  const arrow = document.getElementById(`variant-arrow-${productId}`);
+  if (!list) return;
+  const isHidden = list.classList.contains("hidden");
+  if (isHidden) {
+    list.classList.remove("hidden");
+    if (arrow) arrow.textContent = "Ocultar ▴";
+  } else {
+    list.classList.add("hidden");
+    if (arrow) arrow.textContent = "Ver ▾";
   }
 }
 // ==============================================================================
