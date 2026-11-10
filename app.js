@@ -84,7 +84,13 @@ async function syncProductsFromSupabase() {
           };
         });
 
-        // Galería de fotos combinada (fotos generales de la joya)
+        function getNum(u) {
+          if (!u) return 999;
+          const m = u.match(/foto_0*(\d+)/i) || u.match(/_0*(\d+)\.[a-z0-9]+$/i);
+          return m ? parseInt(m[1], 10) : 900;
+        }
+
+        // Galería de fotos combinada ordenada estrictamente (1 al 5...)
         const generalGalleries = [];
         rows.forEach(r => {
           if (Array.isArray(r.galeria_fotos)) {
@@ -93,6 +99,8 @@ async function syncProductsFromSupabase() {
             });
           }
         });
+        generalGalleries.sort((a, b) => getNum(a) - getNum(b));
+        const coverPhoto = (generalGalleries.length > 0) ? generalGalleries[0] : (primaryRow.foto_principal || variants[0].photo);
 
         const activeVariants = variants.filter(v => v.stock);
         const minPrice = Math.min(...variants.map(v => v.price));
@@ -156,7 +164,7 @@ async function syncProductsFromSupabase() {
           hasMultipleVariants: hasMultipleVariants,
           badge: mainBadge,
           notes: cleanNotes,
-          image: variants[0].photo,
+          image: coverPhoto,
           description: primaryRow.descripcion || primaryRow.titulo,
           stock: !allAgotado,
           variants: variants,
@@ -299,227 +307,17 @@ let HERO_SHOWCASE = [
 let heroElements = [];
 
 function initHero3DCarousel() {
-  const container = document.getElementById("hero-carousel-container");
-  if (!container) return;
-
-  // Preload de imágenes
-  HERO_SHOWCASE.forEach(item => {
-    const img = new Image();
-    img.src = item.src;
-  });
-
-  state.heroIsMobile = window.innerWidth < 640;
-
-  container.innerHTML = "";
-  heroElements = HERO_SHOWCASE.map((item, idx) => {
-    const wrapper = document.createElement("div");
-    wrapper.className = "absolute hero-3d-item select-none cursor-pointer";
-    wrapper.style.aspectRatio = "0.72 / 1";
-
-    // Solo la imagen limpia, sin recuadros ni bordes blancos ni texto sobre ella
-    wrapper.innerHTML = `
-      <div 
-        onclick="handleHeroCardClick(${idx})"
-        class="w-full h-full overflow-hidden rounded-2xl sm:rounded-3xl shadow-[0_16px_36px_rgba(0,0,0,0.6)] select-none group transition-transform duration-300"
-      >
-        <img 
-          src="${item.src}" 
-          alt="${item.name}" 
-          draggable="false" 
-          class="w-full h-full object-cover pointer-events-none group-hover:scale-105 transition-transform duration-500" 
-          style="object-position: center;"
-        />
-      </div>
-    `;
-
-    container.appendChild(wrapper);
-    return wrapper;
-  });
-
-  renderHeroRoles();
-
-  // Iniciar rotación automática autónoma ("movimiento solo", sin gestos de deslizamiento en móvil)
-  startHeroAutoPlay();
-
-  // Pausa en hover de ratón en escritorio
-  const heroRoot = document.getElementById("yamiki-hero-root");
-  if (heroRoot) {
-    heroRoot.addEventListener("mouseenter", stopHeroAutoPlay);
-    heroRoot.addEventListener("mouseleave", startHeroAutoPlay);
-  }
-
-  // Pausa cuando el usuario cambia de pestaña para no gastar batería
-  document.addEventListener("visibilitychange", () => {
-    if (document.hidden) {
-      stopHeroAutoPlay();
-    } else {
-      startHeroAutoPlay();
-    }
-  });
-
-  // Ajuste en cambio de resolución / rotación de pantalla
-  window.addEventListener("resize", () => {
-    const currentMobile = window.innerWidth < 640;
-    if (currentMobile !== state.heroIsMobile) {
-      state.heroIsMobile = currentMobile;
-      renderHeroRoles();
-    }
-  });
-}
-
-function startHeroAutoPlay() {
-  stopHeroAutoPlay();
-  state.heroTimer = setInterval(() => {
-    navigateHero("next", false);
-  }, 3500);
-}
-
-function stopHeroAutoPlay() {
-  if (state.heroTimer) {
-    clearInterval(state.heroTimer);
-    state.heroTimer = null;
-  }
-}
-
-function getHeroRole(index) {
-  if (index === state.heroIndex) return "center";
-  if (index === (state.heroIndex + 3) % 4) return "left";
-  if (index === (state.heroIndex + 1) % 4) return "right";
-  return "back";
-}
-
-function applyHeroRoleStyles(element, role) {
-  const isMob = state.heroIsMobile;
-  if (role === "center") {
-    element.style.transform = `translateX(-50%) scale(${isMob ? 1.05 : 1.10})`;
-    element.style.filter = "blur(0px)";
-    element.style.opacity = "1";
-    element.style.zIndex = "25";
-    element.style.left = "50%";
-    element.style.height = isMob ? "32%" : "38%";
-    element.style.bottom = isMob ? "20%" : "12%";
-  } else if (role === "left") {
-    element.style.transform = `translateX(-50%) scale(${isMob ? 0.85 : 0.95})`;
-    element.style.filter = "blur(2px)";
-    element.style.opacity = isMob ? "0.65" : "0.75";
-    element.style.zIndex = "10";
-    element.style.left = isMob ? "18%" : "28%";
-    element.style.height = isMob ? "18%" : "25%";
-    element.style.bottom = isMob ? "25%" : "18%";
-  } else if (role === "right") {
-    element.style.transform = `translateX(-50%) scale(${isMob ? 0.85 : 0.95})`;
-    element.style.filter = "blur(2px)";
-    element.style.opacity = isMob ? "0.65" : "0.75";
-    element.style.zIndex = "10";
-    element.style.left = isMob ? "82%" : "72%";
-    element.style.height = isMob ? "18%" : "25%";
-    element.style.bottom = isMob ? "25%" : "18%";
-  } else { // back
-    element.style.transform = `translateX(-50%) scale(${isMob ? 0.72 : 0.85})`;
-    element.style.filter = "blur(4px)";
-    element.style.opacity = isMob ? "0.35" : "0.38";
-    element.style.zIndex = "5";
-    element.style.left = "50%";
-    element.style.height = isMob ? "14%" : "18%";
-    element.style.bottom = isMob ? "28%" : "22%";
-  }
+  // Carrusel 3D de la pantalla de inicio deshabilitado a petición del usuario (fondo limpio)
+  return;
 }
 
 function renderHeroRoles() {
-  heroElements.forEach((el, idx) => {
-    const role = getHeroRole(idx);
-    applyHeroRoleStyles(el, role);
-  });
+  return;
 }
 
 function navigateHero(direction, userInitiated = true) {
-  if (state.heroIsAnimating) return;
-  state.heroIsAnimating = true;
-
-  if (direction === "next") {
-    state.heroIndex = (state.heroIndex + 1) % 4;
-  } else {
-    state.heroIndex = (state.heroIndex + 3) % 4;
-  }
-
-  renderHeroRoles();
-
-  if (userInitiated) {
-    // Si el usuario navegó manualmente, reiniciar el temporizador para que disfrute de los 3.5s completos
-    startHeroAutoPlay();
-  }
-
-  setTimeout(() => {
-    state.heroIsAnimating = false;
-  }, 650);
+  return;
 }
-
-function handleHeroCardClick(itemIndex) {
-  if (itemIndex === state.heroIndex) {
-    const item = HERO_SHOWCASE[itemIndex];
-    if (item && item.id) openProductModal(item.id);
-  } else {
-    state.heroIndex = itemIndex;
-    renderHeroRoles();
-    startHeroAutoPlay();
-  }
-}
-
-// Función reutilizable para habilitar Swipe táctil y arrastre en cualquier elemento
-function enableSwipeGesture(element, onSwipeLeft, onSwipeRight) {
-  if (!element) return;
-  let startX = 0;
-  let startY = 0;
-  let isMoving = false;
-
-  // Gestos táctiles en teléfonos móviles
-  element.addEventListener("touchstart", (e) => {
-    if (e.touches.length !== 1) return;
-    startX = e.touches[0].clientX;
-    startY = e.touches[0].clientY;
-    isMoving = true;
-  }, { passive: true });
-
-  element.addEventListener("touchend", (e) => {
-    if (!isMoving || e.changedTouches.length !== 1) return;
-    isMoving = false;
-    const deltaX = e.changedTouches[0].clientX - startX;
-    const deltaY = e.changedTouches[0].clientY - startY;
-
-    // Detectar deslizamiento horizontal dominante
-    if (Math.abs(deltaX) > 35 && Math.abs(deltaX) > Math.abs(deltaY) * 1.1) {
-      if (deltaX < 0) {
-        onSwipeLeft();
-      } else {
-        onSwipeRight();
-      }
-    }
-  }, { passive: true });
-
-  // Arrastre con ratón en computadoras
-  let isMouseDown = false;
-  let mouseStartX = 0;
-
-  element.addEventListener("mousedown", (e) => {
-    if (e.button !== 0) return;
-    isMouseDown = true;
-    mouseStartX = e.clientX;
-  });
-
-  window.addEventListener("mouseup", (e) => {
-    if (!isMouseDown) return;
-    isMouseDown = false;
-    const deltaX = e.clientX - mouseStartX;
-    if (Math.abs(deltaX) > 45) {
-      if (deltaX < 0) {
-        onSwipeLeft();
-      } else {
-        onSwipeRight();
-      }
-    }
-  });
-}
-
 // ==============================================================================
 // CARRUSEL DE NOVEDADES & LO MÁS RECIENTE (LOOP INFINITO CONTINUO "TIPO INFINITO")
 // ==============================================================================
@@ -553,11 +351,13 @@ function initCarousel() {
         
         <div class="relative aspect-square bg-[#f6f6f6] overflow-hidden cursor-pointer" onclick="openProductModal('${prod.id}')">
           <span class="product-badge absolute top-1.5 left-1.5 sm:top-2.5 sm:left-2.5 z-10 text-[9px] sm:text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full shadow-xs">
-            Novedad
+            ${prod.hasDiscount ? '🔥 Oferta' : 'Novedad'}
           </span>
-          <span class="absolute top-1.5 right-1.5 sm:top-2.5 sm:right-2.5 z-10 text-[9px] sm:text-[11px] font-extrabold px-1.5 py-0.5 sm:px-2 rounded-md bg-sage-900/90 text-white backdrop-blur-xs shadow-xs">
-            ${prod.code}
-          </span>
+          ${prod.hasDiscount && prod.originalPrice && prod.originalPrice > prod.price ? `
+            <span class="absolute top-1.5 right-1.5 sm:top-2.5 sm:right-2.5 z-10 text-[9px] sm:text-[11px] font-black tracking-wider px-2 py-0.5 rounded-full shadow-sm bg-[#e72380] text-white">
+              -${Math.round(((prod.originalPrice - prod.price) / prod.originalPrice) * 100)}% OFF
+            </span>
+          ` : ''}
           
           <img 
             src="${prod.image}" 
@@ -2171,11 +1971,8 @@ function openProductModal(productId, defaultSize = null, defaultVariantId = null
   state.modalPhotos = photoList;
   state.currentModalPhotoIdx = 0;
 
-  // Establecer foto principal inicial: si hay variante activa con foto, o la primera foto numerada
-  let initPhoto = photoList[0] ? photoList[0].url : product.image;
-  if (activeVariant && activeVariant.photo) {
-    initPhoto = activeVariant.photo;
-  }
+  // La foto inicial SIEMPRE es foto_01.jpg (photoList[0])
+  const initPhoto = photoList[0] ? photoList[0].url : product.image;
   if (modalImage) modalImage.src = initPhoto;
 
   const foundInitIdx = photoList.findIndex(p => p.url === initPhoto);

@@ -75,7 +75,60 @@ async function loadProductsFromSupabase() {
 
     if (error) throw error;
 
-    state.products = data || [];
+    state.rawProducts = data || [];
+
+    // Agrupar filas de Supabase por id_aliexpress (diseño familiar) idéntico a la tienda principal
+    const groupMap = new Map();
+    (data || []).forEach(row => {
+      const groupId = String(row.id_aliexpress || row.id);
+      if (!groupMap.has(groupId)) {
+        groupMap.set(groupId, []);
+      }
+      groupMap.get(groupId).push(row);
+    });
+
+    function getNum(u) {
+      if (!u) return 999;
+      const m = u.match(/foto_0*(\d+)/i) || u.match(/_0*(\d+)\.[a-z0-9]+$/i);
+      return m ? parseInt(m[1], 10) : 900;
+    }
+
+    const groupedList = [];
+    groupMap.forEach((rows, groupId) => {
+      const primaryRow = rows.find(r => r.activo !== false && r.estado_stock !== "Agotada") || rows[0];
+
+      // Galería consolidada y ordenada numéricamente del 1 al 5...
+      const generalGalleries = [];
+      rows.forEach(r => {
+        if (Array.isArray(r.galeria_fotos)) {
+          r.galeria_fotos.forEach(u => {
+            if (u && !generalGalleries.includes(u)) generalGalleries.push(u);
+          });
+        }
+      });
+      generalGalleries.sort((a, b) => getNum(a) - getNum(b));
+
+      const coverPhoto = (generalGalleries.length > 0) ? generalGalleries[0] : (primaryRow.foto_principal || "");
+      const isNovedad = rows.some(r => r.es_novedad === true);
+      const isOferta = rows.some(r => r.es_destacado === true || (r.badge && (r.badge.includes("%") || r.badge.includes("🔥"))));
+      const allAgotado = rows.every(r => r.estado_stock === "Agotada" || r.activo === false);
+
+      groupedList.push({
+        ...primaryRow,
+        id: String(primaryRow.id),
+        groupId: groupId,
+        rowIds: rows.map(r => r.id),
+        variants: rows,
+        hasMultipleVariants: rows.length > 1,
+        foto_principal: coverPhoto,
+        galeria_fotos: generalGalleries,
+        es_novedad: isNovedad,
+        es_destacado: isOferta,
+        estado_stock: allAgotado ? "Agotada" : "Disponible"
+      });
+    });
+
+    state.products = groupedList;
     calculateStats();
     applyFilters();
   } catch (err) {
@@ -247,6 +300,11 @@ function renderProductsTable() {
               <span class="text-[10px] text-rose-300 font-medium">
                 📏 ${prod.tallas || 'Ajustable'}
               </span>
+              ${prod.hasMultipleVariants ? `
+                <span class="text-[10px] text-purple-300 font-bold bg-purple-950/60 px-2 py-0.5 rounded-full border border-purple-800/40">
+                  ${prod.variants.length} modelos
+                </span>
+              ` : ''}
               ${prod.color_modelo && prod.color_modelo !== 'Única' ? `
                 <span class="text-[10px] text-purple-300 font-medium bg-purple-950/40 px-1.5 py-0.5 rounded border border-purple-800/40">
                   ${prod.color_modelo}
@@ -636,16 +694,17 @@ async function updateProductPrice(productId, newPrice) {
     return;
   }
 
+  const p = state.products.find(item => item.id === productId || (item.rowIds && item.rowIds.includes(productId)));
+  const targetIds = p && p.rowIds ? p.rowIds : [productId];
+
   try {
     const { error } = await supabaseClient
       .from("productos")
       .update({ precio_venta: price, updated_at: new Date().toISOString() })
-      .eq("id", productId);
+      .in("id", targetIds);
 
     if (error) throw error;
 
-    // Actualizar estado local
-    const p = state.products.find(item => item.id === productId);
     if (p) p.precio_venta = price;
 
     showToast("Precio actualizado", `Nuevo precio: $${price} MXN`, "success");
@@ -727,15 +786,18 @@ async function confirmDeleteProduct(productId, sku) {
     return;
   }
 
+  const prod = state.products.find(p => p.id === productId || (p.rowIds && p.rowIds.includes(productId)));
+  const targetIds = prod && prod.rowIds ? prod.rowIds : [productId];
+
   try {
     const { error } = await supabaseClient
       .from("productos")
       .delete()
-      .eq("id", productId);
+      .in("id", targetIds);
 
     if (error) throw error;
 
-    state.products = state.products.filter(p => p.id !== productId);
+    state.products = state.products.filter(p => p.id !== productId && (!p.rowIds || !p.rowIds.includes(productId)));
     calculateStats();
     applyFilters();
     showToast("Joya eliminada", `Se eliminó "${sku}" correctamente.`, "success");
@@ -1793,14 +1855,22 @@ function openEditProductModal(productId) {
   const inputBadge = document.getElementById("edit-badge-oferta");
   if (inputBadge) inputBadge.value = prod.badge && prod.badge !== "PLATA S925" ? prod.badge : (isOferta ? "-20% OFF" : "");
 
-  // Recopilar todas las fotos de la joya (principal + galería)
+  // Recopilar todas las fotos de la joya (principal + galería) ordenadas del 1 al 5...
+  function getNum(u) {
+    if (!u) return 999;
+    const m = u.match(/foto_0*(\d+)/i) || u.match(/_0*(\d+)\.[a-z0-9]+$/i);
+    return m ? parseInt(m[1], 10) : 900;
+  }
   const allPhotos = [];
-  if (prod.foto_principal) allPhotos.push(prod.foto_principal);
   if (Array.isArray(prod.galeria_fotos)) {
     prod.galeria_fotos.forEach(u => {
       if (u && !allPhotos.includes(u)) allPhotos.push(u);
     });
   }
+  if (prod.foto_principal && !allPhotos.includes(prod.foto_principal)) {
+    allPhotos.push(prod.foto_principal);
+  }
+  allPhotos.sort((a, b) => getNum(a) - getNum(b));
   state.currentEditPhotos = allPhotos;
   renderEditPhotosGrid();
   updateEditDiscountNotice();
@@ -1906,10 +1976,11 @@ async function handleEditProductSubmit(e) {
       updated_at: new Date().toISOString()
     };
 
+    const targetIds = prod.rowIds && prod.rowIds.length > 0 ? prod.rowIds : [productId];
     const { error } = await supabaseClient
       .from("productos")
       .update(updates)
-      .eq("id", productId);
+      .in("id", targetIds);
 
     if (error) throw error;
 

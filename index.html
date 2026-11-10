@@ -331,40 +331,16 @@
         </span>
       </div>
 
-      <!-- 4. Contenedor del Carrusel 3D de Joyas -->
-      <div id="hero-carousel-container" class="absolute inset-0 z-[10] pointer-events-auto">
-        <!-- Inyectado y animado automáticamente desde app.js -->
-      </div>
-
-      <!-- 5. Controles Inferiores Izquierda (Botones circulares + botón CTA Explorar Joyas) -->
-      <div class="absolute bottom-5 left-4 sm:bottom-8 sm:left-8 z-[25] flex items-center gap-2.5 sm:gap-3">
-        <div class="flex items-center gap-1.5 sm:gap-2">
-          <button 
-            type="button" 
-            onclick="navigateHero('prev')" 
-            class="btn-press w-10 h-10 sm:w-11 sm:h-11 rounded-full border border-gray-200 bg-white/95 text-gray-900 shadow-md hover:bg-gray-100 dark:bg-white/10 dark:text-white dark:border-white/30 dark:hover:bg-white/20 backdrop-blur-md flex items-center justify-center transition-all hover:scale-105 active:scale-95 cursor-pointer"
-            aria-label="Pieza anterior"
-          >
-            <i data-lucide="arrow-left" class="w-4 h-4 sm:w-4.5 sm:h-4.5 stroke-[2.25]"></i>
-          </button>
-          <button 
-            type="button" 
-            onclick="navigateHero('next')" 
-            class="btn-press w-10 h-10 sm:w-11 sm:h-11 rounded-full border border-gray-200 bg-white/95 text-gray-900 shadow-md hover:bg-gray-100 dark:bg-white/10 dark:text-white dark:border-white/30 dark:hover:bg-white/20 backdrop-blur-md flex items-center justify-center transition-all hover:scale-105 active:scale-95 cursor-pointer"
-            aria-label="Siguiente pieza"
-          >
-            <i data-lucide="arrow-right" class="w-4 h-4 sm:w-4.5 sm:h-4.5 stroke-[2.25]"></i>
-          </button>
-        </div>
-
+      <!-- Botón CTA Inferior Izquierda -->
+      <div class="absolute bottom-5 left-4 sm:bottom-8 sm:left-8 z-[25]">
         <a 
           href="#catalogo" 
-          class="btn-press inline-flex items-center gap-2 px-4 py-2 sm:px-5 sm:py-2.5 rounded-full bg-[#000000] hover:bg-[#2D3C35] text-white text-xs sm:text-sm font-bold uppercase tracking-wider transition-all shadow-md group dark:bg-white/15 dark:hover:bg-white/25 dark:border dark:border-white/30"
+          class="btn-press inline-flex items-center gap-2 px-5 py-2.5 sm:px-6 sm:py-3 rounded-full bg-[#000000] hover:bg-[#2D3C35] text-white text-xs sm:text-sm font-bold uppercase tracking-wider transition-all shadow-lg group dark:bg-white/15 dark:hover:bg-white/25 dark:border dark:border-white/30"
         >
           <span>Explorar Joyas</span>
-          <i data-lucide="arrow-right" class="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[2.25] transition-transform duration-200 group-hover:translate-x-1"></i>
+          <i data-lucide="arrow-right" class="w-4 h-4 stroke-[2.25] transition-transform duration-200 group-hover:translate-x-1"></i>
         </a>
-      </div>
+      </div></div>
 
     </div>
   </section>
