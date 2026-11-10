@@ -123,12 +123,25 @@ async function syncProductsFromSupabase() {
         const sampleVariantWithDiscount = variants.find(v => v.originalPrice) || variants[0];
         const repOriginalPrice = sampleVariantWithDiscount.originalPrice;
 
+        let rawStone = (primaryRow.tipo_piedra || "").trim();
+        const isStoneEmpty = !rawStone || ["ninguno", "ninguna", "none", "sin piedra", "no", "n/a"].includes(rawStone.toLowerCase());
+        const cleanStone = isStoneEmpty ? null : rawStone;
+
+        // Limpiar "Piedra: Ninguno" de notas/especificaciones
+        let cleanNotes = primaryRow.especificaciones || null;
+        if (cleanNotes) {
+          cleanNotes = cleanNotes.replace(/Piedra:\s*Ningun[oa]\s*\|?/gi, "").trim();
+          cleanNotes = cleanNotes.replace(/^[|\s]+|[|\s]+$/g, "").trim();
+          if (!cleanNotes) cleanNotes = null;
+        }
+
         liveProducts.push({
           id: String(primaryRow.id),
           groupId: groupId,
           code: primaryRow.codigo_sku || variants[0].sku,
           name: primaryRow.titulo,
           category: primaryRow.categoria || "anillos",
+          stone: cleanStone,
           price: minPrice,
           maxPrice: maxPrice,
           originalPrice: repOriginalPrice,
@@ -142,7 +155,7 @@ async function syncProductsFromSupabase() {
           hasDiscount: hasDiscount,
           hasMultipleVariants: hasMultipleVariants,
           badge: mainBadge,
-          notes: primaryRow.especificaciones || null,
+          notes: cleanNotes,
           image: variants[0].photo,
           description: primaryRow.descripcion || primaryRow.titulo,
           stock: !allAgotado,
@@ -1463,13 +1476,20 @@ function renderProducts() {
         
         <!-- Imagen -->
         <div class="relative w-full aspect-square bg-[#f6f6f6] overflow-hidden cursor-pointer" onclick="openProductModal('${prod.id}')">
-          <span class="product-badge absolute top-1.5 left-1.5 sm:top-2.5 sm:left-2.5 z-10 text-[9px] sm:text-[10px] font-bold tracking-wider uppercase px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full shadow-xs">
-            ${prod.badge}
-          </span>
-
-          <span class="absolute top-1.5 right-1.5 sm:top-2.5 sm:right-2.5 z-10 text-[9px] sm:text-[11px] font-extrabold tracking-wider px-1.5 py-0.5 sm:px-2 rounded-md bg-sage-900/90 text-white backdrop-blur-xs shadow-xs">
-            ${prod.code}
-          </span>
+          <!-- Badge Dinámico (Porcentaje de Descuento Automático o Modelos) -->
+          ${prod.hasDiscount && prod.originalPrice && prod.originalPrice > prod.price ? `
+            <span class="absolute top-1.5 left-1.5 sm:top-2.5 sm:left-2.5 z-10 text-[9px] sm:text-[11px] font-black tracking-wider px-2.5 py-1 rounded-full shadow-md bg-[#e72380] text-white border border-white/20">
+              🔥 -${Math.round(((prod.originalPrice - prod.price) / prod.originalPrice) * 100)}% OFF
+            </span>
+          ` : (prod.hasMultipleVariants ? `
+            <span class="product-badge absolute top-1.5 left-1.5 sm:top-2.5 sm:left-2.5 z-10 text-[9px] sm:text-[10px] font-bold tracking-wider uppercase px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full shadow-xs">
+              ${prod.variants.length} modelos
+            </span>
+          ` : `
+            <span class="product-badge absolute top-1.5 left-1.5 sm:top-2.5 sm:left-2.5 z-10 text-[9px] sm:text-[10px] font-bold tracking-wider uppercase px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full shadow-xs">
+              ${prod.badge || 'PLATA S925'}
+            </span>
+          `)}
 
           <img 
             src="${prod.image}" 
@@ -2001,8 +2021,7 @@ function sendOrderToWhatsApp() {
   message += `------------------------------------\n`;
   message += `📦 *Total de piezas:* ${totalPieces}\n`;
   message += `💰 *TOTAL GENERAL:* *${formatCurrency(totalAmount)} ${BUSINESS_CONFIG.currencyCode}*\n`;
-  message += `💳 *Anticipo 50% requerido:* *${formatCurrency(advanceAmount)} ${BUSINESS_CONFIG.currencyCode}*\n`;
-  message += `🤝 *Saldo restante contra entrega:* ${formatCurrency(remainingAmount)} ${BUSINESS_CONFIG.currencyCode}\n\n`;
+  message += `🛡️ *GARANTÍA INCLUIDA:* 30 días contra cualquier defecto de fábrica en Plata Ley S925\n\n`;
 
   message += `👤 *DATOS DEL CLIENTE:*\n`;
   message += `• *Nombre:* ${customerName ? customerName : "Por acordar"}\n`;
@@ -2013,7 +2032,7 @@ function sendOrderToWhatsApp() {
     message += `• *Notas:* ${customerNotes}\n`;
   }
 
-  message += `\n¿Me podrían confirmar los datos de transferencia/depósito para realizar mi anticipo del 50% y asegurar mis piezas? ¡Muchas gracias! 💖`;
+  message += `\n¿Me podrían confirmar disponibilidad y los datos de pago/transferencia para procesar mi pedido? ¡Muchas gracias! 💖`;
 
   const whatsappUrl = `https://wa.me/${BUSINESS_CONFIG.whatsappNumber}?text=${encodeURIComponent(message)}`;
   window.open(whatsappUrl, "_blank");
@@ -2050,77 +2069,113 @@ function openProductModal(productId, defaultSize = null, defaultVariantId = null
 
   const modal = document.getElementById("product-modal");
   const modalImage = document.getElementById("modal-product-image");
-  const modalCode = document.getElementById("modal-product-code");
   const modalName = document.getElementById("modal-product-name");
   const modalCategory = document.getElementById("modal-product-category");
   const modalMaterial = document.getElementById("modal-product-material");
-  const modalPrice = document.getElementById("modal-product-price");
   const modalDescription = document.getElementById("modal-product-description");
   const modalQtyInput = document.getElementById("modal-qty-input");
 
-  if (modalCode) modalCode.textContent = activeVariant ? activeVariant.sku : product.code;
   if (modalName) modalName.textContent = product.name;
   if (modalCategory) modalCategory.textContent = getCategoryLabel(product.category);
   if (modalMaterial) modalMaterial.textContent = product.material;
   if (modalDescription) modalDescription.textContent = product.description;
   if (modalQtyInput) modalQtyInput.value = 1;
 
-  // Precios con descuento
-  if (modalPrice) {
-    const curPrice = activeVariant ? activeVariant.price : product.price;
-    const curOrigPrice = activeVariant ? activeVariant.originalPrice : product.originalPrice;
-    const isDisc = (activeVariant && activeVariant.isDiscount) || product.hasDiscount;
-
-    if (isDisc && curOrigPrice && curOrigPrice > curPrice) {
-      modalPrice.innerHTML = `
-        <span class="text-[#e72380]">${formatCurrency(curPrice)}</span>
-        <span class="text-xs sm:text-sm text-gray-400 line-through ml-2 font-normal">${formatCurrency(curOrigPrice)}</span>
-      `;
+  // Mostrar Piedra / Gema SOLO si existe y no es Ninguno
+  const stoneRow = document.getElementById("modal-product-stone-row");
+  const stoneText = document.getElementById("modal-product-stone");
+  if (stoneRow && stoneText) {
+    if (product.stone) {
+      stoneRow.classList.remove("hidden");
+      stoneText.textContent = product.stone;
     } else {
-      modalPrice.textContent = formatCurrency(curPrice);
+      stoneRow.classList.add("hidden");
     }
   }
 
-  // Coleccionar todas las fotos para la galería
+  // Precios con cálculo automático de descuento
+  const curPrice = activeVariant ? activeVariant.price : product.price;
+  const curOrigPrice = activeVariant ? activeVariant.originalPrice : product.originalPrice;
+  const isDisc = (activeVariant && activeVariant.isDiscount) || product.hasDiscount;
+
+  const modalPrice = document.getElementById("modal-product-price");
+  const modalOrigPrice = document.getElementById("modal-product-original-price");
+  const modalDiscPill = document.getElementById("modal-product-discount-pill");
+  const modalDiscBadge = document.getElementById("modal-product-discount-badge");
+
+  if (modalPrice) modalPrice.textContent = formatCurrency(curPrice);
+
+  if (isDisc && curOrigPrice && curOrigPrice > curPrice) {
+    const pct = Math.round(((curOrigPrice - curPrice) / curOrigPrice) * 100);
+    const ahorro = Math.round(curOrigPrice - curPrice);
+
+    if (modalOrigPrice) {
+      modalOrigPrice.textContent = formatCurrency(curOrigPrice);
+      modalOrigPrice.classList.remove("hidden");
+    }
+    if (modalDiscPill) {
+      modalDiscPill.textContent = `🔥 -${pct}% OFF (Ahorro de $${ahorro} MXN)`;
+      modalDiscPill.classList.remove("hidden");
+    }
+    if (modalDiscBadge) {
+      modalDiscBadge.textContent = `🔥 -${pct}% OFF`;
+      modalDiscBadge.classList.remove("hidden");
+    }
+  } else {
+    if (modalOrigPrice) modalOrigPrice.classList.add("hidden");
+    if (modalDiscPill) modalDiscPill.classList.add("hidden");
+    if (modalDiscBadge) modalDiscBadge.classList.add("hidden");
+  }
+
+  // Coleccionar todas las fotos para la galería en orden numérico estricto (1 al 5...)
   const photoList = [];
   const seenUrls = new Set();
 
-  // 1. Fotos de variantes
+  function getPhotoNum(u) {
+    if (!u) return 999;
+    const m = u.match(/foto_0*(\d+)/i) || u.match(/_0*(\d+)\.[a-z0-9]+$/i);
+    return m ? parseInt(m[1], 10) : 900;
+  }
+
+  // 1. Fotos de galería general ordenadas numéricamente (foto_01, foto_02...)
+  const sortedGallery = [...(product.gallery || [])].sort((a, b) => getPhotoNum(a) - getPhotoNum(b));
+  sortedGallery.forEach((url, idx) => {
+    if (url && !seenUrls.has(url)) {
+      seenUrls.add(url);
+      const num = getPhotoNum(url);
+      photoList.push({
+        url: url,
+        label: num < 900 ? `Foto ${num}` : `Foto ${idx + 1}`,
+        variantId: null
+      });
+    }
+  });
+
+  // 2. Fotos de variantes
   if (product.variants && product.variants.length > 0) {
     product.variants.forEach((v, idx) => {
       if (v.photo && !seenUrls.has(v.photo)) {
         seenUrls.add(v.photo);
         photoList.push({
           url: v.photo,
-          label: v.color && v.color !== "Única" ? v.color : (v.sku || `Modelo ${idx + 1}`),
+          label: v.color && v.color !== "Única" ? v.color : `Modelo ${idx + 1}`,
           variantId: v.id
         });
       }
     });
   } else if (product.image && !seenUrls.has(product.image)) {
     seenUrls.add(product.image);
-    photoList.push({ url: product.image, label: "Principal", variantId: product.id });
-  }
-
-  // 2. Fotos de galería general
-  if (Array.isArray(product.gallery)) {
-    product.gallery.forEach((url, idx) => {
-      if (url && !seenUrls.has(url)) {
-        seenUrls.add(url);
-        photoList.push({
-          url: url,
-          label: `Ángulo ${idx + 1}`,
-          variantId: null
-        });
-      }
-    });
+    photoList.push({ url: product.image, label: "Foto 1", variantId: product.id });
   }
 
   state.modalPhotos = photoList;
   state.currentModalPhotoIdx = 0;
 
-  // Establecer foto principal inicial
-  const initPhoto = activeVariant ? activeVariant.photo : (photoList[0] ? photoList[0].url : product.image);
+  // Establecer foto principal inicial: si hay variante activa con foto, o la primera foto numerada
+  let initPhoto = photoList[0] ? photoList[0].url : product.image;
+  if (activeVariant && activeVariant.photo) {
+    initPhoto = activeVariant.photo;
+  }
   if (modalImage) modalImage.src = initPhoto;
 
   const foundInitIdx = photoList.findIndex(p => p.url === initPhoto);
@@ -2261,19 +2316,33 @@ function selectModalVariant(variantId, changePhoto = true) {
     }
   });
 
-  const modalCode = document.getElementById("modal-product-code");
-  if (modalCode) modalCode.textContent = variant.sku;
-
   const modalPrice = document.getElementById("modal-product-price");
-  if (modalPrice) {
-    if (variant.isDiscount && variant.originalPrice) {
-      modalPrice.innerHTML = `
-        <span class="text-[#e72380]">${formatCurrency(variant.price)}</span>
-        <span class="text-xs text-gray-400 line-through ml-2 font-normal">${formatCurrency(variant.originalPrice)}</span>
-      `;
-    } else {
-      modalPrice.textContent = formatCurrency(variant.price);
+  const modalOrigPrice = document.getElementById("modal-product-original-price");
+  const modalDiscPill = document.getElementById("modal-product-discount-pill");
+  const modalDiscBadge = document.getElementById("modal-product-discount-badge");
+
+  if (modalPrice) modalPrice.textContent = formatCurrency(variant.price);
+
+  if (variant.isDiscount && variant.originalPrice && variant.originalPrice > variant.price) {
+    const pct = Math.round(((variant.originalPrice - variant.price) / variant.originalPrice) * 100);
+    const ahorro = Math.round(variant.originalPrice - variant.price);
+
+    if (modalOrigPrice) {
+      modalOrigPrice.textContent = formatCurrency(variant.originalPrice);
+      modalOrigPrice.classList.remove("hidden");
     }
+    if (modalDiscPill) {
+      modalDiscPill.textContent = `🔥 -${pct}% OFF (Ahorro de $${ahorro} MXN)`;
+      modalDiscPill.classList.remove("hidden");
+    }
+    if (modalDiscBadge) {
+      modalDiscBadge.textContent = `🔥 -${pct}% OFF`;
+      modalDiscBadge.classList.remove("hidden");
+    }
+  } else {
+    if (modalOrigPrice) modalOrigPrice.classList.add("hidden");
+    if (modalDiscPill) modalDiscPill.classList.add("hidden");
+    if (modalDiscBadge) modalDiscBadge.classList.add("hidden");
   }
 
   if (changePhoto && variant.photo) {

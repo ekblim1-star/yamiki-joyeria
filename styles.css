@@ -1424,6 +1424,13 @@ html.dark .product-hover-badge:hover svg {
   background-color: rgba(0, 0, 0, 0.3);
 }
 
+@media (min-width: 768px) {
+  .gallery-thumb-btn {
+    width: 64px;
+    height: 64px;
+  }
+}
+
 .gallery-thumb-btn:hover {
   opacity: 0.95;
   transform: translateY(-1px);

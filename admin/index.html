@@ -701,142 +701,213 @@
   </div>
 
   <!-- ========================================================================
-       MODAL: EDITAR DETALLES DE JOYA (DESCRIPCIÓN, TALLAS, PRECIO, FOTO)
+       MODAL: EDITAR DETALLES DE JOYA (FOTOS, PRECIOS, DESCUENTOS, TALLAS, STOCK)
        ======================================================================== -->
-  <div id="edit-product-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4">
-    <div class="modal-overlay fixed inset-0 bg-black/75 backdrop-blur-xs" onclick="closeEditProductModal()"></div>
-    <div class="modal-dialog bg-[#141C18] border border-white/10 rounded-3xl max-w-xl w-full p-6 shadow-2xl relative z-10 space-y-4 max-h-[90vh] overflow-y-auto">
+  <div id="edit-product-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-3 sm:p-5">
+    <div class="modal-overlay fixed inset-0 bg-black/80 backdrop-blur-sm" onclick="closeEditProductModal()"></div>
+    <div class="modal-dialog bg-[#141C18] border border-white/10 rounded-3xl max-w-xl sm:max-w-3xl lg:max-w-5xl w-full p-5 sm:p-7 shadow-2xl relative z-10 space-y-5 max-h-[92vh] overflow-y-auto">
 
-      <div class="flex items-center justify-between pb-3 border-b border-white/10">
-        <div class="flex items-center gap-2.5">
-          <div class="w-9 h-9 rounded-xl bg-[#e72380]/20 text-[#e72380] flex items-center justify-center">
-            <i data-lucide="edit-3" class="w-4 h-4"></i>
+      <!-- Cabecera del Modal -->
+      <div class="flex items-center justify-between pb-3.5 border-b border-white/10">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-2xl bg-[#e72380]/20 text-[#e72380] flex items-center justify-center">
+            <i data-lucide="sparkles" class="w-5 h-5"></i>
           </div>
           <div>
-            <h3 class="text-base font-extrabold text-white">Editar Joya</h3>
-            <span id="edit-sku-badge" class="px-2 py-0.5 rounded bg-white/10 text-rose-300 font-mono text-[10px] font-bold"></span>
+            <h3 class="text-base sm:text-lg font-extrabold text-white">Editar Joya y Fotos</h3>
+            <div class="flex items-center gap-2 mt-0.5">
+              <span id="edit-sku-badge" class="px-2 py-0.5 rounded bg-white/10 text-rose-300 font-mono text-[10px] font-bold"></span>
+              <span class="text-[11px] text-gray-400 hidden sm:inline">• Catálogo Oficial Yamiki S925</span>
+            </div>
           </div>
         </div>
-        <button type="button" onclick="closeEditProductModal()" class="text-gray-400 hover:text-white p-1 rounded-lg">
+        <button type="button" onclick="closeEditProductModal()" class="text-gray-400 hover:text-white p-2 rounded-xl hover:bg-white/5 transition" title="Cerrar">
           <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
 
-      <form id="edit-product-form" onsubmit="handleEditProductSubmit(event)" class="space-y-4 text-xs">
+      <form id="edit-product-form" onsubmit="handleEditProductSubmit(event)" class="space-y-5 text-xs">
         <input type="hidden" id="edit-product-id" />
 
-        <!-- Foto Preview + Cambio -->
-        <div class="flex items-center gap-4 bg-black/30 p-3 rounded-2xl border border-white/5">
-          <img id="edit-foto-preview" src="" alt="Foto joya" class="w-16 h-16 rounded-xl object-cover bg-black/40 border border-white/10 shrink-0" onerror="this.src='https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=400&q=80'" />
-          <div class="flex-1 space-y-1.5">
-            <label class="block font-bold text-gray-300">Foto de la Joya</label>
-            <input type="file" id="edit-foto-file" accept="image/*" class="w-full text-xs text-gray-400 file:mr-2 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-[11px] file:font-bold file:bg-[#e72380]/20 file:text-[#e72380] hover:file:bg-[#e72380]/30 cursor-pointer" />
-            <input type="url" id="edit-foto-url" placeholder="O escribe/pega la URL de la imagen..." class="w-full px-2.5 py-1.5 bg-black/40 border border-white/10 rounded-lg text-white text-[11px] focus:outline-none focus:border-[#e72380]" />
-          </div>
-        </div>
+        <!-- Estructura Adaptada: 2 Columnas en Desktop (PC) y 1 Columna en Celular -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
 
-        <!-- Nombre / Título -->
-        <div>
-          <label class="block font-bold text-gray-300 mb-1">Nombre / Título de la Joya *</label>
-          <input type="text" id="edit-titulo" required class="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-xl text-white text-xs focus:outline-none focus:border-[#e72380]" />
-        </div>
-
-        <!-- Descripción Completa -->
-        <div>
-          <label class="block font-bold text-gray-300 mb-1">Descripción del Producto (Visible en tienda)</label>
-          <textarea id="edit-descripcion" rows="3" class="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-xl text-white text-xs focus:outline-none focus:border-[#e72380] resize-y" placeholder="Detalles de diseño, pureza de plata, etc..."></textarea>
-        </div>
-
-        <!-- Categoría y Tallas Disponibles -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div>
-            <label class="block font-bold text-gray-300 mb-1">Categoría</label>
-            <select id="edit-categoria" class="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-xl text-white text-xs focus:outline-none focus:border-[#e72380]">
-              <option value="anillos">Anillos</option>
-              <option value="aretes">Aretes</option>
-              <option value="collares">Collares</option>
-              <option value="pulseras">Pulseras</option>
-              <option value="dijes">Dijes & Charms</option>
-            </select>
-          </div>
-          <div>
-            <label class="block font-bold text-gray-300 mb-1">Tallas Disponibles (Solo las que hay en stock)</label>
-            <input type="text" id="edit-tallas" placeholder="Ej: 5, 6, 7, 8 o Ajustable" class="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-xl text-white text-xs focus:outline-none focus:border-[#e72380]" />
-            <span class="text-[10px] text-gray-500 mt-0.5 block">Escribe solo las disponibles (ej. 5, 6, 7)</span>
-          </div>
-        </div>
-
-        <!-- Precios y Stock -->
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <div>
-            <label class="block font-bold text-gray-300 mb-1">Precio Venta (MXN) *</label>
-            <input type="number" step="1" id="edit-precio" required class="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-xl text-white text-xs font-bold focus:outline-none focus:border-[#e72380]" />
-          </div>
-          <div>
-            <label class="block font-bold text-gray-400 mb-1">Costo Real (Privado)</label>
-            <input type="number" step="0.01" id="edit-costo" class="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-xl text-gray-300 text-xs focus:outline-none focus:border-[#e72380]" />
-          </div>
-          <div>
-            <label class="block font-bold text-gray-300 mb-1">Estado de Stock</label>
-            <select id="edit-stock" class="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-xl text-white text-xs focus:outline-none focus:border-[#e72380]">
-              <option value="Disponible">Disponible</option>
-              <option value="Agotada">Agotada</option>
-            </select>
-          </div>
-        </div>
-
-        <!-- Enlace Proveedor (AliExpress) -->
-        <div>
-          <label class="block font-bold text-gray-400 mb-1">Enlace Proveedor AliExpress (Privado)</label>
-          <input type="url" id="edit-enlace" class="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-xl text-gray-300 text-xs focus:outline-none focus:border-[#e72380]" placeholder="https://es.aliexpress.com/..." />
-        </div>
-
-        <!-- Interruptores: Portada y Activo -->
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3 rounded-2xl bg-white/[0.03] border border-white/5">
-          <label class="flex items-center gap-2 cursor-pointer">
-            <input type="checkbox" id="edit-es-novedad" class="rounded text-amber-500 focus:ring-0" />
-            <span class="font-bold text-amber-400">⭐ Mostrar en Portada (Novedades)</span>
-          </label>
-          <label class="flex items-center gap-2 cursor-pointer">
-            <input type="checkbox" id="edit-activo" class="rounded text-emerald-500 focus:ring-0" />
-            <span class="font-bold text-emerald-400">Visible en Tienda</span>
-          </label>
-        </div>
-
-        <!-- Sección de Descuentos & Ofertas -->
-        <div class="p-3.5 rounded-2xl bg-gradient-to-r from-rose-950/40 to-black/30 border border-rose-500/20 space-y-3">
-          <div class="flex items-center justify-between">
-            <label class="flex items-center gap-2 cursor-pointer">
-              <input type="checkbox" id="edit-es-descuento" class="rounded text-[#e72380] focus:ring-0 w-4 h-4" />
-              <span class="font-extrabold text-white text-xs flex items-center gap-1.5">
-                <i data-lucide="badge-percent" class="w-4 h-4 text-[#e72380]"></i>
-                <span>🔥 Activar Oferta / Descuento Especial</span>
-              </span>
-            </label>
-            <span class="text-[10px] text-rose-300 font-bold uppercase tracking-wider">Tienda Pública</span>
-          </div>
-
-          <div id="edit-descuento-fields" class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-            <div>
-              <label class="block font-bold text-gray-300 text-[11px] mb-1">Precio Original / Tachado (MXN)</label>
-              <input type="number" step="1" id="edit-precio-original" placeholder="Ej. 520 (tachado en la tienda)" class="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-xl text-white text-xs focus:outline-none focus:border-[#e72380]" />
-              <span class="text-[10px] text-gray-400 mt-0.5 block">Se verá: <span class="line-through">$520</span> Precio Venta</span>
+          <!-- COLUMNA IZQUIERDA: GESTOR DE FOTOS (lg:col-span-5) -->
+          <div class="lg:col-span-5 space-y-4 bg-black/30 p-4 rounded-2xl border border-white/10">
+            <div class="flex items-center justify-between">
+              <div>
+                <h4 class="font-bold text-white text-sm flex items-center gap-1.5">
+                  <i data-lucide="image" class="w-4 h-4 text-[#e72380]"></i>
+                  <span>Fotos de la Joya</span>
+                </h4>
+                <p class="text-[11px] text-gray-400 mt-0.5">La primera es la portada principal. Puedes eliminar fotos o subir nuevas.</p>
+              </div>
+              <span id="edit-photos-count" class="text-[11px] font-bold px-2 py-0.5 rounded-full bg-[#e72380]/20 text-[#e72380]">0 fotos</span>
             </div>
-            <div>
-              <label class="block font-bold text-gray-300 text-[11px] mb-1">Etiqueta / Badge de Oferta</label>
-              <input type="text" id="edit-badge-oferta" placeholder="Ej: -20% OFF, Oferta Flash" class="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-xl text-white text-xs focus:outline-none focus:border-[#e72380]" />
-              <span class="text-[10px] text-gray-400 mt-0.5 block">Texto de la etiqueta sobre la foto</span>
+
+            <!-- Grilla Dinámica de Fotos -->
+            <div id="edit-photos-grid" class="grid grid-cols-2 sm:grid-cols-3 gap-2.5 max-h-[320px] overflow-y-auto p-1 rounded-xl bg-black/20">
+              <!-- Se puebla con renderEditPhotosGrid() -->
             </div>
+
+            <!-- Subir Nuevas Fotos (Archivos) -->
+            <div class="space-y-2 pt-2 border-t border-white/10">
+              <label class="block font-bold text-gray-300 text-[11px]">
+                <i data-lucide="upload" class="w-3.5 h-3.5 inline mr-1 text-[#e72380]"></i>
+                Subir fotos desde tu cel / PC
+              </label>
+              <input 
+                type="file" 
+                id="edit-add-photos-file" 
+                accept="image/*" 
+                multiple 
+                onchange="handleEditAddFiles(this.files)"
+                class="w-full text-xs text-gray-400 file:mr-2 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-[11px] file:font-bold file:bg-[#e72380]/20 file:text-[#e72380] hover:file:bg-[#e72380]/30 cursor-pointer" 
+              />
+              <span class="text-[10px] text-gray-500 block">Puedes seleccionar varias fotos a la vez (JPG, PNG, WEBP).</span>
+            </div>
+
+            <!-- Agregar Foto por URL -->
+            <div class="space-y-1.5 pt-2 border-t border-white/10">
+              <label class="block font-bold text-gray-300 text-[11px]">
+                <i data-lucide="link" class="w-3.5 h-3.5 inline mr-1 text-gray-400"></i>
+                O agregar por URL
+              </label>
+              <div class="flex gap-2">
+                <input 
+                  type="url" 
+                  id="edit-add-photo-url-input" 
+                  placeholder="https://ejemplo.com/foto.jpg" 
+                  class="flex-1 px-3 py-1.5 bg-black/40 border border-white/10 rounded-xl text-white text-[11px] focus:outline-none focus:border-[#e72380]" 
+                />
+                <button 
+                  type="button" 
+                  onclick="handleEditAddUrl()" 
+                  class="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white rounded-xl font-bold text-[11px] transition shrink-0"
+                >
+                  + Añadir
+                </button>
+              </div>
+            </div>
+
+            <div id="edit-photo-upload-status" class="hidden text-[11px] p-2 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-300 font-medium"></div>
           </div>
+
+          <!-- COLUMNA DERECHA: DATOS, PRECIOS, DESCUENTOS Y TALLAS (lg:col-span-7) -->
+          <div class="lg:col-span-7 space-y-4">
+
+            <!-- Nombre / Título -->
+            <div>
+              <label class="block font-bold text-gray-300 mb-1">Nombre / Título de la Joya *</label>
+              <input type="text" id="edit-titulo" required class="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-xl text-white text-xs focus:outline-none focus:border-[#e72380]" />
+            </div>
+
+            <!-- Descripción Completa -->
+            <div>
+              <label class="block font-bold text-gray-300 mb-1">Descripción del Producto (Visible en tienda)</label>
+              <textarea id="edit-descripcion" rows="2" class="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-xl text-white text-xs focus:outline-none focus:border-[#e72380] resize-y" placeholder="Detalles de diseño, pureza de plata, etc..."></textarea>
+            </div>
+
+            <!-- Categoría y Tallas -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label class="block font-bold text-gray-300 mb-1">Categoría</label>
+                <select id="edit-categoria" class="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-xl text-white text-xs focus:outline-none focus:border-[#e72380]">
+                  <option value="anillos">Anillos</option>
+                  <option value="aretes">Aretes</option>
+                  <option value="collares">Collares</option>
+                  <option value="pulseras">Pulseras</option>
+                  <option value="dijes">Dijes & Charms</option>
+                </select>
+              </div>
+              <div>
+                <label class="block font-bold text-gray-300 mb-1">Tallas Disponibles (En stock)</label>
+                <input type="text" id="edit-tallas" placeholder="Ej: 5, 6, 7, 8 o Ajustable" class="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-xl text-white text-xs focus:outline-none focus:border-[#e72380]" />
+                <span class="text-[10px] text-gray-500 mt-0.5 block">Solo las disponibles en tienda (ej: 5, 6, 7)</span>
+              </div>
+            </div>
+
+            <!-- Precios y Stock -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div>
+                <label class="block font-bold text-gray-300 mb-1">Precio Venta (MXN) *</label>
+                <input type="number" step="1" id="edit-precio" oninput="updateEditDiscountNotice()" required class="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-xl text-white text-xs font-bold focus:outline-none focus:border-[#e72380]" />
+              </div>
+              <div>
+                <label class="block font-bold text-gray-400 mb-1">Costo Real (Privado)</label>
+                <input type="number" step="0.01" id="edit-costo" class="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-xl text-gray-300 text-xs focus:outline-none focus:border-[#e72380]" />
+              </div>
+              <div>
+                <label class="block font-bold text-gray-300 mb-1">Estado de Stock</label>
+                <select id="edit-stock" class="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-xl text-white text-xs focus:outline-none focus:border-[#e72380]">
+                  <option value="Disponible">Disponible</option>
+                  <option value="Agotada">Agotada</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- SECCIÓN DE DESCUENTOS Y AVISO AUTOMÁTICO EN TIEMPO REAL -->
+            <div class="p-3.5 rounded-2xl bg-gradient-to-r from-rose-950/40 to-black/30 border border-rose-500/20 space-y-3">
+              <div class="flex items-center justify-between">
+                <label class="flex items-center gap-2 cursor-pointer">
+                  <input type="checkbox" id="edit-es-descuento" onchange="updateEditDiscountNotice()" class="rounded text-[#e72380] focus:ring-0 w-4 h-4 cursor-pointer" />
+                  <span class="font-extrabold text-white text-xs flex items-center gap-1.5">
+                    <i data-lucide="badge-percent" class="w-4 h-4 text-[#e72380]"></i>
+                    <span>🔥 Activar Oferta / Descuento Especial</span>
+                  </span>
+                </label>
+                <span class="text-[10px] text-rose-300 font-bold uppercase tracking-wider">Cálculo Automático</span>
+              </div>
+
+              <div id="edit-descuento-fields" class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                <div>
+                  <label class="block font-bold text-gray-300 text-[11px] mb-1">Precio Original Anterior (Tachado en Tienda)</label>
+                  <input type="number" step="1" id="edit-precio-original" oninput="updateEditDiscountNotice()" placeholder="Ej. 200 (se verá tachado)" class="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-xl text-white text-xs focus:outline-none focus:border-[#e72380]" />
+                </div>
+                <div>
+                  <label class="block font-bold text-gray-300 text-[11px] mb-1">Etiqueta Badge en Foto</label>
+                  <input type="text" id="edit-badge-oferta" placeholder="Ej: -50% OFF, Oferta Flash" class="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-xl text-white text-xs focus:outline-none focus:border-[#e72380]" />
+                </div>
+              </div>
+
+              <!-- Aviso En Vivo de Descuento (Para saber exactamente a cuánto lo estás dejando) -->
+              <div id="edit-descuento-live-notice" class="p-2.5 rounded-xl bg-black/40 border border-white/10 text-[11px] text-gray-300 min-h-[38px] flex items-center">
+                <span class="text-gray-400">💡 Activa el descuento e ingresa el precio original para ver el cálculo en vivo.</span>
+              </div>
+            </div>
+
+            <!-- Enlace Proveedor (AliExpress - Privado) -->
+            <div>
+              <label class="block font-bold text-gray-400 mb-1">Enlace Proveedor AliExpress (Privado)</label>
+              <input type="url" id="edit-enlace" class="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-xl text-gray-300 text-xs focus:outline-none focus:border-[#e72380]" placeholder="https://es.aliexpress.com/..." />
+            </div>
+
+            <!-- Interruptores: Portada y Activo -->
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3 rounded-2xl bg-white/[0.03] border border-white/5">
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" id="edit-es-novedad" class="rounded text-amber-500 focus:ring-0 cursor-pointer" />
+                <span class="font-bold text-amber-400 text-xs">⭐ Mostrar en Portada (Novedades)</span>
+              </label>
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" id="edit-activo" class="rounded text-emerald-500 focus:ring-0 cursor-pointer" />
+                <span class="font-bold text-emerald-400 text-xs">Visible en Tienda</span>
+              </label>
+            </div>
+
+          </div>
+
         </div>
 
-        <!-- Barra Fija Inferior para Guardar (100% Amigable en Móvil) -->
-        <div class="sticky bottom-0 bg-[#141C18]/95 backdrop-blur-md pt-3 pb-1 border-t border-white/10 flex justify-end gap-2.5 z-20">
-          <button type="button" onclick="closeEditProductModal()" class="px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-gray-300 font-bold transition text-xs">Cancelar</button>
-          <button type="submit" id="edit-save-btn" class="px-5 py-2.5 rounded-xl bg-[#e72380] hover:bg-[#d41c73] text-white font-bold transition shadow-lg shadow-[#e72380]/20 flex items-center gap-1.5 text-xs">
-            <i data-lucide="check" class="w-4 h-4"></i>
-            <span>Guardar Cambios</span>
-          </button>
+        <!-- Barra Fija Inferior para Guardar (100% Amigable en Móvil y PC) -->
+        <div class="sticky bottom-0 bg-[#141C18]/95 backdrop-blur-md pt-3 pb-1 border-t border-white/10 flex items-center justify-between gap-3 z-20">
+          <p class="text-[11px] text-gray-400 hidden sm:block">Los cambios se reflejan al instante en la tienda en línea.</p>
+          <div class="flex items-center gap-2.5 ml-auto">
+            <button type="button" onclick="closeEditProductModal()" class="px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-gray-300 font-bold transition text-xs">Cancelar</button>
+            <button type="submit" id="edit-save-btn" class="px-5 py-2.5 rounded-xl bg-[#e72380] hover:bg-[#d41c73] text-white font-bold transition shadow-lg shadow-[#e72380]/20 flex items-center gap-1.5 text-xs">
+              <i data-lucide="check" class="w-4 h-4"></i>
+              <span>Guardar Cambios</span>
+            </button>
+          </div>
         </div>
 
       </form>

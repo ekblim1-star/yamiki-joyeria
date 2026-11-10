@@ -19,7 +19,8 @@ const state = {
   searchQuery: "",
   isLoading: false,
   importedData: [],
-  droppedImages: new Map(), // filename -> File object
+  droppedImages: new Map(),
+  currentEditPhotos: [], // filename -> File object
   stats: {
     total: 0,
     novedades: 0,
@@ -1503,8 +1504,201 @@ function showToast(title, message, type = "success") {
 }
 
 // ==============================================================================
-// MODAL DE EDICIÓN COMPLETA DE JOYAS (TÍTULO, DESCRIPCIÓN, TALLAS, FOTOS, STOCK)
+// GESTOR DE FOTOS Y MODAL DE EDICIÓN COMPLETA DE JOYAS
 // ==============================================================================
+
+function renderEditPhotosGrid() {
+  const grid = document.getElementById("edit-photos-grid");
+  const countEl = document.getElementById("edit-photos-count");
+  if (!grid) return;
+
+  const photos = state.currentEditPhotos || [];
+  if (countEl) countEl.textContent = `${photos.length} foto${photos.length === 1 ? '' : 's'}`;
+
+  if (photos.length === 0) {
+    grid.innerHTML = `
+      <div class="col-span-full py-6 text-center text-gray-500 text-xs">
+        <i data-lucide="image-off" class="w-6 h-6 mx-auto mb-1 opacity-50"></i>
+        Sin fotos registradas. Sube una o añade una URL.
+      </div>
+    `;
+    lucide.createIcons();
+    return;
+  }
+
+  grid.innerHTML = photos.map((url, idx) => {
+    const isMain = idx === 0;
+    return `
+      <div class="relative group rounded-xl overflow-hidden bg-black/50 border ${isMain ? 'border-amber-400 ring-1 ring-amber-400/50 shadow-md shadow-amber-500/10' : 'border-white/10'}">
+        <div class="aspect-square w-full overflow-hidden bg-black/40">
+          <img src="${url}" alt="Foto ${idx + 1}" class="w-full h-full object-cover" onerror="this.src='https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=400&q=80'" />
+        </div>
+
+        <!-- Badge Principal o Botón para Hacer Principal -->
+        <div class="absolute top-1 left-1 z-10">
+          ${isMain ? `
+            <span class="px-1.5 py-0.5 rounded-md bg-amber-500 text-black font-extrabold text-[9px] shadow-sm flex items-center gap-1">
+              ⭐ Portada
+            </span>
+          ` : `
+            <button 
+              type="button" 
+              onclick="handleSetMainEditPhoto(${idx})" 
+              class="px-1.5 py-0.5 rounded-md bg-black/80 hover:bg-amber-500 hover:text-black text-amber-300 font-bold text-[9px] backdrop-blur-xs transition shadow-sm border border-white/10"
+              title="Convertir en foto de portada principal"
+            >
+              ⭐ Portada
+            </button>
+          `}
+        </div>
+
+        <!-- Botón Eliminar Foto -->
+        <button 
+          type="button" 
+          onclick="handleDeleteEditPhoto(${idx})" 
+          class="absolute top-1 right-1 z-10 w-6 h-6 rounded-md bg-red-600/85 hover:bg-red-600 text-white flex items-center justify-center transition shadow-sm"
+          title="Eliminar esta foto"
+        >
+          <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+        </button>
+
+        <!-- Número de orden -->
+        <span class="absolute bottom-1 right-1 z-10 px-1 py-0.2 rounded bg-black/70 text-gray-300 text-[8px] font-mono">
+          #${idx + 1}
+        </span>
+      </div>
+    `;
+  }).join("");
+
+  lucide.createIcons();
+}
+
+function handleSetMainEditPhoto(idx) {
+  if (!state.currentEditPhotos || idx <= 0 || idx >= state.currentEditPhotos.length) return;
+  const [photo] = state.currentEditPhotos.splice(idx, 1);
+  state.currentEditPhotos.unshift(photo);
+  renderEditPhotosGrid();
+}
+
+function handleDeleteEditPhoto(idx) {
+  if (!state.currentEditPhotos || idx < 0 || idx >= state.currentEditPhotos.length) return;
+  state.currentEditPhotos.splice(idx, 1);
+  renderEditPhotosGrid();
+}
+
+async function handleEditAddFiles(files) {
+  if (!files || files.length === 0) return;
+  const prodId = document.getElementById("edit-product-id").value;
+  const prod = state.products.find(p => p.id === prodId);
+  const statusEl = document.getElementById("edit-photo-upload-status");
+  
+  if (statusEl) {
+    statusEl.classList.remove("hidden");
+    statusEl.innerHTML = `<span class="animate-pulse">⏳ Subiendo ${files.length} foto(s) a Supabase...</span>`;
+  }
+
+  const folder = (prod && prod.id_aliexpress) ? prod.id_aliexpress : (prod && prod.codigo_sku ? prod.codigo_sku : prodId);
+
+  for (let i = 0; i < files.length; i++) {
+    const file = files[i];
+    const cleanExt = (file.name.split('.').pop() || 'jpg').toLowerCase();
+    const cleanName = `foto_${Date.now()}_${i + 1}.${cleanExt}`;
+    const storagePath = `${folder}/galeria/${cleanName}`;
+
+    try {
+      const { data, error } = await supabaseClient.storage
+        .from("joyas")
+        .upload(storagePath, file, { upsert: true });
+
+      if (error) {
+        console.warn("Fallo subiendo a subcarpeta, probando ruta plana:", error);
+        const flatPath = `subida_${Date.now()}_${i + 1}.${cleanExt}`;
+        const { error: flatErr } = await supabaseClient.storage
+          .from("joyas")
+          .upload(flatPath, file, { upsert: true });
+
+        if (!flatErr) {
+          const url = `${SUPABASE_URL}/storage/v1/object/public/joyas/${flatPath}`;
+          state.currentEditPhotos.push(url);
+        } else {
+          console.error("Error al subir foto:", flatErr);
+        }
+      } else {
+        const url = `${SUPABASE_URL}/storage/v1/object/public/joyas/${storagePath}`;
+        state.currentEditPhotos.push(url);
+      }
+    } catch (e) {
+      console.error("Error en upload:", e);
+    }
+  }
+
+  if (statusEl) {
+    statusEl.innerHTML = `<span class="text-emerald-400 font-bold">✅ ¡Fotos agregadas con éxito!</span>`;
+    setTimeout(() => statusEl.classList.add("hidden"), 3000);
+  }
+
+  const fileInp = document.getElementById("edit-add-photos-file");
+  if (fileInp) fileInp.value = "";
+
+  renderEditPhotosGrid();
+}
+
+function handleEditAddUrl() {
+  const input = document.getElementById("edit-add-photo-url-input");
+  if (!input) return;
+  const url = input.value.trim();
+  if (!url) return;
+  if (!url.startsWith("http://") && !url.startsWith("https://")) {
+    showToast("URL Inválida", "La URL de la imagen debe comenzar con https://", "error");
+    return;
+  }
+  if (!state.currentEditPhotos) state.currentEditPhotos = [];
+  state.currentEditPhotos.push(url);
+  input.value = "";
+  renderEditPhotosGrid();
+}
+
+function updateEditDiscountNotice() {
+  const saleInput = document.getElementById("edit-precio");
+  const origInput = document.getElementById("edit-precio-original");
+  const checkDesc = document.getElementById("edit-es-descuento");
+  const notice = document.getElementById("edit-descuento-live-notice");
+  const badgeInput = document.getElementById("edit-badge-oferta");
+  if (!notice) return;
+
+  const sale = parseFloat(saleInput ? saleInput.value : 0) || 0;
+  const orig = parseFloat(origInput ? origInput.value : 0) || 0;
+  const isChecked = checkDesc ? checkDesc.checked : false;
+
+  if (!isChecked) {
+    notice.innerHTML = '<span class="text-gray-400">💡 Activa el descuento e ingresa el precio original para ver el cálculo en vivo.</span>';
+    return;
+  }
+
+  if (!orig || orig <= sale) {
+    notice.innerHTML = `<span class="text-amber-400 font-bold">⚠️ El precio original (${orig ? '$' + orig : 'vacío'}) debe ser mayor al precio de venta ($${sale}) para calcular el descuento.</span>`;
+    return;
+  }
+
+  const pct = Math.round(((orig - sale) / orig) * 100);
+  const ahorro = Math.round(orig - sale);
+
+  notice.innerHTML = `
+    <div class="space-y-0.5">
+      <div class="text-emerald-400 font-extrabold text-xs flex items-center gap-1.5">
+        <span>✨ ¡Descuento de ${pct}% de ahorro!</span>
+      </div>
+      <div class="text-gray-300 text-[11px]">
+        Estás rebajando la joya de <span class="line-through text-gray-400 font-semibold">$${orig} MXN</span> a <strong class="text-white font-bold">$${sale} MXN</strong> (el cliente ahorra <strong>$${ahorro} MXN</strong>).
+      </div>
+    </div>
+  `;
+
+  if (badgeInput && (!badgeInput.value || badgeInput.value.includes("%") || badgeInput.value === "PLATA S925")) {
+    badgeInput.value = `-${pct}% OFF`;
+  }
+}
+
 function openEditProductModal(productId) {
   const prod = state.products.find(p => p.id === productId);
   if (!prod) {
@@ -1531,11 +1725,6 @@ function openEditProductModal(productId) {
   document.getElementById("edit-stock").value = prod.estado_stock || "Disponible";
   document.getElementById("edit-enlace").value = prod.enlace_aliexpress || "";
   
-  const currentPhoto = prod.foto_principal || 'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=400&q=80';
-  document.getElementById("edit-foto-preview").src = currentPhoto;
-  document.getElementById("edit-foto-url").value = prod.foto_principal || "";
-  document.getElementById("edit-foto-file").value = "";
-
   document.getElementById("edit-es-novedad").checked = prod.es_novedad === true;
   document.getElementById("edit-activo").checked = prod.activo !== false && prod.estado_stock !== "Agotada";
 
@@ -1557,25 +1746,17 @@ function openEditProductModal(productId) {
   const inputBadge = document.getElementById("edit-badge-oferta");
   if (inputBadge) inputBadge.value = prod.badge && prod.badge !== "PLATA S925" ? prod.badge : (isOferta ? "-20% OFF" : "");
 
-  // Listener para previsualizar foto nueva si se sube archivo
-  const fileInput = document.getElementById("edit-foto-file");
-  fileInput.onchange = function() {
-    if (this.files && this.files[0]) {
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        document.getElementById("edit-foto-preview").src = e.target.result;
-      };
-      reader.readAsDataURL(this.files[0]);
-    }
-  };
-
-  // Listener para previsualizar URL pegada
-  const urlInput = document.getElementById("edit-foto-url");
-  urlInput.oninput = function() {
-    if (this.value) {
-      document.getElementById("edit-foto-preview").src = this.value;
-    }
-  };
+  // Recopilar todas las fotos de la joya (principal + galería)
+  const allPhotos = [];
+  if (prod.foto_principal) allPhotos.push(prod.foto_principal);
+  if (Array.isArray(prod.galeria_fotos)) {
+    prod.galeria_fotos.forEach(u => {
+      if (u && !allPhotos.includes(u)) allPhotos.push(u);
+    });
+  }
+  state.currentEditPhotos = allPhotos;
+  renderEditPhotosGrid();
+  updateEditDiscountNotice();
 
   modal.classList.remove("hidden");
   requestAnimationFrame(() => modal.classList.add("modal-active"));
@@ -1607,7 +1788,6 @@ async function handleEditProductSubmit(e) {
     const descripcion = document.getElementById("edit-descripcion").value.trim();
     const categoria = document.getElementById("edit-categoria").value;
     let tallas = document.getElementById("edit-tallas").value.trim();
-    // Limpiar patrones de agotadas en tallas
     tallas = tallas.replace(/\(.*?agotad.*?\)/gi, "").trim() || "Ajustable";
     
     const precio = parseFloat(document.getElementById("edit-precio").value);
@@ -1629,24 +1809,6 @@ async function handleEditProductSubmit(e) {
       }
     }
 
-    let fotoUrl = document.getElementById("edit-foto-url").value.trim() || prod.foto_principal;
-    const fileInput = document.getElementById("edit-foto-file");
-
-    // Si seleccionó un archivo nuevo, subir a Supabase Storage
-    if (fileInput.files && fileInput.files[0]) {
-      const file = fileInput.files[0];
-      const filename = `joya_${productId}.jpg`;
-      const { error: upErr } = await supabaseClient.storage
-        .from("joyas")
-        .upload(filename, file, { upsert: true });
-
-      if (upErr) {
-        console.error("Error al subir nueva foto:", upErr);
-      } else {
-        fotoUrl = `${SUPABASE_URL}/storage/v1/object/public/joyas/${filename}?t=${Date.now()}`;
-      }
-    }
-
     const esDescuento = document.getElementById("edit-es-descuento") ? document.getElementById("edit-es-descuento").checked : false;
     const precioOriginal = document.getElementById("edit-precio-original") ? parseFloat(document.getElementById("edit-precio-original").value || 0) : null;
     const badgeOferta = document.getElementById("edit-badge-oferta") ? document.getElementById("edit-badge-oferta").value.trim() : "";
@@ -1659,11 +1821,15 @@ async function handleEditProductSubmit(e) {
     }
 
     let finalEspec = prod.especificaciones || "";
-    // Limpiar previo PrecioOriginal si existe
     finalEspec = finalEspec.replace(/\[?PrecioOriginal:\s*[\d.]+\]?\s*\|?\s*/gi, "").trim();
     if (esDescuento && precioOriginal && precioOriginal > precio) {
       finalEspec = `[PrecioOriginal: ${precioOriginal}] ${finalEspec}`.trim();
     }
+
+    // Manejar lista de fotos (principal + galería)
+    const currentPhotos = state.currentEditPhotos || [];
+    let mainPhotoUrl = currentPhotos[0] || prod.foto_principal;
+    let newGallery = currentPhotos.slice(1);
 
     const updates = {
       titulo: titulo,
@@ -1674,7 +1840,8 @@ async function handleEditProductSubmit(e) {
       costo_real: costo > 0 ? costo : null,
       estado_stock: stock,
       enlace_aliexpress: enlace || null,
-      foto_principal: fotoUrl,
+      foto_principal: mainPhotoUrl,
+      galeria_fotos: newGallery,
       es_novedad: esNovedad,
       es_destacado: esDescuento,
       badge: finalBadge,
@@ -1711,7 +1878,6 @@ async function handleEditProductSubmit(e) {
     lucide.createIcons();
   }
 }
-
 // ==============================================================================
 // SISTEMA DE SEGURIDAD Y PIN DE ACCESO
 // ==============================================================================

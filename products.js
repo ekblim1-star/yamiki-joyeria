@@ -21,10 +21,10 @@ const BUSINESS_CONFIG = {
   currencySymbol: "$",
   currencyCode: "MXN",
   
-  // Políticas de pedido sobre encargo
+  // Políticas y Garantía de Joyería
   orderPolicy: {
-    advancePayment: "50% de anticipo para confirmar y asegurar diseño/talla",
-    deliveryPayment: "50% restante al recibir o liquidar tu pedido",
+    advancePayment: "30 días de garantía por defectos de fábrica en todas tus piezas de Plata Ley S925",
+    deliveryPayment: "Pago seguro y transparente directo con confirmación de pedido",
     deliveryTime: "15 a 20 días hábiles aproximadamente tras realizar el pedido grupal",
     groupOrder: "Pedidos en conjunto directamente con proveedor (reunión de 7 pedidos)"
   },
@@ -36,7 +36,7 @@ const BUSINESS_CONFIG = {
   location: "Envíos a todo el país y entregas coordinadas por WhatsApp",
   schedule: "Lunes a Sábado: 10:00 AM - 8:00 PM",
   
-  topAnnouncement: "✨ Catálogo Plata Ley S925 sobre pedido | Anticipo del 50% | WhatsApp: +52 993 290 2704"
+  topAnnouncement: "✨ Catálogo Plata Ley S925 | 30 días de garantía por defectos de fábrica | WhatsApp: +52 993 290 2704"
 };
 
 // 2. CATEGORÍAS DEL CATÁLOGO
