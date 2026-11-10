@@ -1,3 +1,13 @@
+// Helper defensivo para renderizar iconos Lucide sin riesgo de ReferenceError si falla CDN
+function safeCreateIcons() {
+  try {
+    if (typeof window !== "undefined" && window.lucide && typeof window.lucide.createIcons === "function") {
+      window.lucide.createIcons();
+    }
+  } catch (err) {}
+}
+window.safeCreateIcons = safeCreateIcons;
+
 // ==============================================================================
 // YAMIKI JOYERÍA S925 - ADMIN PANEL CONTROLLER
 // Conexión Directa a Supabase + Importador Excel + Gestor de Portada y Precios
@@ -280,7 +290,7 @@ function renderProductsTable() {
     if (mobileContainer) {
       mobileContainer.innerHTML = emptyHtml;
     }
-    lucide.createIcons();
+    safeCreateIcons();
     return;
   }
 
@@ -631,7 +641,7 @@ function renderProductsTable() {
     }).join("");
   }
 
-  lucide.createIcons();
+  safeCreateIcons();
 }
 
 async function toggleDescuento(productId, newValue) {
@@ -720,7 +730,7 @@ function renderOfertasView() {
         </button>
       </div>
     `;
-    lucide.createIcons();
+    safeCreateIcons();
     return;
   }
 
@@ -782,7 +792,7 @@ function renderOfertasView() {
     `;
   }).join("");
 
-  lucide.createIcons();
+  safeCreateIcons();
 }
 
 // ==============================================================================
@@ -1193,7 +1203,7 @@ function renderImportPreview() {
     `;
   }
 
-  lucide.createIcons();
+  safeCreateIcons();
 }
 
 // ==============================================================================
@@ -1220,7 +1230,7 @@ function showProgressModal(title, subtitle) {
   if (modal) {
     modal.classList.remove("hidden");
     requestAnimationFrame(() => modal.classList.add("modal-active"));
-    lucide.createIcons();
+    safeCreateIcons();
   }
 }
 
@@ -1357,7 +1367,7 @@ async function commitImportToSupabase() {
     if (iconBox) {
       iconBox.className = "w-16 h-16 rounded-2xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center mx-auto shadow-lg shadow-emerald-500/20";
       iconBox.innerHTML = '<i data-lucide="check-circle" class="w-8 h-8"></i>';
-      lucide.createIcons();
+      safeCreateIcons();
     }
 
     showToast(
@@ -1387,7 +1397,7 @@ async function commitImportToSupabase() {
     if (errMsg) errMsg.textContent = err.message || JSON.stringify(err);
 
     showToast("Error al importar", err.message || "Ocurrió un error al guardar.", "error");
-    lucide.createIcons();
+    safeCreateIcons();
   }
 }
 
@@ -1532,7 +1542,7 @@ function switchTab(tabName) {
     if (tabImportar) tabImportar.className = activeTabClass;
   }
 
-  lucide.createIcons();
+  safeCreateIcons();
 }
 
 function renderPortadaView() {
@@ -1560,7 +1570,7 @@ function renderPortadaView() {
         </button>
       </div>
     `;
-    lucide.createIcons();
+    safeCreateIcons();
     return;
   }
 
@@ -1642,7 +1652,7 @@ function renderPortadaView() {
     `;
   }).join("");
 
-  lucide.createIcons();
+  safeCreateIcons();
 }
 
 function setLoading(isLoading) {
@@ -1680,7 +1690,7 @@ function showToast(title, message, type = "success") {
   `;
 
   container.appendChild(toast);
-  lucide.createIcons();
+  safeCreateIcons();
 
   requestAnimationFrame(() => {
     toast.classList.remove("translate-y-2");
@@ -1951,7 +1961,7 @@ function renderEditPhotosGrid() {
         Sin fotos registradas. Sube una o añade una URL.
       </div>
     `;
-    lucide.createIcons();
+    safeCreateIcons();
     return;
   }
 
@@ -2060,7 +2070,7 @@ function renderEditPhotosGrid() {
     `;
   }).join("");
 
-  lucide.createIcons();
+  safeCreateIcons();
 }
 
 function updateEditDiscountNotice() {
@@ -2167,7 +2177,7 @@ function openEditProductModal(productId, targetVariantId = null) {
 
   modal.classList.remove("hidden");
   requestAnimationFrame(() => modal.classList.add("modal-active"));
-  lucide.createIcons();
+  safeCreateIcons();
 }
 
 function cleanVariantName(label) {
@@ -2229,7 +2239,7 @@ function renderEditVariantPills() {
   });
 
   list.innerHTML = pillsHtml;
-  lucide.createIcons();
+  safeCreateIcons();
 }
 
 function selectEditVariant(variantId) {
@@ -2361,7 +2371,7 @@ function selectEditVariant(variantId) {
   renderEditPhotosGrid();
   renderEditVariantPills();
   updateEditDiscountNotice();
-  lucide.createIcons();
+  safeCreateIcons();
 }
 
 function closeEditProductModal() {
@@ -2381,7 +2391,7 @@ async function handleEditProductSubmit(e) {
   const origBtnContent = saveBtn.innerHTML;
   saveBtn.disabled = true;
   saveBtn.innerHTML = `<i data-lucide="loader" class="w-4 h-4 animate-spin"></i><span>Guardando...</span>`;
-  lucide.createIcons();
+  safeCreateIcons();
 
   try {
     const titulo = document.getElementById("edit-titulo").value.trim();
@@ -2524,7 +2534,7 @@ async function handleEditProductSubmit(e) {
   } finally {
     saveBtn.disabled = false;
     saveBtn.innerHTML = origBtnContent;
-    lucide.createIcons();
+    safeCreateIcons();
   }
 }
 
@@ -2570,7 +2580,7 @@ function checkAdminAuth() {
 }
 
 function handlePinSubmit(e) {
-  e.preventDefault();
+  if (e && typeof e.preventDefault === "function") e.preventDefault();
   const input = document.getElementById("admin-pin-input");
   const errorMsg = document.getElementById("pin-error-msg");
   const lockScreen = document.getElementById("admin-lock-screen");
@@ -2621,6 +2631,6 @@ function togglePinVisibility() {
   input.type = isPassword ? "text" : "password";
   if (icon) {
     icon.setAttribute("data-lucide", isPassword ? "eye-off" : "eye");
-    lucide.createIcons();
+    safeCreateIcons();
   }
 }

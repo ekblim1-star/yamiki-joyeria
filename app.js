@@ -1,3 +1,13 @@
+// Helper defensivo para renderizar iconos Lucide sin riesgo de ReferenceError si falla CDN
+function safeCreateIcons() {
+  try {
+    if (typeof window !== "undefined" && window.lucide && typeof window.lucide.createIcons === "function") {
+      window.lucide.createIcons();
+    }
+  } catch (err) {}
+}
+window.safeCreateIcons = safeCreateIcons;
+
 
 // ==============================================================================
 // SINCRONIZACIÓN EN VIVO CON SUPABASE (CATÁLOGO DINÁMICO PROTEGIDO)
@@ -306,7 +316,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   try { renderProducts(); } catch (e) { console.error("Products render error:", e); }
   try { updateCartUI(); } catch (e) { console.error("Cart UI error:", e); }
   try { setupEventListeners(); } catch (e) { console.error("Event listeners error:", e); }
-  try { if (window.lucide && typeof lucide.createIcons === "function") lucide.createIcons(); } catch (e) { console.error("Lucide error:", e); }
+  try { safeCreateIcons(); } catch (e) { console.error("Lucide error:", e); }
   try { handleUrlRouting(); } catch (e) { console.error("URL routing error:", e); }
 });
 
@@ -720,7 +730,7 @@ function toggleFilterDropdown(type, event) {
     renderFilterDropdownOptions(type);
     menu.classList.remove("hidden");
     btn.setAttribute("aria-expanded", "true");
-    lucide.createIcons();
+    safeCreateIcons();
   }
 }
 
@@ -1134,9 +1144,7 @@ function navigateTo(viewName, options = {}) {
 
   updateNavTabsHighlight();
 
-  if (window.lucide && typeof lucide.createIcons === "function") {
-    lucide.createIcons();
-  }
+  safeCreateIcons();
 }
 
 /**
@@ -1261,9 +1269,7 @@ function selectCategoryFilter(categoryId) {
     history.replaceState(null, "", "#/catalogo");
   }
 
-  if (window.lucide && typeof lucide.createIcons === "function") {
-    lucide.createIcons();
-  }
+  safeCreateIcons();
 }
 
 function selectSizeFilter(sizeId) {
@@ -1484,7 +1490,7 @@ function renderProducts() {
       </div>
     `;
     if (paginationContainer) paginationContainer.innerHTML = "";
-    lucide.createIcons();
+    safeCreateIcons();
     return;
   }
 
@@ -1618,7 +1624,7 @@ function renderProducts() {
     `;  }).join("");
 
   renderPagination(totalPages);
-  lucide.createIcons();
+  safeCreateIcons();
 }
 
 function renderPagination(totalPages) {
@@ -1672,7 +1678,7 @@ function renderPagination(totalPages) {
 
   html += `</div>`;
   container.innerHTML = html;
-  lucide.createIcons();
+  safeCreateIcons();
 }
 
 function changePage(page) {
@@ -1709,11 +1715,11 @@ function handleQuickAddToCart(productId, event) {
     const originalHtml = btn.innerHTML;
     btn.innerHTML = `<i data-lucide="check" class="w-3.5 h-3.5 text-emerald-300"></i> <span class="font-bold text-white text-[10px] sm:text-xs">¡Agregado!</span>`;
     btn.style.backgroundColor = "#15803d";
-    lucide.createIcons();
+    safeCreateIcons();
     setTimeout(() => {
       btn.innerHTML = originalHtml;
       btn.style.backgroundColor = "";
-      lucide.createIcons();
+      safeCreateIcons();
     }, 1200);
   }
 }
@@ -2022,7 +2028,7 @@ function updateCartUI() {
           </div>
         `;
       }).join("");
-      lucide.createIcons();
+      safeCreateIcons();
     }
   }
 }
@@ -2234,7 +2240,7 @@ function openRingSizeGuideModal() {
     requestAnimationFrame(() => {
       modal.classList.add("modal-active");
     });
-    lucide.createIcons();
+    safeCreateIcons();
   }
 }
 
@@ -2281,7 +2287,7 @@ function switchGuideModalTab(tabName) {
       }
     }
   });
-  lucide.createIcons();
+  safeCreateIcons();
 }
 
 function openLightbox(src, caption = "") {
@@ -2299,7 +2305,7 @@ function openLightbox(src, caption = "") {
   requestAnimationFrame(() => {
     modal.classList.add("active");
   });
-  lucide.createIcons();
+  safeCreateIcons();
 }
 
 function closeLightbox() {
@@ -2384,7 +2390,7 @@ function updateThemeIcons(isDark) {
     }
   }
   if (typeof lucide !== "undefined") {
-    lucide.createIcons();
+    safeCreateIcons();
   }
 }
 
@@ -2419,7 +2425,7 @@ function showToast(message, image = null, type = "success") {
   `;
 
   container.appendChild(toast);
-  lucide.createIcons();
+  safeCreateIcons();
 
   const dismissTimer = setTimeout(() => {
     dismissToast(toast);
@@ -2838,9 +2844,7 @@ function renderProductPage(prod, defaultSize = null, defaultVariantId = null) {
   // Gestos táctiles para deslizar fotos en móvil
   setupProductPageTouchGestures();
 
-  if (window.lucide && typeof lucide.createIcons === "function") {
-    lucide.createIcons();
-  }
+  safeCreateIcons();
 }
 
 function updateProductPagePrice() {
@@ -3240,9 +3244,7 @@ function renderProductPageRelated() {
     `;
   }).join("");
 
-  if (window.lucide && typeof lucide.createIcons === "function") {
-    lucide.createIcons();
-  }
+  safeCreateIcons();
 }
 
 let productTouchStartX = 0;
