@@ -252,7 +252,7 @@ function renderProductsTable() {
     if (container) {
       container.innerHTML = `
         <tr>
-          <td colspan="8" class="py-16 text-center text-gray-400">
+          <td colspan="7" class="py-16 text-center text-gray-400">
             <i data-lucide="gem" class="w-12 h-12 mx-auto mb-3 text-gray-600"></i>
             <p class="text-sm font-semibold text-gray-300">No se encontraron joyas</p>
             <p class="text-xs text-gray-500 mt-1">Prueba cambiando el filtro o sube tu archivo Excel del scraper.</p>
@@ -390,24 +390,7 @@ function renderProductsTable() {
             </div>
           </td>
 
-          <!-- 5. Interruptor: 🔥 Oferta / Descuento -->
-          <td class="py-3 px-4 text-center">
-            <div class="flex flex-col items-center gap-1">
-              <label class="switch" title="Activa para marcar esta joya en oferta">
-                <input 
-                  type="checkbox" 
-                  ${isOferta ? 'checked' : ''} 
-                  onchange="toggleDescuento('${prod.id}', this.checked)"
-                />
-                <span class="slider slider-rose"></span>
-              </label>
-              <span class="text-[10px] font-bold ${isOferta ? 'text-rose-400' : 'text-gray-500'}">
-                ${isOferta ? '🔥 En Oferta' : 'No'}
-              </span>
-            </div>
-          </td>
-
-          <!-- 6. Interruptor: Activo / Visible en Tienda -->
+          <!-- 5. Interruptor: Activo / Visible en Tienda -->
           <td class="py-3 px-4 text-center">
             <div class="flex flex-col items-center gap-1">
               <label class="switch" title="Ocultar o mostrar joya en la tienda">
@@ -541,6 +524,17 @@ function renderProductsTable() {
                     </div>
                     <div class="flex items-center gap-2 shrink-0">
                       <span class="font-bold text-emerald-400 text-xs">$${Math.round(v.precio_venta || 0)}</span>
+                      ${(v.enlace_aliexpress || prod.enlace_aliexpress) ? `
+                        <a 
+                          href="${v.enlace_aliexpress || prod.enlace_aliexpress}" 
+                          target="_blank" 
+                          rel="noopener noreferrer" 
+                          class="p-1.5 rounded-lg bg-orange-600/20 hover:bg-orange-600 text-orange-400 hover:text-white border border-orange-500/30 transition flex items-center justify-center"
+                          title="Comprar este modelo en AliExpress"
+                        >
+                          <i data-lucide="external-link" class="w-3 h-3"></i>
+                        </a>
+                      ` : ''}
                       <button type="button" onclick="openEditProductModal('${prod.id}', '${v.id}')" class="px-2.5 py-1 rounded-lg bg-[#e72380]/20 hover:bg-[#e72380] text-[#e72380] hover:text-white font-bold text-[10px] transition">
                         Editar
                       </button>
@@ -582,14 +576,29 @@ function renderProductsTable() {
               <span>Portada</span>
             </button>
 
-            <button
-              type="button"
-              onclick="toggleDescuento('${prod.id}', ${!isOferta})"
-              class="py-2.5 px-1.5 rounded-xl text-[11px] font-bold border transition flex items-center justify-center gap-1 ${isOferta ? 'bg-[#e72380]/20 text-rose-300 border-[#e72380]/40' : 'bg-white/5 text-gray-400 border-white/10'}"
-            >
-              <i data-lucide="badge-percent" class="w-3.5 h-3.5"></i>
-              <span>Oferta</span>
-            </button>
+            <!-- 2. Botón Comprar en AliExpress para móvil -->
+            ${prod.enlace_aliexpress ? `
+              <a
+                href="${prod.enlace_aliexpress}"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="py-2.5 px-1.5 rounded-xl text-[11px] font-bold bg-orange-600/20 hover:bg-orange-600 text-orange-400 hover:text-white border border-orange-500/30 transition flex items-center justify-center gap-1 shadow-xs"
+                title="Abrir producto exacto en AliExpress para surtir pedido"
+              >
+                <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+                <span>Comprar</span>
+              </a>
+            ` : `
+              <button
+                type="button"
+                onclick="openEditProductModal('${prod.id}')"
+                class="py-2.5 px-1.5 rounded-xl text-[11px] font-bold bg-white/5 text-gray-500 border border-white/10 flex items-center justify-center gap-1"
+                title="Agregar enlace de AliExpress en Editar"
+              >
+                <i data-lucide="link" class="w-3.5 h-3.5"></i>
+                <span>Sin Link</span>
+              </button>
+            `}
 
             <button
               type="button"
