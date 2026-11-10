@@ -529,7 +529,7 @@ function initCarousel() {
               ${getCategoryLabel(prod.category)}
             </span>
             <h4 class="font-sans font-bold text-xs sm:text-sm text-gray-900 group-hover:text-sage-700 transition line-clamp-1 leading-snug" title="${prod.name}">
-              ${prod.name}
+              ${cleanOrderTitle(prod.name)}
             </h4>
             ${prod.displaySizes ? `<p class="text-[9px] sm:text-[11px] text-gray-500 mt-1 truncate">📏 <span class="size-pill-tag font-bold px-1.5 py-0.5 rounded">${prod.displaySizes}</span></p>` : ""}
             ${prod.notes ? `<p class="text-[9px] sm:text-[10px] text-rose-600 italic mt-0.5 line-clamp-1">✨ ${prod.notes}</p>` : ""}
@@ -1564,7 +1564,7 @@ function renderProducts() {
               class="font-sans text-xs sm:text-base font-bold text-gray-900 dark:text-white group-hover:text-sage-700 dark:group-hover:text-rose-400 transition-colors cursor-pointer line-clamp-1 leading-snug"
               title="${prod.name}"
             >
-              ${prod.name}
+              ${cleanOrderTitle(prod.name)}
             </h3>
 
             ${ringSizeHtml}
@@ -1737,7 +1737,7 @@ function cleanOrderTitle(title) {
   const parts = t.split(/,\s+(?![0-9])/);
   let main = parts[0].trim();
   // Quitar coletillas de búsqueda de AliExpress
-  main = main.replace(/\s+(para mujer(?:es)?(?:\s+y\s+(?:adolescentes|ni[ñn]as))?|para adolescentes|de lujo|de alta calidad|regalo de joyería|regalo de boda|joyería fina|sortija de compromiso)$/i, "").trim();
+  main = main.replace(/(?:\s+(?:para mujer(?:es)?(?:\s+y\s+(?:adolescentes|ni[ñas]))?|para adolescentes|de lujo|de alta calidad|regalo de joyería|regalo de boda|joyería fina|sortija de compromiso|moda femenina|para fiesta))+$/i, "").trim();
   if (main.length > 0) {
     main = main.charAt(0).toUpperCase() + main.slice(1);
   }
@@ -1747,8 +1747,8 @@ function cleanOrderTitle(title) {
 function cleanOrderVariantLabel(label) {
   if (!label) return "";
   let s = String(label).trim();
-  s = s.replace(/color\s+de\s+la\s+gema:\s*/gi, "");
-  s = s.replace(/color:\s*/gi, "");
+  s = s.replace(/color\s+de\s+(?:la\s+)?(?:gema|piedra|metal|cristal):\s*/gi, "");
+  s = s.replace(/(?:stone\s+)?color:\s*/gi, "");
   s = s.replace(/modelo:\s*/gi, "");
   s = s.replace(/[\u00A0\s]+/g, " ");
   s = s.trim();
@@ -2420,7 +2420,7 @@ function showToast(message, image = null, type = "success") {
 }
 
 function dismissToast(toastEl) {
-  if (!toastEl || toastEl.classList.contains("toast-exit")) return;
+  if (!toastEl || !toastEl.classList || typeof toastEl.classList.contains !== "function" || toastEl.classList.contains("toast-exit")) return;
   toastEl.classList.add("toast-exit");
   setTimeout(() => {
     if (toastEl.parentElement) toastEl.remove();
@@ -2615,10 +2615,11 @@ function findProductById(idOrSlug) {
 
   if (found) return found;
 
-  // 2. Coincidencia parcial si target es un SKU o identificador corto
+  // 2. Coincidencia parcial si target es un SKU o identificador corto o está en el título
   found = PRODUCTS.find(p => {
     if (p.code && p.code.toLowerCase().includes(target)) return true;
     if (p.groupId && String(p.groupId).toLowerCase().includes(target)) return true;
+    if (p.name && p.name.toLowerCase().includes(target)) return true;
     return false;
   });
 
@@ -2629,6 +2630,12 @@ function findProductById(idOrSlug) {
  * Abre la subpágina dedicada de una joya y actualiza la URL para compartir
  */
 function navigateToProduct(productId, defaultSize = null, defaultVariantId = null, options = {}) {
+  // Asegurar que menús, gaveta de carrito o modales abiertos se cierren limpiamente
+  if (typeof closeCart === "function") closeCart();
+  if (typeof closeProductModal === "function") closeProductModal(false);
+  const mobileMenu = document.getElementById("mobile-menu");
+  if (mobileMenu && !mobileMenu.classList.contains("hidden")) mobileMenu.classList.add("hidden");
+
   const prod = findProductById(productId);
   if (!prod) {
     if (!PRODUCTS || PRODUCTS.length === 0) {
@@ -3050,6 +3057,19 @@ function handleProductPageAddToCart() {
   const pState = state.currentProductPage;
   if (!pState) return;
   const prod = pState.product;
+
+  // Si tiene varios modelos y el cliente no ha seleccionado uno
+  if (prod.variants && prod.variants.length > 1 && !pState.selectedVariant) {
+    const vSection = document.getElementById("product-page-variants-section");
+    if (vSection) {
+      vSection.scrollIntoView({ behavior: "smooth", block: "center" });
+      vSection.classList.add("ring-2", "ring-[#e72380]", "rounded-2xl", "p-2");
+      setTimeout(() => vSection.classList.remove("ring-2", "ring-[#e72380]", "p-2"), 2000);
+    }
+    showToast("Elige tu modelo", "Por favor selecciona el color o diseño de tu joya arriba.", "info");
+    return;
+  }
+
   const v = pState.selectedVariant;
   const size = pState.selectedSize;
   const qty = pState.quantity || 1;
@@ -3062,6 +3082,19 @@ function handleProductPageWhatsAppOrder() {
   const pState = state.currentProductPage;
   if (!pState) return;
   const prod = pState.product;
+
+  // Si tiene varios modelos y el cliente no ha seleccionado uno
+  if (prod.variants && prod.variants.length > 1 && !pState.selectedVariant) {
+    const vSection = document.getElementById("product-page-variants-section");
+    if (vSection) {
+      vSection.scrollIntoView({ behavior: "smooth", block: "center" });
+      vSection.classList.add("ring-2", "ring-[#e72380]", "rounded-2xl", "p-2");
+      setTimeout(() => vSection.classList.remove("ring-2", "ring-[#e72380]", "p-2"), 2000);
+    }
+    showToast("Elige tu modelo", "Por favor selecciona el color o diseño de tu joya antes de pedir.", "info");
+    return;
+  }
+
   const v = pState.selectedVariant;
   const size = pState.selectedSize;
   const qty = pState.quantity || 1;
