@@ -1885,7 +1885,10 @@ async function handleEditAddFiles(files) {
       }
 
       if (publicUrl) {
-        state.currentEditPhotos.push(publicUrl);
+        if (!state.currentEditPhotos) state.currentEditPhotos = [];
+        if (!state.currentEditPhotos.includes(publicUrl)) {
+          state.currentEditPhotos.push(publicUrl);
+        }
         // Si se está editando una variante específica, auto-asignarla
         if (state.currentEditingVariantId !== "all" && prod && prod.variants) {
           const v = prod.variants.find(x => x.id === state.currentEditingVariantId);
@@ -1921,7 +1924,11 @@ function handleEditAddUrl() {
     return;
   }
   if (!state.currentEditPhotos) state.currentEditPhotos = [];
-  state.currentEditPhotos.push(url);
+  if (!state.currentEditPhotos.includes(url)) {
+    state.currentEditPhotos.push(url);
+  } else {
+    showToast("Foto ya añadida", "Esta imagen ya se encuentra en la galería.", "info");
+  }
   input.value = "";
   renderEditPhotosGrid();
   renderEditVariantPills();
@@ -2396,9 +2403,12 @@ async function handleEditProductSubmit(e) {
       }
     }
 
-    const currentPhotos = state.currentEditPhotos || [];
-    let mainPhotoUrl = currentPhotos[0] || prod.foto_principal;
-    let newGallery = currentPhotos.slice(1);
+    const uniquePhotos = [];
+    (state.currentEditPhotos || []).forEach(u => {
+      if (u && !uniquePhotos.includes(u)) uniquePhotos.push(u);
+    });
+    let mainPhotoUrl = uniquePhotos[0] || prod.foto_principal;
+    let newGallery = uniquePhotos.slice(1);
 
     if (state.currentEditingVariantId !== "all") {
       // 1. Guardar exclusivamente variante específica

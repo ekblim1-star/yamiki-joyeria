@@ -1124,6 +1124,323 @@
   </main>
 
 
+  
+  <!-- ========================================================================
+       SUBPÁGINA DEDICADA DE PRODUCTO / JOYA (VISTA INDIVIDUAL)
+       ======================================================================== -->
+  <main id="view-producto" class="page-view flex flex-col flex-grow hidden bg-sage-50 dark:bg-[#0b0f0d] text-sage-900 dark:text-white transition-colors duration-200">
+    
+    <!-- Barra Superior de Navegación / Migas de Pan (Breadcrumbs) -->
+    <div class="border-b border-sage-200/80 dark:border-white/10 bg-white/80 dark:bg-[#141C18]/90 backdrop-blur-md sticky top-[68px] z-30 transition-colors shadow-xs">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between gap-3">
+        <button 
+          type="button" 
+          onclick="returnToCatalog()" 
+          class="inline-flex items-center gap-2 text-xs sm:text-sm font-bold text-sage-700 dark:text-gray-300 hover:text-rose-600 dark:hover:text-[#e72380] transition group cursor-pointer"
+        >
+          <span class="w-8 h-8 rounded-full bg-sage-100 dark:bg-white/10 flex items-center justify-center group-hover:bg-rose-500 group-hover:text-white dark:group-hover:bg-[#e72380] transition">
+            <i data-lucide="arrow-left" class="w-4 h-4"></i>
+          </span>
+          <span class="font-extrabold">Volver al catálogo</span>
+        </button>
+
+        <!-- Migas de Pan Desktop -->
+        <nav aria-label="Breadcrumb" class="hidden md:flex items-center gap-2 text-xs text-sage-500 dark:text-gray-400">
+          <a href="#/" onclick="navigateTo('home'); return false;" class="hover:text-rose-500 transition">Inicio</a>
+          <span>/</span>
+          <a href="#/catalogo" onclick="navigateTo('catalogo'); return false;" class="hover:text-rose-500 transition">Catálogo</a>
+          <span>/</span>
+          <span id="product-page-breadcrumb-cat" class="capitalize text-sage-700 dark:text-gray-300 font-medium">Joyería</span>
+          <span>/</span>
+          <span id="product-page-breadcrumb-title" class="truncate max-w-[200px] text-sage-900 dark:text-white font-bold">Detalle</span>
+        </nav>
+
+        <!-- Botón Compartir Joya -->
+        <button 
+          type="button" 
+          onclick="shareCurrentProduct()" 
+          class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-sage-100 dark:bg-white/10 hover:bg-rose-500 hover:text-white dark:hover:bg-[#e72380] text-sage-800 dark:text-gray-200 transition shadow-xs cursor-pointer"
+          title="Compartir enlace de esta joya"
+        >
+          <i data-lucide="share-2" class="w-3.5 h-3.5"></i>
+          <span>Compartir</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Contenido Principal del Producto -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10 flex-grow w-full">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
+
+        <!-- ================= COLUMNA IZQUIERDA: GALERÍA (lg:col-span-7) ================= -->
+        <div class="lg:col-span-7 space-y-4 lg:sticky lg:top-[130px]">
+          
+          <!-- Visor Principal con Gestos Táctiles y Controles -->
+          <div id="product-page-image-box" class="relative w-full aspect-square rounded-3xl overflow-hidden bg-white dark:bg-[#121915] border border-sage-200/80 dark:border-white/10 shadow-lg dark:shadow-black/50 group select-none">
+            
+            <!-- Imagen Principal -->
+            <img 
+              id="product-page-main-img" 
+              src="" 
+              alt="Joya Yamiki" 
+              class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.02]" 
+              onerror="this.onerror=null; this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 fill=%22%23222%22/></svg>';" 
+            />
+
+            <!-- Badge Superior Izquierdo (Descuento o Plata S925) -->
+            <div id="product-page-badge-wrapper" class="absolute top-3.5 left-3.5 z-10 pointer-events-none">
+              <span id="product-page-badge" class="px-3 py-1 rounded-full text-xs font-extrabold uppercase tracking-wider bg-rose-500 text-white shadow-md">
+                PLATA S925
+              </span>
+            </div>
+
+            <!-- Contador de Fotos -->
+            <div class="absolute top-3.5 right-3.5 z-10 pointer-events-none">
+              <span id="product-page-photo-counter" class="px-2.5 py-1 rounded-full text-[11px] font-mono font-bold bg-black/60 text-white backdrop-blur-md border border-white/20">
+                1 / 1
+              </span>
+            </div>
+
+            <!-- Flechas de Navegación en la Foto (Touch-friendly & Desktop hover) -->
+            <button 
+              type="button" 
+              id="product-page-prev-btn" 
+              onclick="changeProductPagePhoto(-1)" 
+              class="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/60 hover:bg-black/90 text-white flex items-center justify-center backdrop-blur-md transition opacity-80 sm:opacity-0 sm:group-hover:opacity-100 border border-white/20 cursor-pointer z-10"
+              aria-label="Foto anterior"
+            >
+              <i data-lucide="chevron-left" class="w-5 h-5"></i>
+            </button>
+            <button 
+              type="button" 
+              id="product-page-next-btn" 
+              onclick="changeProductPagePhoto(1)" 
+              class="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/60 hover:bg-black/90 text-white flex items-center justify-center backdrop-blur-md transition opacity-80 sm:opacity-0 sm:group-hover:opacity-100 border border-white/20 cursor-pointer z-10"
+              aria-label="Siguiente foto"
+            >
+              <i data-lucide="chevron-right" class="w-5 h-5"></i>
+            </button>
+
+            <!-- Indicador de Deslizar en Móvil -->
+            <div class="absolute bottom-3 right-3 sm:hidden px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-xs text-[10px] text-white/90 pointer-events-none font-bold">
+              👈 Desliza foto 👉
+            </div>
+          </div>
+
+          <!-- Tira Horizontal de Miniaturas (Thumbnail Strip) -->
+          <div 
+            id="product-page-thumbnails" 
+            class="flex items-center gap-2.5 overflow-x-auto py-2 scrollbar-thin px-1"
+          >
+            <!-- Inyectado dinámicamente -->
+          </div>
+
+        </div>
+
+        <!-- ================= COLUMNA DERECHA: INFORMACIÓN Y ACCIONES (lg:col-span-5) ================= -->
+        <div class="lg:col-span-5 space-y-6">
+          
+          <!-- Encabezado de Producto -->
+          <div class="space-y-2.5 border-b border-sage-200/80 dark:border-white/10 pb-5">
+            <div class="flex items-center justify-between gap-2 flex-wrap">
+              <span id="product-page-category-tag" class="px-2.5 py-0.5 rounded-full text-[11px] font-extrabold uppercase tracking-wider bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/30">
+                Anillos
+              </span>
+              <span id="product-page-sku-tag" class="text-xs font-mono text-sage-500 dark:text-gray-400 font-bold">
+                SKU: ---
+              </span>
+            </div>
+
+            <h1 id="product-page-title" class="font-serif text-2xl sm:text-3xl font-extrabold text-sage-950 dark:text-white leading-tight">
+              Cargando joya...
+            </h1>
+
+            <!-- Precios y Descuentos -->
+            <div class="flex items-baseline gap-3 pt-2">
+              <span id="product-page-price" class="text-3xl sm:text-4xl font-black text-rose-600 dark:text-[#ff3d9a]">
+                $0
+              </span>
+              <span class="text-sm font-bold text-sage-500 dark:text-gray-400">MXN</span>
+              <span id="product-page-orig-price" class="hidden text-base sm:text-lg line-through text-sage-400 dark:text-gray-500 font-medium"></span>
+              <span id="product-page-savings-badge" class="hidden px-2.5 py-0.5 rounded-md bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-bold border border-emerald-500/30"></span>
+            </div>
+
+            <p class="text-xs text-sage-600 dark:text-gray-300 flex items-center gap-1.5 pt-1">
+              <i data-lucide="shield-check" class="w-4 h-4 text-emerald-500 shrink-0"></i>
+              <span>Garantía de 30 días contra cualquier defecto de fábrica en Plata Ley S925</span>
+            </p>
+          </div>
+
+          <!-- Selector de Variantes (Colores / Diseños) -->
+          <div id="product-page-variants-section" class="space-y-2.5">
+            <div class="flex items-center justify-between">
+              <label class="block text-xs font-extrabold uppercase tracking-wider text-sage-800 dark:text-gray-200">
+                ✨ Elige Modelo / Color:
+              </label>
+              <span id="product-page-selected-variant-name" class="text-xs text-rose-600 dark:text-rose-400 font-bold truncate max-w-[180px]">
+                Selecciona uno
+              </span>
+            </div>
+            <div id="product-page-variants-list" class="flex flex-wrap gap-2">
+              <!-- Píldoras inyectadas dinámicamente -->
+            </div>
+          </div>
+
+          <!-- Selector de Tallas de Anillo (Solo para categoría anillos) -->
+          <div id="product-page-sizes-section" class="space-y-2.5">
+            <div class="flex items-center justify-between">
+              <label class="block text-xs font-extrabold uppercase tracking-wider text-sage-800 dark:text-gray-200">
+                📏 Selecciona tu Talla:
+              </label>
+              <button 
+                type="button" 
+                onclick="openRingSizeGuideModal()" 
+                class="text-xs font-bold text-rose-600 dark:text-rose-400 hover:underline flex items-center gap-1 cursor-pointer"
+              >
+                <span>¿Cómo saber tu talla?</span>
+                <i data-lucide="help-circle" class="w-3.5 h-3.5"></i>
+              </button>
+            </div>
+            <div id="product-page-sizes-list" class="flex flex-wrap gap-2">
+              <!-- Tallas inyectadas dinámicamente -->
+            </div>
+          </div>
+
+          <!-- Selector de Cantidad y Botones de Compra -->
+          <div class="space-y-3 pt-2">
+            
+            <div class="flex items-center gap-3">
+              <!-- Stepper de Cantidad -->
+              <div class="flex items-center border border-sage-300 dark:border-white/20 rounded-2xl bg-white dark:bg-black/30 p-1 shrink-0">
+                <button 
+                  type="button" 
+                  onclick="changeProductPageQuantity(-1)" 
+                  class="w-8 h-8 rounded-xl hover:bg-sage-100 dark:hover:bg-white/10 flex items-center justify-center font-bold text-base transition cursor-pointer"
+                  aria-label="Disminuir cantidad"
+                >
+                  -
+                </button>
+                <span id="product-page-quantity" class="w-10 text-center font-bold font-mono text-sm">
+                  1
+                </span>
+                <button 
+                  type="button" 
+                  onclick="changeProductPageQuantity(1)" 
+                  class="w-8 h-8 rounded-xl hover:bg-sage-100 dark:hover:bg-white/10 flex items-center justify-center font-bold text-base transition cursor-pointer"
+                  aria-label="Aumentar cantidad"
+                >
+                  +
+                </button>
+              </div>
+
+              <!-- Botón Añadir al Carrito (Principal) -->
+              <button 
+                type="button" 
+                id="product-page-add-cart-btn" 
+                onclick="handleProductPageAddToCart()" 
+                class="flex-1 py-3 px-5 rounded-2xl bg-rose-500 hover:bg-rose-600 dark:bg-[#e72380] dark:hover:bg-[#d41c73] text-white font-extrabold text-sm transition shadow-lg shadow-rose-500/25 flex items-center justify-center gap-2 group active:scale-[0.98] cursor-pointer"
+              >
+                <i data-lucide="shopping-bag" class="w-4 h-4 transition-transform group-hover:scale-110"></i>
+                <span id="product-page-add-cart-text">Añadir al Pedido</span>
+              </button>
+            </div>
+
+            <!-- Botón WhatsApp Directo -->
+            <button 
+              type="button" 
+              id="product-page-whatsapp-btn" 
+              onclick="handleProductPageWhatsAppOrder()" 
+              class="w-full py-3 px-5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-sm transition shadow-md shadow-emerald-600/20 flex items-center justify-center gap-2 active:scale-[0.98] cursor-pointer"
+            >
+              <i data-lucide="message-circle" class="w-4 h-4"></i>
+              <span>Pedir Directo por WhatsApp</span>
+            </button>
+          </div>
+
+          <!-- Descripción del Producto -->
+          <div class="space-y-2 pt-4 border-t border-sage-200/80 dark:border-white/10">
+            <h3 class="text-xs font-extrabold uppercase tracking-wider text-sage-800 dark:text-gray-200">
+              Descripción & Detalles:
+            </h3>
+            <p id="product-page-description" class="text-xs sm:text-sm text-sage-600 dark:text-gray-300 leading-relaxed whitespace-pre-line">
+              --
+            </p>
+          </div>
+
+          <!-- Acordeones Informativos (Materiales, Envíos, Cuidados) -->
+          <div class="space-y-2 pt-2">
+            
+            <details class="group rounded-2xl bg-white dark:bg-white/[0.03] border border-sage-200/80 dark:border-white/10 overflow-hidden">
+              <summary class="px-4 py-3 cursor-pointer text-xs font-bold text-sage-900 dark:text-white flex items-center justify-between list-none">
+                <span class="flex items-center gap-2">
+                  <i data-lucide="gem" class="w-4 h-4 text-rose-500"></i>
+                  <span>Materiales y Autenticidad S925</span>
+                </span>
+                <i data-lucide="chevron-down" class="w-4 h-4 text-sage-400 transition-transform group-open:rotate-180"></i>
+              </summary>
+              <div class="px-4 pb-3.5 text-xs text-sage-600 dark:text-gray-300 leading-relaxed border-t border-sage-100 dark:border-white/5 pt-2.5">
+                Todas nuestras piezas están fabricadas en <strong>Plata Esterlina Ley S925</strong> certificada y marcada con el sello oficial 925. Son hipoalergénicas, 100% libres de níquel y plomo, ideales para pieles sensibles.
+              </div>
+            </details>
+
+            <details class="group rounded-2xl bg-white dark:bg-white/[0.03] border border-sage-200/80 dark:border-white/10 overflow-hidden">
+              <summary class="px-4 py-3 cursor-pointer text-xs font-bold text-sage-900 dark:text-white flex items-center justify-between list-none">
+                <span class="flex items-center gap-2">
+                  <i data-lucide="truck" class="w-4 h-4 text-emerald-500"></i>
+                  <span>Envíos Seguros & Entregas</span>
+                </span>
+                <i data-lucide="chevron-down" class="w-4 h-4 text-sage-400 transition-transform group-open:rotate-180"></i>
+              </summary>
+              <div class="px-4 pb-3.5 text-xs text-sage-600 dark:text-gray-300 leading-relaxed border-t border-sage-100 dark:border-white/5 pt-2.5">
+                Envíos garantizados y protegidos a todo México. También ofrecemos entregas personales coordinadas en Villahermosa, Tabasco. Tu joya viaja asegurada y empacada con cuidado.
+              </div>
+            </details>
+
+            <details class="group rounded-2xl bg-white dark:bg-white/[0.03] border border-sage-200/80 dark:border-white/10 overflow-hidden">
+              <summary class="px-4 py-3 cursor-pointer text-xs font-bold text-sage-900 dark:text-white flex items-center justify-between list-none">
+                <span class="flex items-center gap-2">
+                  <i data-lucide="sparkles" class="w-4 h-4 text-amber-500"></i>
+                  <span>Cuidados de tu Joya Yamiki</span>
+                </span>
+                <i data-lucide="chevron-down" class="w-4 h-4 text-sage-400 transition-transform group-open:rotate-180"></i>
+              </summary>
+              <div class="px-4 pb-3.5 text-xs text-sage-600 dark:text-gray-300 leading-relaxed border-t border-sage-100 dark:border-white/5 pt-2.5">
+                Para preservar el brillo natural de la plata de por vida: evita contacto directo con perfumes o cloro, guárdala en su bolsita o cajita cuando no la uses, y límpiala periódicamente con un paño suave especial para plata.
+              </div>
+            </details>
+
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- Sección de Joyas Relacionadas -->
+      <section class="mt-16 pt-12 border-t border-sage-200/80 dark:border-white/10">
+        <div class="flex items-center justify-between mb-6">
+          <div>
+            <span class="text-rose-500 dark:text-rose-400 font-mono text-xs uppercase tracking-widest font-bold">Colección Yamiki</span>
+            <h2 class="text-xl sm:text-2xl font-serif font-extrabold text-sage-950 dark:text-white mt-1">También te podría encantar</h2>
+          </div>
+          <button 
+            type="button" 
+            onclick="returnToCatalog()" 
+            class="text-xs font-bold text-rose-600 dark:text-[#ff3d9a] hover:underline flex items-center gap-1 cursor-pointer"
+          >
+            <span>Ver todo el catálogo</span>
+            <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+          </button>
+        </div>
+        
+        <div id="product-page-related-grid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">
+          <!-- Inyectado dinámicamente -->
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+
   <!-- ========================================================================
        PIE DE PÁGINA (FOOTER)
        ======================================================================== -->
