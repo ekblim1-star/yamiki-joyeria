@@ -18,54 +18,137 @@ async function syncProductsFromSupabase() {
 
     if (error) throw error;
     if (data && data.length > 0) {
-      const liveProducts = data.map((row, idx) => {
-        const isRing = row.categoria === "anillos" || (row.titulo && row.titulo.toLowerCase().includes("anillo"));
-        
-        // Procesar tallas: solo dejar disponibles y extraer números limpios
-        let sizesArray = ["Ajustable"];
-        let displaySizesText = "Ajustable";
-        
-        if (row.tallas && typeof row.tallas === "string") {
-          const raw = row.tallas.trim();
-          if (raw.toLowerCase().includes("ajustable") || raw.toLowerCase().includes("redimensionable") || raw.toLowerCase().includes("única") || raw.toLowerCase().includes("unica")) {
-            sizesArray = ["Ajustable"];
-            displaySizesText = "Ajustable";
-          } else {
-            // Eliminar patrones de agotadas entre paréntesis ej. (Agotadas: 5, 9)
-            const cleanT = raw.replace(/\(.*?agotad.*?\)/gi, "").trim();
-            const extracted = cleanT.match(/\b\d+(\.\d+)?\b/g);
-            if (extracted && extracted.length > 0) {
-              sizesArray = extracted;
-              displaySizesText = extracted.join(" - ");
+      // 1. Agrupar filas de Supabase por id_aliexpress (diseño familiar)
+      const groupMap = new Map();
+
+      data.forEach(row => {
+        const groupId = String(row.id_aliexpress || row.id);
+        if (!groupMap.has(groupId)) {
+          groupMap.set(groupId, []);
+        }
+        groupMap.get(groupId).push(row);
+      });
+
+      const liveProducts = [];
+
+      groupMap.forEach((rows, groupId) => {
+        // Ordenar variantes: disponibles primero
+        const primaryRow = rows.find(r => r.activo !== false && r.estado_stock !== "Agotada") || rows[0];
+        const isRing = primaryRow.categoria === "anillos" || (primaryRow.titulo && primaryRow.titulo.toLowerCase().includes("anillo"));
+
+        // Procesar variantes
+        const variants = rows.map((vRow, vIdx) => {
+          let vSizes = ["Ajustable"];
+          let vDisplaySizes = "Ajustable";
+          if (vRow.tallas && typeof vRow.tallas === "string") {
+            const raw = vRow.tallas.trim();
+            if (raw.toLowerCase().includes("ajustable") || raw.toLowerCase().includes("redimensionable") || raw.toLowerCase().includes("sin talla") || raw.toLowerCase().includes("única")) {
+              vSizes = ["Ajustable"];
+              vDisplaySizes = "Ajustable";
             } else {
-              sizesArray = ["Ajustable"];
-              displaySizesText = "Ajustable";
+              const cleanT = raw.replace(/\(.*?agotad.*?\)/gi, "").trim();
+              const extracted = cleanT.match(/\b\d+(\.\d+)?\b/g);
+              if (extracted && extracted.length > 0) {
+                vSizes = extracted;
+                vDisplaySizes = extracted.join(" - ");
+              }
             }
           }
+
+          const vAgotado = vRow.estado_stock === "Agotada" || vRow.activo === false;
+          const vPrice = parseFloat(vRow.precio_venta) || 350;
+
+          // Parsear precio original si existe en especificaciones o calcular si es oferta
+          let vOriginalPrice = null;
+          if (vRow.especificaciones) {
+            const m = vRow.especificaciones.match(/\[?PrecioOriginal:\s*([\d.]+)\]?/i);
+            if (m) vOriginalPrice = parseFloat(m[1]);
+          }
+          if (!vOriginalPrice && vRow.es_destacado) {
+            vOriginalPrice = Math.round(vPrice * 1.25);
+          }
+
+          return {
+            id: String(vRow.id),
+            sku: vRow.codigo_sku || `YK-${vIdx + 1}`,
+            color: vRow.color_modelo || "Modelo Principal",
+            price: vPrice,
+            originalPrice: vOriginalPrice,
+            photo: vRow.foto_principal || "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=600&q=80",
+            sizes: vSizes,
+            displaySizes: vDisplaySizes,
+            stock: !vAgotado,
+            badge: vRow.badge,
+            isDiscount: vRow.es_destacado === true,
+            isFeatured: vRow.es_novedad === true
+          };
+        });
+
+        // Galería de fotos combinada (fotos generales de la joya)
+        const generalGalleries = [];
+        rows.forEach(r => {
+          if (Array.isArray(r.galeria_fotos)) {
+            r.galeria_fotos.forEach(u => {
+              if (u && !generalGalleries.includes(u)) generalGalleries.push(u);
+            });
+          }
+        });
+
+        const activeVariants = variants.filter(v => v.stock);
+        const minPrice = Math.min(...variants.map(v => v.price));
+        const maxPrice = Math.max(...variants.map(v => v.price));
+        const hasMultipleVariants = variants.length > 1;
+        const hasDiscount = variants.some(v => v.isDiscount || (v.badge && v.badge.includes("%")));
+        const isFeatured = variants.some(v => v.isFeatured);
+        const allAgotado = variants.every(v => !v.stock);
+
+        // Badge principal
+        let mainBadge = "PLATA S925";
+        if (hasDiscount) {
+          mainBadge = primaryRow.badge || "🔥 -20% OFF";
+        } else if (isFeatured) {
+          mainBadge = "⭐ Novedad Destacada";
+        } else if (allAgotado) {
+          mainBadge = "Agotada";
+        } else if (hasMultipleVariants) {
+          mainBadge = `${variants.length} modelos`;
         }
 
-        const isAgotado = row.estado_stock === "Agotada" || row.activo === false;
+        // Tallas consolidadas para filtro
+        const allSizesSet = new Set();
+        variants.forEach(v => v.sizes.forEach(s => allSizesSet.add(s)));
+        const consolidatedSizes = Array.from(allSizesSet);
 
-        return {
-          id: String(row.id),
-          code: row.codigo_sku || `YK-${idx + 1}`,
-          name: row.titulo,
-          category: row.categoria || "anillos",
-          price: parseFloat(row.precio_venta) || 350,
-          originalPrice: null,
-          material: row.metal_material || "Plata Esterlina Ley S925",
+        // Precio original representativo
+        const sampleVariantWithDiscount = variants.find(v => v.originalPrice) || variants[0];
+        const repOriginalPrice = sampleVariantWithDiscount.originalPrice;
+
+        liveProducts.push({
+          id: String(primaryRow.id),
+          groupId: groupId,
+          code: primaryRow.codigo_sku || variants[0].sku,
+          name: primaryRow.titulo,
+          category: primaryRow.categoria || "anillos",
+          price: minPrice,
+          maxPrice: maxPrice,
+          originalPrice: repOriginalPrice,
+          material: primaryRow.metal_material || "Plata Esterlina Ley S925",
           isRing: isRing,
-          sizes: sizesArray,
-          displaySizes: displaySizesText,
+          sizes: consolidatedSizes,
+          displaySizes: variants[0].displaySizes,
           styleTag: "piedras",
-          colors: row.color_modelo ? [row.color_modelo] : [],
-          isFeatured: row.es_novedad === true,
-          badge: row.badge || (row.es_novedad ? "⭐ Novedad Destacada" : (isAgotado ? "Agotada" : "PLATA S925")),
-          notes: row.especificaciones || null,
-          image: row.foto_principal || "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=600&q=80",
-          description: row.descripcion || row.titulo,
-          stock: !isAgotado
-        };
+          colors: variants.map(v => v.color).filter(c => c && c !== "Única"),
+          isFeatured: isFeatured,
+          hasDiscount: hasDiscount,
+          hasMultipleVariants: hasMultipleVariants,
+          badge: mainBadge,
+          notes: primaryRow.especificaciones || null,
+          image: variants[0].photo,
+          description: primaryRow.descripcion || primaryRow.titulo,
+          stock: !allAgotado,
+          variants: variants,
+          gallery: generalGalleries
+        });
       });
 
       // Modificar el array global de productos en memoria
@@ -83,7 +166,7 @@ async function syncProductsFromSupabase() {
         })));
       }
 
-      console.log(`[Yamiki] Sincronizadas ${liveProducts.length} joyas en vivo desde Supabase.`);
+      console.log(`[Yamiki] Sincronizadas ${liveProducts.length} familias de joyas en vivo desde Supabase (${data.length} variantes).`);
     }
   } catch (err) {
     console.warn("[Yamiki] No se pudo sincronizar Supabase, usando catálogo local:", err);
@@ -1205,7 +1288,14 @@ function resetAllFilters() {
 function getFilteredProducts() {
   let list = PRODUCTS.filter(prod => {
     // 1. Filtro por Categoría
-    const matchesCategory = state.currentCategory === "todos" || prod.category === state.currentCategory;
+    let matchesCategory = false;
+    if (state.currentCategory === "todos") {
+      matchesCategory = true;
+    } else if (state.currentCategory === "ofertas") {
+      matchesCategory = prod.hasDiscount === true || (prod.badge && (prod.badge.includes("%") || prod.badge.includes("🔥") || prod.badge.toLowerCase().includes("oferta")));
+    } else {
+      matchesCategory = prod.category === state.currentCategory;
+    }
 
     // 2. Filtro por Buscador (código, nombre, notas, descripción)
     const q = state.searchQuery.toLowerCase().trim();
@@ -1433,10 +1523,21 @@ function renderProducts() {
 
           <div class="pt-2 sm:pt-3 border-t border-gray-100 mt-2 sm:mt-3 flex items-center justify-between gap-1 sm:gap-2">
             <div>
-              <span class="text-xs sm:text-lg font-bold text-sage-900 dark:text-white font-sans block leading-none">
-                ${formattedPrice}
-              </span>
-              <span class="text-[8px] sm:text-[10px] text-gray-400 font-medium">${BUSINESS_CONFIG.currencyCode}</span>
+              ${prod.hasDiscount && prod.originalPrice && prod.originalPrice > prod.price ? `
+                <div class="flex items-baseline gap-1.5">
+                  <span class="text-xs sm:text-lg font-extrabold text-[#e72380] dark:text-rose-400 font-sans block leading-none">
+                    ${prod.hasMultipleVariants ? 'Desde ' : ''}${formattedPrice}
+                  </span>
+                  <span class="text-[10px] sm:text-xs text-gray-400 dark:text-gray-500 line-through font-medium">
+                    ${formatCurrency(prod.originalPrice)}
+                  </span>
+                </div>
+              ` : `
+                <span class="text-xs sm:text-lg font-bold text-sage-900 dark:text-white font-sans block leading-none">
+                  ${prod.hasMultipleVariants ? 'Desde ' : ''}${formattedPrice}
+                </span>
+              `}
+              <span class="text-[8px] sm:text-[10px] text-gray-400 font-medium">${prod.hasMultipleVariants ? 'Desde ' : ''}${BUSINESS_CONFIG.currencyCode}</span>
             </div>
 
             <button 
@@ -1574,19 +1675,29 @@ function saveCartToStorage() {
   }
 }
 
-function addToCart(productId, quantity = 1, selectedSize = null, event = null) {
+function addToCart(productId, quantity = 1, selectedSize = null, event = null, selectedVariant = null) {
   if (event) event.stopPropagation();
 
-  const product = PRODUCTS.find(p => String(p.id) === String(productId));
+  const product = PRODUCTS.find(p => String(p.id) === String(productId) || (p.variants && p.variants.some(v => String(v.id) === String(productId))));
   if (!product) return;
 
+  const variant = selectedVariant || (state.selectedProductForModal && state.selectedProductForModal.id === product.id ? state.selectedModalVariant : (product.variants ? product.variants[0] : null));
+  const variantId = variant ? String(variant.id) : String(product.id);
+  const variantCode = variant ? variant.sku : product.code;
+  const variantPhoto = variant ? variant.photo : product.image;
+  const variantPrice = variant ? variant.price : product.price;
+  const variantName = (variant && variant.color && variant.color !== "Única" && variant.color !== "Modelo Principal") 
+    ? `${product.name} (${variant.color})` 
+    : product.name;
+
   let sizeToSet = selectedSize;
-  if (!sizeToSet && product.isRing && product.sizes && product.sizes.length > 0) {
-    sizeToSet = product.sizes[0];
+  const validSizes = variant ? variant.sizes : product.sizes;
+  if (!sizeToSet && product.isRing && validSizes && validSizes.length > 0) {
+    sizeToSet = validSizes[0];
   }
 
   const existingIndex = state.cart.findIndex(
-    item => item.id === productId && item.selectedSize === sizeToSet
+    item => String(item.variantId || item.id) === String(variantId) && item.selectedSize === sizeToSet
   );
 
   if (existingIndex > -1) {
@@ -1594,13 +1705,14 @@ function addToCart(productId, quantity = 1, selectedSize = null, event = null) {
   } else {
     state.cart.push({
       id: product.id,
-      code: product.code,
-      name: product.name,
-      price: product.price,
-      image: product.image,
+      variantId: variantId,
+      code: variantCode,
+      name: variantName,
+      price: variantPrice,
+      image: variantPhoto,
       category: product.category,
       isRing: product.isRing,
-      sizes: product.sizes || [],
+      sizes: validSizes || [],
       selectedSize: sizeToSet,
       quantity: quantity
     });
@@ -1610,7 +1722,7 @@ function addToCart(productId, quantity = 1, selectedSize = null, event = null) {
   updateCartUI();
   
   const sizeMsg = sizeToSet ? ` (Talla: ${sizeToSet})` : "";
-  showToast(`¡Añadiste "${product.code} - ${product.name}"${sizeMsg} al pedido!`, product.image);
+  showToast(`¡Añadiste "${variantCode} - ${variantName}"${sizeMsg} al pedido!`, variantPhoto);
 }
 
 function updateCartItemSize(cartIndex, newSize) {
@@ -1911,15 +2023,29 @@ function sendOrderToWhatsApp() {
 // ==============================================================================
 // MODAL DE VISTA RÁPIDA (CON SELECTOR DE TALLA)
 // ==============================================================================
-function openProductModal(productId, defaultSize = null) {
-  const product = PRODUCTS.find(p => String(p.id) === String(productId));
+function openProductModal(productId, defaultSize = null, defaultVariantId = null) {
+  const product = PRODUCTS.find(p => String(p.id) === String(productId) || (p.variants && p.variants.some(v => String(v.id) === String(productId))));
   if (!product) return;
 
   state.selectedProductForModal = product;
-  if (defaultSize && product.sizes && product.sizes.includes(defaultSize)) {
+
+  // Seleccionar variante inicial
+  let activeVariant = product.variants ? product.variants[0] : null;
+  if (defaultVariantId && product.variants) {
+    const found = product.variants.find(v => String(v.id) === String(defaultVariantId));
+    if (found) activeVariant = found;
+  } else if (product.variants) {
+    const matched = product.variants.find(v => String(v.id) === String(productId));
+    if (matched) activeVariant = matched;
+  }
+  state.selectedModalVariant = activeVariant;
+
+  // Medida seleccionada
+  const activeSizes = activeVariant ? activeVariant.sizes : product.sizes;
+  if (defaultSize && activeSizes && activeSizes.includes(defaultSize)) {
     state.selectedModalSize = defaultSize;
   } else {
-    state.selectedModalSize = (product.isRing && product.sizes && product.sizes.length > 0) ? product.sizes[0] : null;
+    state.selectedModalSize = (product.isRing && activeSizes && activeSizes.length > 0) ? activeSizes[0] : null;
   }
 
   const modal = document.getElementById("product-modal");
@@ -1931,66 +2057,132 @@ function openProductModal(productId, defaultSize = null) {
   const modalPrice = document.getElementById("modal-product-price");
   const modalDescription = document.getElementById("modal-product-description");
   const modalQtyInput = document.getElementById("modal-qty-input");
-  const modalRingSizesContainer = document.getElementById("modal-ring-sizes-container");
 
-  if (modalImage) modalImage.src = product.image;
-  if (modalCode) modalCode.textContent = product.code;
+  if (modalCode) modalCode.textContent = activeVariant ? activeVariant.sku : product.code;
   if (modalName) modalName.textContent = product.name;
   if (modalCategory) modalCategory.textContent = getCategoryLabel(product.category);
   if (modalMaterial) modalMaterial.textContent = product.material;
-  if (modalPrice) modalPrice.textContent = formatCurrency(product.price);
   if (modalDescription) modalDescription.textContent = product.description;
   if (modalQtyInput) modalQtyInput.value = 1;
 
-  if (modalRingSizesContainer) {
-    if (product.isRing && product.sizes && product.sizes.length > 0) {
-      modalRingSizesContainer.classList.remove("hidden");
-      
-      if (product.sizes.length === 1 && product.sizes[0] === "Ajustable") {
-        modalRingSizesContainer.innerHTML = `
-          <div class="p-3 bg-rose-50 dark:bg-rose-950/40 rounded-xl border border-rose-200 dark:border-rose-900/50 shadow-xs">
-            <span class="text-xs font-bold text-rose-700 dark:text-rose-300 flex items-center gap-1.5">
-              <i data-lucide="sparkles" class="w-4 h-4 text-rose-500"></i> Talla Ajustable Universal
-            </span>
-            <p class="text-[11px] text-gray-600 dark:text-gray-300 mt-1">Este diseño abierto se gradúa con suavidad para adaptarse perfectamente a cualquier dedo.</p>
-          </div>
-        `;
-      } else {
-        modalRingSizesContainer.innerHTML = `
-          <div class="space-y-2">
-            <div class="flex items-center justify-between">
-              <label class="text-xs font-bold text-gray-800 dark:text-white flex items-center gap-1.5">
-                <i data-lucide="ruler" class="w-3.5 h-3.5 text-sage-600 dark:text-rose-400"></i>
-                Selecciona tu Talla de Anillo:
-              </label>
-              <button 
-                type="button" 
-                onclick="openRingSizeGuideModal()"
-                class="text-[11px] text-rose-500 hover:text-rose-700 dark:text-rose-400 dark:hover:text-rose-300 underline font-semibold"
-              >
-                📏 ¿Cómo saber tu talla?
-              </button>
-            </div>
-            <div class="flex flex-wrap gap-2">
-              ${product.sizes.map(sz => `
-                <button 
-                  type="button" 
-                  onclick="selectModalSize('${sz}')"
-                  class="size-pill-btn px-3 py-1.5 rounded-xl text-xs font-bold border transition ${state.selectedModalSize === sz ? 'is-selected' : ''}"
-                  data-size="${sz}"
-                >
-                  Talla ${sz}
-                </button>
-              `).join("")}
-            </div>
-          </div>
-        `;
-      }
+  // Precios con descuento
+  if (modalPrice) {
+    const curPrice = activeVariant ? activeVariant.price : product.price;
+    const curOrigPrice = activeVariant ? activeVariant.originalPrice : product.originalPrice;
+    const isDisc = (activeVariant && activeVariant.isDiscount) || product.hasDiscount;
+
+    if (isDisc && curOrigPrice && curOrigPrice > curPrice) {
+      modalPrice.innerHTML = `
+        <span class="text-[#e72380]">${formatCurrency(curPrice)}</span>
+        <span class="text-xs sm:text-sm text-gray-400 line-through ml-2 font-normal">${formatCurrency(curOrigPrice)}</span>
+      `;
     } else {
-      modalRingSizesContainer.classList.add("hidden");
-      modalRingSizesContainer.innerHTML = "";
+      modalPrice.textContent = formatCurrency(curPrice);
     }
   }
+
+  // Coleccionar todas las fotos para la galería
+  const photoList = [];
+  const seenUrls = new Set();
+
+  // 1. Fotos de variantes
+  if (product.variants && product.variants.length > 0) {
+    product.variants.forEach((v, idx) => {
+      if (v.photo && !seenUrls.has(v.photo)) {
+        seenUrls.add(v.photo);
+        photoList.push({
+          url: v.photo,
+          label: v.color && v.color !== "Única" ? v.color : (v.sku || `Modelo ${idx + 1}`),
+          variantId: v.id
+        });
+      }
+    });
+  } else if (product.image && !seenUrls.has(product.image)) {
+    seenUrls.add(product.image);
+    photoList.push({ url: product.image, label: "Principal", variantId: product.id });
+  }
+
+  // 2. Fotos de galería general
+  if (Array.isArray(product.gallery)) {
+    product.gallery.forEach((url, idx) => {
+      if (url && !seenUrls.has(url)) {
+        seenUrls.add(url);
+        photoList.push({
+          url: url,
+          label: `Ángulo ${idx + 1}`,
+          variantId: null
+        });
+      }
+    });
+  }
+
+  state.modalPhotos = photoList;
+  state.currentModalPhotoIdx = 0;
+
+  // Establecer foto principal inicial
+  const initPhoto = activeVariant ? activeVariant.photo : (photoList[0] ? photoList[0].url : product.image);
+  if (modalImage) modalImage.src = initPhoto;
+
+  const foundInitIdx = photoList.findIndex(p => p.url === initPhoto);
+  if (foundInitIdx !== -1) state.currentModalPhotoIdx = foundInitIdx;
+
+  // Renderizar tira de miniaturas
+  const strip = document.getElementById("modal-thumbnails-strip");
+  if (strip) {
+    if (photoList.length > 1) {
+      strip.classList.remove("hidden");
+      strip.innerHTML = photoList.map((p, idx) => `
+        <button
+          type="button"
+          onclick="selectModalPhoto(${idx})"
+          class="gallery-thumb-btn ${idx === state.currentModalPhotoIdx ? 'is-active' : ''}"
+          title="${p.label}"
+          data-thumb-idx="${idx}"
+        >
+          <img src="${p.url}" alt="${p.label}" class="w-full h-full object-cover" />
+        </button>
+      `).join("");
+    } else {
+      strip.classList.add("hidden");
+      strip.innerHTML = "";
+    }
+  }
+
+  // Renderizar selector de variantes
+  const variantsSection = document.getElementById("modal-variants-section");
+  const variantsList = document.getElementById("modal-variants-list");
+  const variantLabel = document.getElementById("modal-selected-variant-label");
+
+  if (variantsSection && variantsList) {
+    if (product.variants && product.variants.length > 1) {
+      variantsSection.classList.remove("hidden");
+      if (variantLabel && activeVariant) {
+        variantLabel.textContent = activeVariant.color && activeVariant.color !== 'Única' ? activeVariant.color : activeVariant.sku;
+      }
+      variantsList.innerHTML = product.variants.map(v => {
+        const isSelected = activeVariant && v.id === activeVariant.id;
+        const labelText = v.color && v.color !== 'Única' ? v.color : v.sku;
+        return `
+          <button
+            type="button"
+            onclick="selectModalVariant('${v.id}')"
+            class="variant-pill-btn ${isSelected ? 'is-selected' : ''}"
+            data-variant-id="${v.id}"
+          >
+            <img src="${v.photo}" alt="${labelText}" />
+            <span>${labelText}</span>
+            <span class="text-[10px] opacity-75 font-mono">$${Math.round(v.price)}</span>
+          </button>
+        `;
+      }).join("");
+    } else {
+      variantsSection.classList.add("hidden");
+      variantsList.innerHTML = "";
+    }
+  }
+
+  // Renderizar tallas de anillo
+  renderModalRingSizes(activeSizes);
 
   if (modal) {
     modal.style.display = "flex";
@@ -1999,6 +2191,160 @@ function openProductModal(productId, defaultSize = null) {
     requestAnimationFrame(() => {
       modal.classList.add("modal-active");
     });
+  }
+  lucide.createIcons();
+}
+
+function selectModalPhoto(idx) {
+  if (!state.modalPhotos || !state.modalPhotos[idx]) return;
+  state.currentModalPhotoIdx = idx;
+  const photo = state.modalPhotos[idx];
+
+  const modalImg = document.getElementById("modal-product-image");
+  if (modalImg) {
+    modalImg.src = photo.url;
+  }
+
+  const thumbs = document.querySelectorAll("#modal-thumbnails-strip .gallery-thumb-btn");
+  thumbs.forEach(t => {
+    const tIdx = parseInt(t.getAttribute("data-thumb-idx"), 10);
+    if (tIdx === idx) {
+      t.classList.add("is-active");
+      t.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
+    } else {
+      t.classList.remove("is-active");
+    }
+  });
+
+  if (photo.variantId && state.selectedProductForModal && state.selectedProductForModal.variants) {
+    const v = state.selectedProductForModal.variants.find(item => item.id === photo.variantId);
+    if (v && (!state.selectedModalVariant || state.selectedModalVariant.id !== v.id)) {
+      selectModalVariant(v.id, false);
+    }
+  }
+}
+
+function prevModalPhoto() {
+  if (!state.modalPhotos || state.modalPhotos.length <= 1) return;
+  let newIdx = state.currentModalPhotoIdx - 1;
+  if (newIdx < 0) newIdx = state.modalPhotos.length - 1;
+  selectModalPhoto(newIdx);
+}
+
+function nextModalPhoto() {
+  if (!state.modalPhotos || state.modalPhotos.length <= 1) return;
+  let newIdx = state.currentModalPhotoIdx + 1;
+  if (newIdx >= state.modalPhotos.length) newIdx = 0;
+  selectModalPhoto(newIdx);
+}
+
+function selectModalVariant(variantId, changePhoto = true) {
+  const product = state.selectedProductForModal;
+  if (!product || !product.variants) return;
+
+  const variant = product.variants.find(v => v.id === variantId);
+  if (!variant) return;
+
+  state.selectedModalVariant = variant;
+
+  const variantLabel = document.getElementById("modal-selected-variant-label");
+  if (variantLabel) {
+    variantLabel.textContent = variant.color && variant.color !== 'Única' ? variant.color : variant.sku;
+  }
+
+  const pills = document.querySelectorAll("#modal-variants-list .variant-pill-btn");
+  pills.forEach(p => {
+    if (p.getAttribute("data-variant-id") === variantId) {
+      p.classList.add("is-selected");
+    } else {
+      p.classList.remove("is-selected");
+    }
+  });
+
+  const modalCode = document.getElementById("modal-product-code");
+  if (modalCode) modalCode.textContent = variant.sku;
+
+  const modalPrice = document.getElementById("modal-product-price");
+  if (modalPrice) {
+    if (variant.isDiscount && variant.originalPrice) {
+      modalPrice.innerHTML = `
+        <span class="text-[#e72380]">${formatCurrency(variant.price)}</span>
+        <span class="text-xs text-gray-400 line-through ml-2 font-normal">${formatCurrency(variant.originalPrice)}</span>
+      `;
+    } else {
+      modalPrice.textContent = formatCurrency(variant.price);
+    }
+  }
+
+  if (changePhoto && variant.photo) {
+    const photoIdx = state.modalPhotos.findIndex(p => p.url === variant.photo);
+    if (photoIdx !== -1) {
+      selectModalPhoto(photoIdx);
+    } else {
+      const modalImg = document.getElementById("modal-product-image");
+      if (modalImg) modalImg.src = variant.photo;
+    }
+  }
+
+  renderModalRingSizes(variant.sizes);
+}
+
+function renderModalRingSizes(sizes) {
+  const modalRingSizesContainer = document.getElementById("modal-ring-sizes-container");
+  const product = state.selectedProductForModal;
+  if (!modalRingSizesContainer || !product) return;
+
+  const isRing = product.isRing;
+  if (isRing && sizes && sizes.length > 0) {
+    modalRingSizesContainer.classList.remove("hidden");
+    
+    if (!state.selectedModalSize || !sizes.includes(state.selectedModalSize)) {
+      state.selectedModalSize = sizes[0];
+    }
+
+    if (sizes.length === 1 && sizes[0] === "Ajustable") {
+      modalRingSizesContainer.innerHTML = `
+        <div class="p-3 bg-rose-50 dark:bg-rose-950/40 rounded-xl border border-rose-200 dark:border-rose-900/50 shadow-xs">
+          <span class="text-xs font-bold text-rose-700 dark:text-rose-300 flex items-center gap-1.5">
+            <i data-lucide="sparkles" class="w-4 h-4 text-rose-500"></i> Talla Ajustable Universal
+          </span>
+          <p class="text-[11px] text-gray-600 dark:text-gray-300 mt-1">Este diseño abierto se gradúa con suavidad para adaptarse perfectamente a cualquier dedo.</p>
+        </div>
+      `;
+    } else {
+      modalRingSizesContainer.innerHTML = `
+        <div class="space-y-2">
+          <div class="flex items-center justify-between">
+            <label class="text-xs font-bold text-gray-800 dark:text-white flex items-center gap-1.5">
+              <i data-lucide="ruler" class="w-3.5 h-3.5 text-sage-600 dark:text-rose-400"></i>
+              Selecciona tu Talla de Anillo:
+            </label>
+            <button 
+              type="button" 
+              onclick="openRingSizeGuideModal()"
+              class="text-[11px] text-rose-500 hover:text-rose-700 dark:text-rose-400 dark:hover:text-rose-300 underline font-semibold"
+            >
+              📏 ¿Cómo saber tu talla?
+            </button>
+          </div>
+          <div class="flex flex-wrap gap-2">
+            ${sizes.map(sz => `
+              <button 
+                type="button" 
+                onclick="selectModalSize('${sz}')"
+                class="size-pill-btn px-3 py-1.5 rounded-xl text-xs font-bold border transition ${state.selectedModalSize === sz ? 'is-selected' : ''}"
+                data-size="${sz}"
+              >
+                Talla ${sz}
+              </button>
+            `).join("")}
+          </div>
+        </div>
+      `;
+    }
+  } else {
+    modalRingSizesContainer.classList.add("hidden");
+    modalRingSizesContainer.innerHTML = "";
   }
   lucide.createIcons();
 }
@@ -2035,7 +2381,7 @@ function addModalProductToCart() {
   if (!state.selectedProductForModal) return;
   const qtyInput = document.getElementById("modal-qty-input");
   const qty = qtyInput ? Math.max(1, parseInt(qtyInput.value) || 1) : 1;
-  addToCart(state.selectedProductForModal.id, qty, state.selectedModalSize);
+  addToCart(state.selectedProductForModal.id, qty, state.selectedModalSize, null, state.selectedModalVariant);
   closeProductModal();
 }
 

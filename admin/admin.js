@@ -90,17 +90,30 @@ function calculateStats() {
   state.stats.novedades = state.products.filter(p => p.es_novedad).length;
   state.stats.agotadas = state.products.filter(p => p.estado_stock === "Agotada" || !p.activo).length;
   state.stats.anillos = state.products.filter(p => p.categoria === "anillos").length;
+  state.stats.ofertas = state.products.filter(p => p.es_destacado === true || (p.badge && (p.badge.includes("%") || p.badge.includes("🔥") || p.badge.toLowerCase().includes("oferta")))).length;
 
-  document.getElementById("stat-total").textContent = state.stats.total;
-  document.getElementById("stat-novedades").textContent = `${state.stats.novedades} / ${MAX_NOVEDADES}`;
-  document.getElementById("stat-agotadas").textContent = state.stats.agotadas;
-  document.getElementById("stat-anillos").textContent = state.stats.anillos;
+  const statTotal = document.getElementById("stat-total");
+  if (statTotal) statTotal.textContent = state.stats.total;
+  const statNov = document.getElementById("stat-novedades");
+  if (statNov) statNov.textContent = `${state.stats.novedades} / ${MAX_NOVEDADES}`;
+  const statAgot = document.getElementById("stat-agotadas");
+  if (statAgot) statAgot.textContent = state.stats.agotadas;
+  const statAn = document.getElementById("stat-anillos");
+  if (statAn) statAn.textContent = state.stats.anillos;
+  const statOf = document.getElementById("stat-ofertas");
+  if (statOf) statOf.textContent = state.stats.ofertas;
 
   const tabNovCount = document.getElementById("tab-novedades-count");
   if (tabNovCount) tabNovCount.textContent = `${state.stats.novedades}/${MAX_NOVEDADES}`;
 
+  const tabOfCount = document.getElementById("tab-ofertas-count");
+  if (tabOfCount) tabOfCount.textContent = state.stats.ofertas;
+
   const portadaLimit = document.getElementById("portada-limit-label");
   if (portadaLimit) portadaLimit.textContent = `${state.stats.novedades} / ${MAX_NOVEDADES}`;
+
+  const ofertasLabel = document.getElementById("ofertas-count-label");
+  if (ofertasLabel) ofertasLabel.textContent = `${state.stats.ofertas} piezas`;
 }
 
 // ==============================================================================
@@ -128,6 +141,8 @@ function applyFilters() {
   // Filtro de Categoría / Estado
   if (state.activeFilter === "novedades") {
     list = list.filter(p => p.es_novedad);
+  } else if (state.activeFilter === "ofertas") {
+    list = list.filter(p => p.es_destacado === true || (p.badge && (p.badge.includes("%") || p.badge.includes("🔥") || p.badge.toLowerCase().includes("oferta"))));
   } else if (state.activeFilter === "agotadas") {
     list = list.filter(p => p.estado_stock === "Agotada" || !p.activo);
   } else if (state.activeFilter !== "todas") {
@@ -154,182 +169,436 @@ function applyFilters() {
 // ==============================================================================
 function renderProductsTable() {
   const container = document.getElementById("products-table-body");
+  const mobileContainer = document.getElementById("products-mobile-cards");
   const countLabel = document.getElementById("filtered-count-label");
-  if (!container) return;
 
   if (countLabel) {
     countLabel.textContent = `Mostrando ${state.filteredProducts.length} de ${state.products.length} joyas`;
   }
 
   if (state.filteredProducts.length === 0) {
+    const emptyHtml = `
+      <div class="py-12 text-center text-gray-400 p-6 bg-[#141C18] rounded-2xl border border-white/5">
+        <i data-lucide="gem" class="w-12 h-12 mx-auto mb-3 text-gray-600"></i>
+        <p class="text-sm font-semibold text-gray-300">No se encontraron joyas</p>
+        <p class="text-xs text-gray-500 mt-1">Prueba cambiando el filtro o la búsqueda.</p>
+      </div>
+    `;
+    if (container) {
+      container.innerHTML = `
+        <tr>
+          <td colspan="8" class="py-16 text-center text-gray-400">
+            <i data-lucide="gem" class="w-12 h-12 mx-auto mb-3 text-gray-600"></i>
+            <p class="text-sm font-semibold text-gray-300">No se encontraron joyas</p>
+            <p class="text-xs text-gray-500 mt-1">Prueba cambiando el filtro o sube tu archivo Excel del scraper.</p>
+          </td>
+        </tr>
+      `;
+    }
+    if (mobileContainer) {
+      mobileContainer.innerHTML = emptyHtml;
+    }
+    lucide.createIcons();
+    return;
+  }
+
+  // 1. Renderizar filas para Tabla de Escritorio (Desktop)
+  if (container) {
+    container.innerHTML = state.filteredProducts.map(prod => {
+      const photoUrl = prod.foto_principal || 'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=400&q=80';
+      const isNovedad = prod.es_novedad === true;
+      const isOferta = prod.es_destacado === true || (prod.badge && (prod.badge.includes("%") || prod.badge.includes("🔥")));
+      const isActivo = prod.activo !== false;
+      const isAgotado = prod.estado_stock === "Agotada";
+
+      return `
+        <tr class="border-b border-white/5 hover:bg-white/[0.02] transition-colors group">
+          
+          <!-- 1. Foto y Código SKU -->
+          <td class="py-3 px-4">
+            <div class="flex items-center gap-3">
+              <div class="relative w-14 h-14 rounded-xl overflow-hidden bg-black/40 border border-white/10 shrink-0">
+                <img 
+                  src="${photoUrl}" 
+                  alt="${prod.codigo_sku}" 
+                  class="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-200"
+                  onerror="this.src='https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=400&q=80'"
+                />
+              </div>
+              <div>
+                <span class="inline-block px-2 py-0.5 rounded-md bg-[#e72380]/20 text-[#e72380] border border-[#e72380]/30 text-xs font-extrabold tracking-wider">
+                  ${prod.codigo_sku || 'S/C'}
+                </span>
+                <p class="text-[11px] text-gray-400 font-mono mt-0.5">ID: ${prod.id_aliexpress || 'Manual'}</p>
+              </div>
+            </div>
+          </td>
+
+          <!-- 2. Título, Categoría y Tallas -->
+          <td class="py-3 px-4 max-w-xs">
+            <p class="text-xs font-bold text-white line-clamp-2 leading-snug" title="${prod.titulo}">
+              ${prod.titulo}
+            </p>
+            <div class="flex items-center gap-2 mt-1 flex-wrap">
+              <span class="text-[10px] uppercase font-bold text-gray-400 bg-white/5 px-2 py-0.5 rounded">
+                ${prod.categoria}
+              </span>
+              <span class="text-[10px] text-rose-300 font-medium">
+                📏 ${prod.tallas || 'Ajustable'}
+              </span>
+              ${prod.color_modelo && prod.color_modelo !== 'Única' ? `
+                <span class="text-[10px] text-purple-300 font-medium bg-purple-950/40 px-1.5 py-0.5 rounded border border-purple-800/40">
+                  ${prod.color_modelo}
+                </span>
+              ` : ''}
+            </div>
+          </td>
+
+          <!-- 3. Precio de Venta (Editable en 1 clic) -->
+          <td class="py-3 px-4">
+            <div class="flex items-center gap-1.5">
+              <span class="text-xs font-bold text-gray-400">$</span>
+              <input 
+                type="number" 
+                step="1"
+                value="${Math.round(prod.precio_venta || 0)}" 
+                onblur="updateProductPrice('${prod.id}', this.value)"
+                onkeydown="if(event.key==='Enter') this.blur()"
+                class="price-input w-24 px-2 py-1 bg-black/40 border border-white/15 rounded-lg text-sm font-bold text-white focus:outline-none text-right"
+                title="Haz clic para cambiar el precio y presiona Enter"
+              />
+              <span class="text-[10px] text-gray-500 font-bold">MXN</span>
+            </div>
+            ${prod.costo_real ? `
+              <p class="text-[10px] text-gray-500 mt-1 text-right">
+                Costo: <strong class="text-gray-400">$${Math.round(prod.costo_real)}</strong>
+                ${prod.ganancia_estimada ? `(+$${Math.round(prod.ganancia_estimada)})` : ''}
+              </p>
+            ` : ''}
+          </td>
+
+          <!-- 4. Interruptor: ⭐ Novedades de Portada -->
+          <td class="py-3 px-4 text-center">
+            <div class="flex flex-col items-center gap-1">
+              <label class="switch" title="Activa para que esta joya salga en el inicio de la tienda">
+                <input 
+                  type="checkbox" 
+                  ${isNovedad ? 'checked' : ''} 
+                  onchange="toggleNovedad('${prod.id}', this.checked, this)"
+                />
+                <span class="slider slider-amber"></span>
+              </label>
+              <span class="text-[10px] font-bold ${isNovedad ? 'text-amber-400' : 'text-gray-500'}">
+                ${isNovedad ? '⭐ En Portada' : 'No'}
+              </span>
+            </div>
+          </td>
+
+          <!-- 5. Interruptor: 🔥 Oferta / Descuento -->
+          <td class="py-3 px-4 text-center">
+            <div class="flex flex-col items-center gap-1">
+              <label class="switch" title="Activa para marcar esta joya en oferta">
+                <input 
+                  type="checkbox" 
+                  ${isOferta ? 'checked' : ''} 
+                  onchange="toggleDescuento('${prod.id}', this.checked)"
+                />
+                <span class="slider slider-rose"></span>
+              </label>
+              <span class="text-[10px] font-bold ${isOferta ? 'text-rose-400' : 'text-gray-500'}">
+                ${isOferta ? '🔥 En Oferta' : 'No'}
+              </span>
+            </div>
+          </td>
+
+          <!-- 6. Interruptor: Activo / Visible en Tienda -->
+          <td class="py-3 px-4 text-center">
+            <div class="flex flex-col items-center gap-1">
+              <label class="switch" title="Ocultar o mostrar joya en la tienda">
+                <input 
+                  type="checkbox" 
+                  ${isActivo && !isAgotado ? 'checked' : ''} 
+                  onchange="toggleActivo('${prod.id}', this.checked)"
+                />
+                <span class="slider"></span>
+              </label>
+              <span class="text-[10px] font-bold ${isActivo && !isAgotado ? 'text-emerald-400' : 'text-red-400'}">
+                ${isAgotado ? 'Agotada' : (isActivo ? 'Visible' : 'Oculto')}
+              </span>
+            </div>
+          </td>
+
+          <!-- 7. Botón de Compra Directo a AliExpress -->
+          <td class="py-3 px-4 text-center">
+            ${prod.enlace_aliexpress ? `
+              <a 
+                href="${prod.enlace_aliexpress}" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-orange-600/20 text-orange-400 border border-orange-500/30 hover:bg-orange-500 hover:text-white transition text-xs font-bold shadow-xs whitespace-nowrap"
+                title="Abrir producto exacto en AliExpress para surtir pedido"
+              >
+                <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+                <span>Comprar</span>
+              </a>
+            ` : `
+              <span class="text-xs text-gray-500 italic">Manual</span>
+            `}
+          </td>
+
+          <!-- 8. Acciones (Editar / Eliminar) -->
+          <td class="py-3 px-4 text-right">
+            <div class="flex items-center justify-end gap-1">
+              <button 
+                type="button" 
+                onclick="openEditProductModal('${prod.id}')"
+                class="p-1.5 rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition"
+                title="Editar detalles de la joya"
+              >
+                <i data-lucide="edit-3" class="w-4 h-4"></i>
+              </button>
+              <button 
+                type="button" 
+                onclick="confirmDeleteProduct('${prod.id}', '${prod.codigo_sku}')"
+                class="p-1.5 rounded-lg hover:bg-red-500/20 text-gray-500 hover:text-red-400 transition"
+                title="Eliminar joya"
+              >
+                <i data-lucide="trash-2" class="w-4 h-4"></i>
+              </button>
+            </div>
+          </td>
+
+        </tr>
+      `;
+    }).join("");
+  }
+
+  // 2. Renderizar Tarjetas Móviles Ultra Amigables (Smartphones)
+  if (mobileContainer) {
+    mobileContainer.innerHTML = state.filteredProducts.map(prod => {
+      const photoUrl = prod.foto_principal || 'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=400&q=80';
+      const isNovedad = prod.es_novedad === true;
+      const isOferta = prod.es_destacado === true || (prod.badge && (prod.badge.includes("%") || prod.badge.includes("🔥")));
+      const isActivo = prod.activo !== false;
+      const isAgotado = prod.estado_stock === "Agotada";
+
+      return `
+        <div class="bg-[#141C18] border border-white/10 rounded-2xl p-3.5 space-y-3 shadow-md">
+          <!-- Cabecera de Tarjeta Móvil: Foto + Datos -->
+          <div class="flex items-start gap-3">
+            <div class="relative w-16 h-16 rounded-xl overflow-hidden bg-black/40 border border-white/10 shrink-0">
+              <img 
+                src="${photoUrl}" 
+                alt="${prod.codigo_sku}" 
+                class="w-full h-full object-cover"
+                onerror="this.src='https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=400&q=80'"
+              />
+              ${isOferta ? `
+                <span class="absolute top-0.5 right-0.5 px-1 py-0.2 rounded text-[8px] font-extrabold bg-[#e72380] text-white">
+                  🔥
+                </span>
+              ` : ''}
+            </div>
+
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-1.5 flex-wrap">
+                <span class="px-2 py-0.5 rounded-md bg-[#e72380]/20 text-[#e72380] border border-[#e72380]/30 text-[11px] font-extrabold">
+                  ${prod.codigo_sku || 'S/C'}
+                </span>
+                <span class="text-[9px] uppercase font-bold text-gray-400 bg-white/5 px-1.5 py-0.5 rounded">
+                  ${prod.categoria}
+                </span>
+                ${isNovedad ? '<span class="text-[9px] font-bold text-amber-400 bg-amber-500/10 px-1.5 py-0.5 rounded">⭐ Portada</span>' : ''}
+              </div>
+              <p class="text-xs font-bold text-white line-clamp-2 mt-1 leading-snug">
+                ${prod.titulo}
+              </p>
+              <p class="text-[10px] text-gray-400 font-mono mt-0.5">
+                📏 ${prod.tallas || 'Ajustable'}
+              </p>
+            </div>
+          </div>
+
+          <!-- Fila de Precios Táctil y Directo -->
+          <div class="flex items-center justify-between bg-black/30 p-2.5 rounded-xl border border-white/5">
+            <div class="flex items-center gap-1.5">
+              <span class="text-xs font-bold text-gray-400">Precio: $</span>
+              <input
+                type="number"
+                step="1"
+                value="${Math.round(prod.precio_venta || 0)}"
+                onblur="updateProductPrice('${prod.id}', this.value)"
+                class="w-20 px-2 py-1 bg-black/60 border border-white/20 rounded-lg text-sm font-bold text-white text-right focus:border-[#e72380] focus:outline-none"
+              />
+              <span class="text-[10px] text-gray-400 font-bold">MXN</span>
+            </div>
+            ${prod.costo_real ? `
+              <div class="text-right text-[10px] text-gray-400">
+                Costo: <span class="text-gray-200 font-bold">$${Math.round(prod.costo_real)}</span>
+              </div>
+            ` : ''}
+          </div>
+
+          <!-- Botones de Acción Móviles con Grandes Objetivos Táctiles -->
+          <div class="grid grid-cols-3 gap-2 pt-1 border-t border-white/5">
+            <button
+              type="button"
+              onclick="toggleNovedad('${prod.id}', ${!isNovedad})"
+              class="py-2.5 px-1.5 rounded-xl text-[11px] font-bold border transition flex items-center justify-center gap-1 ${isNovedad ? 'bg-amber-500/20 text-amber-300 border-amber-500/40' : 'bg-white/5 text-gray-400 border-white/10'}"
+            >
+              <i data-lucide="star" class="w-3.5 h-3.5 ${isNovedad ? 'fill-amber-400' : ''}"></i>
+              <span>Portada</span>
+            </button>
+
+            <button
+              type="button"
+              onclick="toggleDescuento('${prod.id}', ${!isOferta})"
+              class="py-2.5 px-1.5 rounded-xl text-[11px] font-bold border transition flex items-center justify-center gap-1 ${isOferta ? 'bg-[#e72380]/20 text-rose-300 border-[#e72380]/40' : 'bg-white/5 text-gray-400 border-white/10'}"
+            >
+              <i data-lucide="badge-percent" class="w-3.5 h-3.5"></i>
+              <span>Oferta</span>
+            </button>
+
+            <button
+              type="button"
+              onclick="openEditProductModal('${prod.id}')"
+              class="py-2.5 px-1.5 rounded-xl text-[11px] font-bold bg-[#e72380] hover:bg-[#d41c73] text-white flex items-center justify-center gap-1 shadow-sm"
+            >
+              <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
+              <span>Editar</span>
+            </button>
+          </div>
+        </div>
+      `;
+    }).join("");
+  }
+
+  lucide.createIcons();
+}
+
+async function toggleDescuento(productId, newValue) {
+  const prod = state.products.find(p => p.id === productId);
+  if (!prod) return;
+
+  try {
+    const badgeText = newValue ? (prod.badge && prod.badge.includes("%") ? prod.badge : "-20% OFF") : "PLATA S925";
+    const { error } = await supabaseClient
+      .from("productos")
+      .update({
+        es_destacado: newValue,
+        badge: badgeText,
+        updated_at: new Date().toISOString()
+      })
+      .eq("id", productId);
+
+    if (error) throw error;
+
+    prod.es_destacado = newValue;
+    prod.badge = badgeText;
+
+    calculateStats();
+    applyFilters();
+    if (state.activeTab === "ofertas") {
+      renderOfertasView();
+    }
+
+    showToast("Oferta Actualizada", `"${prod.titulo.slice(0, 25)}..." ${newValue ? 'marcada en Oferta 🔥' : 'quitada de Ofertas'}.`, "success");
+  } catch (err) {
+    console.error("Error al cambiar estado de oferta:", err);
+    showToast("Error", err.message || "No se pudo actualizar el descuento.", "error");
+  }
+}
+
+function renderOfertasView() {
+  const container = document.getElementById("ofertas-products-grid");
+  if (!container) return;
+
+  const ofertas = state.products.filter(p => p.es_destacado === true || (p.badge && (p.badge.includes("%") || p.badge.includes("🔥"))));
+
+  if (ofertas.length === 0) {
     container.innerHTML = `
-      <tr>
-        <td colspan="7" class="py-16 text-center text-gray-400">
-          <i data-lucide="gem" class="w-12 h-12 mx-auto mb-3 text-gray-600"></i>
-          <p class="text-sm font-semibold text-gray-300">No se encontraron joyas</p>
-          <p class="text-xs text-gray-500 mt-1">Prueba cambiando el filtro o sube tu archivo Excel del scraper.</p>
-        </td>
-      </tr>
+      <div class="col-span-full py-16 text-center bg-[#141C18] rounded-3xl border border-white/5 p-8">
+        <div class="w-16 h-16 rounded-2xl bg-[#e72380]/15 text-[#e72380] flex items-center justify-center mx-auto mb-3 shadow-md">
+          <i data-lucide="badge-percent" class="w-8 h-8"></i>
+        </div>
+        <h4 class="text-base font-bold text-white">No hay joyas en Oferta actualmente</h4>
+        <p class="text-xs text-gray-400 mt-1 max-w-md mx-auto">
+          Ve a la pestaña <strong>Catálogo General</strong> y activa el interruptor <span class="text-[#e72380] font-bold">🔥 Oferta</span> o edita una joya para asignarle un precio tachado.
+        </p>
+        <button 
+          type="button" 
+          onclick="switchTab('catalogo')" 
+          class="mt-4 px-5 py-2 rounded-xl bg-[#e72380] text-white text-xs font-bold hover:bg-[#d41c73] transition shadow-md"
+        >
+          Ir al Catálogo General
+        </button>
+      </div>
     `;
     lucide.createIcons();
     return;
   }
 
-  container.innerHTML = state.filteredProducts.map(prod => {
+  container.innerHTML = ofertas.map(prod => {
     const photoUrl = prod.foto_principal || 'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=400&q=80';
-    const isNovedad = prod.es_novedad === true;
-    const isActivo = prod.activo !== false;
-    const isAgotado = prod.estado_stock === "Agotada";
-
     return `
-      <tr class="border-b border-white/5 hover:bg-white/[0.02] transition-colors group">
+      <div class="bg-[#141C18] border border-rose-500/20 rounded-2xl p-4 flex flex-col justify-between space-y-3 relative overflow-hidden group shadow-md">
         
-        <!-- 1. Foto y Código SKU -->
-        <td class="py-3 px-4">
-          <div class="flex items-center gap-3">
-            <div class="relative w-14 h-14 rounded-xl overflow-hidden bg-black/40 border border-white/10 shrink-0">
-              <img 
-                src="${photoUrl}" 
-                alt="${prod.codigo_sku}" 
-                class="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-200"
-                onerror="this.src='https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=400&q=80'"
-              />
-            </div>
-            <div>
-              <span class="inline-block px-2 py-0.5 rounded-md bg-[#e72380]/20 text-[#e72380] border border-[#e72380]/30 text-xs font-extrabold tracking-wider">
-                ${prod.codigo_sku || 'S/C'}
-              </span>
-              <p class="text-[11px] text-gray-400 font-mono mt-0.5">ID: ${prod.id_aliexpress || 'Manual'}</p>
-            </div>
-          </div>
-        </td>
+        <div class="relative w-full aspect-square rounded-xl overflow-hidden bg-black/40 border border-white/10">
+          <span class="absolute top-2 left-2 px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-[#e72380] text-white shadow-sm z-10">
+            ${prod.badge || '🔥 Oferta'}
+          </span>
+          <img 
+            src="${photoUrl}" 
+            alt="${prod.codigo_sku}" 
+            class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+          />
+        </div>
 
-        <!-- 2. Título, Categoría y Tallas -->
-        <td class="py-3 px-4 max-w-xs">
-          <p class="text-xs font-bold text-white line-clamp-2 leading-snug" title="${prod.titulo}">
-            ${prod.titulo}
-          </p>
-          <div class="flex items-center gap-2 mt-1 flex-wrap">
-            <span class="text-[10px] uppercase font-bold text-gray-400 bg-white/5 px-2 py-0.5 rounded">
+        <div class="space-y-1">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-extrabold text-[#e72380] font-mono">
+              ${prod.codigo_sku || 'S/C'}
+            </span>
+            <span class="text-[10px] text-gray-400 uppercase font-bold">
               ${prod.categoria}
             </span>
-            <span class="text-[10px] text-rose-300 font-medium">
-              📏 ${prod.tallas || 'Ajustable'}
-            </span>
-            ${prod.color_modelo && prod.color_modelo !== 'Única' ? `
-              <span class="text-[10px] text-purple-300 font-medium bg-purple-950/40 px-1.5 py-0.5 rounded border border-purple-800/40">
-                ${prod.color_modelo}
-              </span>
-            ` : ''}
           </div>
-        </td>
-
-        <!-- 3. Precio de Venta (Editable en 1 clic) -->
-        <td class="py-3 px-4">
-          <div class="flex items-center gap-1.5">
-            <span class="text-xs font-bold text-gray-400">$</span>
-            <input 
-              type="number" 
-              step="1"
-              value="${Math.round(prod.precio_venta || 0)}" 
-              onblur="updateProductPrice('${prod.id}', this.value)"
-              onkeydown="if(event.key==='Enter') this.blur()"
-              class="price-input w-24 px-2 py-1 bg-black/40 border border-white/15 rounded-lg text-sm font-bold text-white focus:outline-none text-right"
-              title="Haz clic para cambiar el precio y presiona Enter"
-            />
-            <span class="text-[10px] text-gray-500 font-bold">MXN</span>
-          </div>
-          ${prod.costo_real ? `
-            <p class="text-[10px] text-gray-500 mt-1 text-right">
-              Costo: <strong class="text-gray-400">$${Math.round(prod.costo_real)}</strong>
-              ${prod.ganancia_estimada ? `(+$${Math.round(prod.ganancia_estimada)})` : ''}
-            </p>
-          ` : ''}
-        </td>
-
-        <!-- 4. Interruptor: ⭐ Novedades de Portada -->
-        <td class="py-3 px-4 text-center">
-          <div class="flex flex-col items-center gap-1">
-            <label class="switch" title="Activa para que esta joya salga en el inicio de la tienda">
-              <input 
-                type="checkbox" 
-                ${isNovedad ? 'checked' : ''} 
-                onchange="toggleNovedad('${prod.id}', this.checked, this)"
-              />
-              <span class="slider slider-amber"></span>
-            </label>
-            <span class="text-[10px] font-bold ${isNovedad ? 'text-amber-400' : 'text-gray-500'}">
-              ${isNovedad ? '⭐ En Portada' : 'No'}
+          <p class="text-xs font-bold text-white line-clamp-1" title="${prod.titulo}">
+            ${prod.titulo}
+          </p>
+          <div class="flex items-baseline gap-2 pt-1">
+            <span class="text-base font-extrabold text-white">
+              $${Math.round(prod.precio_venta || 0)} MXN
             </span>
           </div>
-        </td>
+        </div>
 
-        <!-- 5. Interruptor: Activo / Visible en Tienda -->
-        <td class="py-3 px-4 text-center">
-          <div class="flex flex-col items-center gap-1">
-            <label class="switch" title="Ocultar o mostrar joya en la tienda">
-              <input 
-                type="checkbox" 
-                ${isActivo && !isAgotado ? 'checked' : ''} 
-                onchange="toggleActivo('${prod.id}', this.checked)"
-              />
-              <span class="slider"></span>
-            </label>
-            <span class="text-[10px] font-bold ${isActivo && !isAgotado ? 'text-emerald-400' : 'text-red-400'}">
-              ${isAgotado ? 'Agotada' : (isActivo ? 'Visible' : 'Oculto')}
-            </span>
-          </div>
-        </td>
+        <div class="pt-2 border-t border-white/10 flex items-center gap-2">
+          <button 
+            type="button" 
+            onclick="openEditProductModal('${prod.id}')"
+            class="flex-1 py-2 rounded-xl bg-white/10 hover:bg-white/15 text-white text-xs font-bold flex items-center justify-center gap-1.5 transition"
+          >
+            <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
+            <span>Editar Descuento</span>
+          </button>
+          <button 
+            type="button" 
+            onclick="toggleDescuento('${prod.id}', false)"
+            class="p-2 rounded-xl bg-red-950/40 hover:bg-red-900/60 text-red-300 transition"
+            title="Quitar de ofertas"
+          >
+            <i data-lucide="x" class="w-4 h-4"></i>
+          </button>
+        </div>
 
-        <!-- 6. Botón de Compra Directo a AliExpress -->
-        <td class="py-3 px-4 text-center">
-          ${prod.enlace_aliexpress ? `
-            <a 
-              href="${prod.enlace_aliexpress}" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-orange-600/20 text-orange-400 border border-orange-500/30 hover:bg-orange-500 hover:text-white transition text-xs font-bold shadow-xs whitespace-nowrap"
-              title="Abrir producto exacto en AliExpress para surtir pedido"
-            >
-              <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
-              <span>Comprar</span>
-            </a>
-          ` : `
-            <span class="text-xs text-gray-500 italic">Manual</span>
-          `}
-        </td>
-
-        <!-- 7. Acciones (Editar / Eliminar) -->
-        <td class="py-3 px-4 text-right">
-          <div class="flex items-center justify-end gap-1">
-            <button 
-              type="button" 
-              onclick="openEditProductModal('${prod.id}')"
-              class="p-1.5 rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition"
-              title="Editar detalles de la joya"
-            >
-              <i data-lucide="edit-3" class="w-4 h-4"></i>
-            </button>
-            <button 
-              type="button" 
-              onclick="confirmDeleteProduct('${prod.id}', '${prod.codigo_sku}')"
-              class="p-1.5 rounded-lg hover:bg-red-500/20 text-gray-500 hover:text-red-400 transition"
-              title="Eliminar joya"
-            >
-              <i data-lucide="trash-2" class="w-4 h-4"></i>
-            </button>
-          </div>
-        </td>
-
-      </tr>
+      </div>
     `;
   }).join("");
 
   lucide.createIcons();
 }
 
-// ==============================================================================
-// EDICIÓN RÁPIDA EN TIEMPO REAL
 // ==============================================================================
 async function updateProductPrice(productId, newPrice) {
   const price = parseFloat(newPrice);
@@ -1052,6 +1321,11 @@ function switchTab(tabName) {
   if (tabPortada) tabPortada.className = defaultTabClass;
   if (tabImportar) tabImportar.className = defaultTabClass;
 
+  const viewOfertas = document.getElementById("view-ofertas");
+  const tabOfertas = document.getElementById("tab-btn-ofertas");
+  if (viewOfertas) viewOfertas.classList.add("hidden");
+  if (tabOfertas) tabOfertas.className = defaultTabClass;
+
   if (tabName === "catalogo") {
     if (viewCatalogo) viewCatalogo.classList.remove("hidden");
     if (tabCatalogo) tabCatalogo.className = activeTabClass;
@@ -1059,6 +1333,10 @@ function switchTab(tabName) {
     if (viewPortada) viewPortada.classList.remove("hidden");
     if (tabPortada) tabPortada.className = activeTabClass;
     renderPortadaView();
+  } else if (tabName === "ofertas") {
+    if (viewOfertas) viewOfertas.classList.remove("hidden");
+    if (tabOfertas) tabOfertas.className = activeTabClass;
+    renderOfertasView();
   } else if (tabName === "importar") {
     if (viewImportar) viewImportar.classList.remove("hidden");
     if (tabImportar) tabImportar.className = activeTabClass;
@@ -1261,6 +1539,24 @@ function openEditProductModal(productId) {
   document.getElementById("edit-es-novedad").checked = prod.es_novedad === true;
   document.getElementById("edit-activo").checked = prod.activo !== false && prod.estado_stock !== "Agotada";
 
+  const isOferta = prod.es_destacado === true || (prod.badge && (prod.badge.includes("%") || prod.badge.includes("🔥")));
+  const checkDesc = document.getElementById("edit-es-descuento");
+  if (checkDesc) checkDesc.checked = isOferta;
+
+  let origPrice = "";
+  if (prod.especificaciones) {
+    const m = prod.especificaciones.match(/\[?PrecioOriginal:\s*([\d.]+)\]?/i);
+    if (m) origPrice = Math.round(parseFloat(m[1]));
+  }
+  if (!origPrice && isOferta && prod.precio_venta) {
+    origPrice = Math.round(prod.precio_venta * 1.25);
+  }
+  const inputOrig = document.getElementById("edit-precio-original");
+  if (inputOrig) inputOrig.value = origPrice;
+
+  const inputBadge = document.getElementById("edit-badge-oferta");
+  if (inputBadge) inputBadge.value = prod.badge && prod.badge !== "PLATA S925" ? prod.badge : (isOferta ? "-20% OFF" : "");
+
   // Listener para previsualizar foto nueva si se sube archivo
   const fileInput = document.getElementById("edit-foto-file");
   fileInput.onchange = function() {
@@ -1351,6 +1647,24 @@ async function handleEditProductSubmit(e) {
       }
     }
 
+    const esDescuento = document.getElementById("edit-es-descuento") ? document.getElementById("edit-es-descuento").checked : false;
+    const precioOriginal = document.getElementById("edit-precio-original") ? parseFloat(document.getElementById("edit-precio-original").value || 0) : null;
+    const badgeOferta = document.getElementById("edit-badge-oferta") ? document.getElementById("edit-badge-oferta").value.trim() : "";
+
+    let finalBadge = prod.badge || "PLATA S925";
+    if (esDescuento) {
+      finalBadge = badgeOferta || (finalBadge.includes("%") ? finalBadge : "-20% OFF");
+    } else if (finalBadge.includes("%") || finalBadge.includes("🔥")) {
+      finalBadge = "PLATA S925";
+    }
+
+    let finalEspec = prod.especificaciones || "";
+    // Limpiar previo PrecioOriginal si existe
+    finalEspec = finalEspec.replace(/\[?PrecioOriginal:\s*[\d.]+\]?\s*\|?\s*/gi, "").trim();
+    if (esDescuento && precioOriginal && precioOriginal > precio) {
+      finalEspec = `[PrecioOriginal: ${precioOriginal}] ${finalEspec}`.trim();
+    }
+
     const updates = {
       titulo: titulo,
       descripcion: descripcion,
@@ -1362,6 +1676,9 @@ async function handleEditProductSubmit(e) {
       enlace_aliexpress: enlace || null,
       foto_principal: fotoUrl,
       es_novedad: esNovedad,
+      es_destacado: esDescuento,
+      badge: finalBadge,
+      especificaciones: finalEspec || null,
       activo: stock === "Agotada" ? false : activo,
       updated_at: new Date().toISOString()
     };

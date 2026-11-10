@@ -142,7 +142,7 @@
   <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-8 py-6 space-y-6">
 
     <!-- 1. TARJETAS DE MÉTRICAS RÁPIDAS -->
-    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+    <div class="grid grid-cols-2 sm:grid-cols-5 gap-3 sm:gap-4">
       
       <div class="p-4 rounded-2xl bg-[#141C18] border border-white/5 flex items-center gap-3.5 shadow-sm">
         <div class="w-10 h-10 rounded-xl bg-white/5 text-gray-300 flex items-center justify-center shrink-0">
@@ -163,6 +163,17 @@
           <span id="stat-novedades" class="text-xl sm:text-2xl font-extrabold text-amber-400 font-mono leading-none">0</span>
         </div>
       </div>
+
+      <div class="p-4 rounded-2xl bg-[#141C18] border border-rose-500/20 flex items-center gap-3.5 shadow-sm">
+        <div class="w-10 h-10 rounded-xl bg-[#e72380]/15 text-[#e72380] flex items-center justify-center shrink-0">
+          <i data-lucide="badge-percent" class="w-5 h-5"></i>
+        </div>
+        <div>
+          <span class="text-[11px] text-rose-300 font-bold uppercase tracking-wider block">🔥 En Oferta</span>
+          <span id="stat-ofertas" class="text-xl sm:text-2xl font-extrabold text-[#e72380] font-mono leading-none">0</span>
+        </div>
+      </div>
+
 
       <div class="p-4 rounded-2xl bg-[#141C18] border border-white/5 flex items-center gap-3.5 shadow-sm">
         <div class="w-10 h-10 rounded-xl bg-purple-500/10 text-purple-400 flex items-center justify-center shrink-0">
@@ -209,6 +220,19 @@
           <span>⭐ Novedades de Portada</span>
           <span id="tab-novedades-count" class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-500/20 text-amber-400 border border-amber-500/30">
             0/10
+          </span>
+        </button>
+
+        <button 
+          id="tab-btn-ofertas"
+          type="button" 
+          onclick="switchTab('ofertas')"
+          class="tab-btn px-4 py-2 rounded-xl text-xs font-semibold text-gray-400 hover:text-white hover:bg-white/5 transition flex items-center gap-2"
+        >
+          <i data-lucide="badge-percent" class="w-4 h-4 text-[#e72380]"></i>
+          <span>🔥 Ofertas & Descuentos</span>
+          <span id="tab-ofertas-count" class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-[#e72380]/20 text-rose-300 border border-[#e72380]/30">
+            0
           </span>
         </button>
 
@@ -268,6 +292,16 @@
             class="filter-btn px-3.5 py-1.5 rounded-xl text-xs font-semibold transition bg-white/5 text-gray-300 hover:bg-white/10 hover:text-white flex items-center gap-1.5"
           >
             <span>⭐ Novedades (Inicio)</span>
+          </button>
+
+          <button 
+            type="button" 
+            onclick="setFilter('ofertas')" 
+            data-filter="ofertas"
+            class="filter-btn px-3.5 py-1.5 rounded-xl text-xs font-semibold transition bg-white/5 text-rose-300 hover:bg-rose-950/40 hover:text-white flex items-center gap-1.5 border border-rose-500/20"
+          >
+            <i data-lucide="badge-percent" class="w-3.5 h-3.5 text-[#e72380]"></i>
+            <span>🔥 En Oferta</span>
           </button>
 
           <button 
@@ -333,8 +367,8 @@
         <span class="text-[11px] text-gray-500 italic">💡 Haz clic en cualquier precio para editarlo directamente</span>
       </div>
 
-      <!-- Tabla de Productos -->
-      <div class="overflow-x-auto rounded-2xl border border-white/5 bg-[#141C18] shadow-md">
+      <!-- Vista Tabla para Pantallas Medianas / PC (Desktop) -->
+      <div class="hidden sm:block overflow-x-auto rounded-2xl border border-white/5 bg-[#141C18] shadow-md">
         <table class="w-full text-left border-collapse">
           <thead>
             <tr class="border-b border-white/10 text-[11px] font-extrabold uppercase tracking-wider text-gray-400 bg-white/[0.02]">
@@ -342,6 +376,7 @@
               <th class="py-3 px-4">Joya & Tallas</th>
               <th class="py-3 px-4">Precio Venta (MXN)</th>
               <th class="py-3 px-4 text-center">⭐ Novedades</th>
+              <th class="py-3 px-4 text-center">🔥 Oferta</th>
               <th class="py-3 px-4 text-center">Estado Tienda</th>
               <th class="py-3 px-4 text-center">Compra Proveedor</th>
               <th class="py-3 px-4 text-right">Acciones</th>
@@ -353,9 +388,58 @@
         </table>
       </div>
 
+      <!-- Vista Tarjetas Móviles Ultra Amigables (Smartphones / Móvil) -->
+      <div id="products-mobile-cards" class="block sm:hidden space-y-3">
+        <!-- Inyectado dinámicamente por admin.js para teléfonos móviles -->
+      </div>
+
     </div>
 
-        <!-- ========================================================================
+            <!-- ========================================================================
+         VISTA DEDICADA: GESTIÓN DE OFERTAS Y DESCUENTOS (PROMOS & REBAJAS)
+         ======================================================================== -->
+    <div id="view-ofertas" class="hidden space-y-5">
+      
+      <!-- Banner Informativo con Contador -->
+      <div class="p-5 sm:p-6 rounded-3xl bg-gradient-to-r from-rose-950/40 via-[#141C18] to-[#141C18] border border-rose-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-lg">
+        <div class="flex items-start gap-3.5">
+          <div class="w-12 h-12 rounded-2xl bg-[#e72380]/20 text-[#e72380] flex items-center justify-center shrink-0 shadow-md">
+            <i data-lucide="badge-percent" class="w-6 h-6"></i>
+          </div>
+          <div>
+            <h3 class="text-base sm:text-lg font-extrabold text-white leading-tight">
+              Vitrina de Promociones & Descuentos Activos
+            </h3>
+            <p class="text-xs text-gray-300 mt-1 max-w-xl">
+              Aquí puedes ver todas las piezas en descuento. Los clientes verán el precio tachado (ej: <span class="line-through text-gray-400">$500</span> <span class="text-[#e72380] font-bold">$380</span>) y el badge de oferta en la tienda.
+            </p>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-3 shrink-0">
+          <div class="text-right">
+            <span class="text-[10px] text-gray-400 uppercase tracking-wider font-bold block">En Descuento</span>
+            <span id="ofertas-count-label" class="text-xl font-extrabold text-[#e72380] font-mono">0 piezas</span>
+          </div>
+          <button 
+            type="button" 
+            onclick="switchTab('catalogo'); setFilter('todas');" 
+            class="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/15 text-white text-xs font-bold transition border border-white/10 flex items-center gap-1.5"
+          >
+            <i data-lucide="plus" class="w-4 h-4 text-[#e72380]"></i>
+            <span>Poner Joyas en Oferta</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Grid de Joyas en Oferta -->
+      <div id="ofertas-products-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        <!-- Inyectado dinámicamente por admin.js -->
+      </div>
+
+    </div>
+
+    <!-- ========================================================================
          VISTA DEDICADA: GESTIÓN DE JOYAS EN PORTADA (NOVEDADES DE INICIO)
          ======================================================================== -->
     <div id="view-portada" class="hidden space-y-5">
@@ -719,9 +803,37 @@
           </label>
         </div>
 
-        <div class="pt-3 border-t border-white/10 flex justify-end gap-2.5">
-          <button type="button" onclick="closeEditProductModal()" class="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-gray-300 font-bold transition">Cancelar</button>
-          <button type="submit" id="edit-save-btn" class="px-5 py-2 rounded-xl bg-[#e72380] hover:bg-[#d41c73] text-white font-bold transition shadow-lg shadow-[#e72380]/20 flex items-center gap-1.5">
+        <!-- Sección de Descuentos & Ofertas -->
+        <div class="p-3.5 rounded-2xl bg-gradient-to-r from-rose-950/40 to-black/30 border border-rose-500/20 space-y-3">
+          <div class="flex items-center justify-between">
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" id="edit-es-descuento" class="rounded text-[#e72380] focus:ring-0 w-4 h-4" />
+              <span class="font-extrabold text-white text-xs flex items-center gap-1.5">
+                <i data-lucide="badge-percent" class="w-4 h-4 text-[#e72380]"></i>
+                <span>🔥 Activar Oferta / Descuento Especial</span>
+              </span>
+            </label>
+            <span class="text-[10px] text-rose-300 font-bold uppercase tracking-wider">Tienda Pública</span>
+          </div>
+
+          <div id="edit-descuento-fields" class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+            <div>
+              <label class="block font-bold text-gray-300 text-[11px] mb-1">Precio Original / Tachado (MXN)</label>
+              <input type="number" step="1" id="edit-precio-original" placeholder="Ej. 520 (tachado en la tienda)" class="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-xl text-white text-xs focus:outline-none focus:border-[#e72380]" />
+              <span class="text-[10px] text-gray-400 mt-0.5 block">Se verá: <span class="line-through">$520</span> Precio Venta</span>
+            </div>
+            <div>
+              <label class="block font-bold text-gray-300 text-[11px] mb-1">Etiqueta / Badge de Oferta</label>
+              <input type="text" id="edit-badge-oferta" placeholder="Ej: -20% OFF, Oferta Flash" class="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-xl text-white text-xs focus:outline-none focus:border-[#e72380]" />
+              <span class="text-[10px] text-gray-400 mt-0.5 block">Texto de la etiqueta sobre la foto</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Barra Fija Inferior para Guardar (100% Amigable en Móvil) -->
+        <div class="sticky bottom-0 bg-[#141C18]/95 backdrop-blur-md pt-3 pb-1 border-t border-white/10 flex justify-end gap-2.5 z-20">
+          <button type="button" onclick="closeEditProductModal()" class="px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-gray-300 font-bold transition text-xs">Cancelar</button>
+          <button type="submit" id="edit-save-btn" class="px-5 py-2.5 rounded-xl bg-[#e72380] hover:bg-[#d41c73] text-white font-bold transition shadow-lg shadow-[#e72380]/20 flex items-center gap-1.5 text-xs">
             <i data-lucide="check" class="w-4 h-4"></i>
             <span>Guardar Cambios</span>
           </button>

@@ -154,6 +154,10 @@
             <i data-lucide="gem" class="w-3.5 h-3.5 text-rose-500"></i>
             <span>Catálogo</span>
           </a>
+          <a href="#/catalogo" onclick="navigateTo('catalogo'); selectCategoryFilter('ofertas'); return false;" id="nav-link-ofertas" class="nav-tab-link py-1 border-b-2 border-transparent hover:border-[#e72380] hover:text-[#e72380] dark:hover:text-rose-400 transition-all flex items-center gap-1 text-[#e72380] dark:text-rose-400 font-bold">
+            <i data-lucide="badge-percent" class="w-3.5 h-3.5 text-[#e72380]"></i>
+            <span>Ofertas</span>
+          </a>
           <a href="#/inicio#novedades-carousel" onclick="navigateTo('home', { scrollTo: 'novedades-carousel' }); return false;" id="nav-link-novedades" class="nav-tab-link py-1 border-b-2 border-transparent hover:border-[#e72380] hover:text-[#e72380] dark:hover:text-rose-400 transition-all flex items-center gap-1">
             <i data-lucide="sparkles" class="w-3 h-3 text-rose-500"></i>
             <span>Novedades</span>
@@ -232,6 +236,10 @@
       <a href="#/catalogo" onclick="navigateTo('catalogo'); document.getElementById('mobile-menu').classList.add('hidden'); return false;" class="block py-2 text-base font-semibold text-[#000000] hover:text-[#e72380] dark:text-gray-100 dark:hover:text-rose-400 border-b border-gray-100 dark:border-white/5 flex items-center gap-2">
         <i data-lucide="gem" class="w-4 h-4 text-rose-500"></i>
         <span>Catálogo Completo con Filtros</span>
+      </a>
+      <a href="#/catalogo" onclick="navigateTo('catalogo'); selectCategoryFilter('ofertas'); document.getElementById('mobile-menu').classList.add('hidden'); return false;" class="block py-2 text-base font-bold text-[#e72380] dark:text-rose-400 hover:text-rose-600 border-b border-gray-100 dark:border-white/5 flex items-center gap-2">
+        <i data-lucide="badge-percent" class="w-4 h-4 text-[#e72380]"></i>
+        <span>🔥 Ofertas & Descuentos</span>
       </a>
       <a href="#/inicio#novedades-carousel" onclick="navigateTo('home', { scrollTo: 'novedades-carousel' }); document.getElementById('mobile-menu').classList.add('hidden'); return false;" class="block py-2 text-base font-semibold text-[#000000] hover:text-[#e72380] dark:text-gray-100 dark:hover:text-rose-400 border-b border-gray-100 dark:border-white/5 flex items-center gap-2">
         <i data-lucide="sparkles" class="w-4 h-4 text-rose-500"></i>
@@ -1549,18 +1557,47 @@
         <i data-lucide="x" class="w-4 h-4"></i>
       </button>
 
-      <div class="md:w-1/2 h-52 sm:h-64 md:h-auto bg-gray-50 dark:bg-[#000000] relative overflow-hidden shrink-0 flex items-center justify-center">
-        <img 
-          id="modal-product-image" 
-          src="" 
-          alt="Joya" 
-          class="w-full h-full object-cover object-center"
-        />
-        <div class="absolute top-3 left-3 bg-sage-900/85 dark:bg-black/85 backdrop-blur-xs px-2.5 py-1 rounded-md text-xs font-extrabold text-white border border-white/10">
-          <span id="modal-product-code">A-01</span>
+      <!-- Columna Izquierda: Galería Multimodal con Miniaturas y Flechas -->
+      <div class="md:w-1/2 p-3 sm:p-4 bg-gray-50 dark:bg-[#000000] flex flex-col justify-between shrink-0">
+        <!-- Contenedor Foto Principal -->
+        <div class="relative w-full aspect-square rounded-2xl overflow-hidden bg-black/40 border border-gray-200 dark:border-white/10 group flex items-center justify-center">
+          <img
+            id="modal-product-image"
+            src=""
+            alt="Joya"
+            class="w-full h-full object-cover object-center transition-all duration-300"
+          />
+          <div class="absolute top-3 left-3 bg-sage-900/85 dark:bg-black/85 backdrop-blur-xs px-2.5 py-1 rounded-md text-xs font-extrabold text-white border border-white/10">
+            <span id="modal-product-code">A-01</span>
+          </div>
+          <div class="absolute bottom-3 left-3 bg-white/95 dark:bg-[#181818]/95 backdrop-blur-xs px-2.5 py-1 rounded-md text-[10px] font-bold text-sage-800 dark:text-rose-300 border border-gray-200 dark:border-white/10 shadow-xs">
+            PLATA S925 SOBRE PEDIDO
+          </div>
+
+          <!-- Flechas Anterior / Siguiente -->
+          <button
+            type="button"
+            onclick="prevModalPhoto()"
+            id="modal-prev-photo-btn"
+            class="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/60 hover:bg-black/90 text-white flex items-center justify-center transition btn-press opacity-0 group-hover:opacity-100 shadow-md"
+            title="Foto anterior"
+          >
+            <i data-lucide="chevron-left" class="w-4 h-4"></i>
+          </button>
+          <button
+            type="button"
+            onclick="nextModalPhoto()"
+            id="modal-next-photo-btn"
+            class="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/60 hover:bg-black/90 text-white flex items-center justify-center transition btn-press opacity-0 group-hover:opacity-100 shadow-md"
+            title="Siguiente foto"
+          >
+            <i data-lucide="chevron-right" class="w-4 h-4"></i>
+          </button>
         </div>
-        <div class="absolute bottom-3 left-3 bg-white/95 dark:bg-[#181818]/95 backdrop-blur-xs px-2.5 py-1 rounded-md text-[10px] font-bold text-sage-800 dark:text-rose-300 border border-gray-200 dark:border-white/10 shadow-xs">
-          PLATA S925 SOBRE PEDIDO
+
+        <!-- Tira de Miniaturas (Thumbnails) -->
+        <div id="modal-thumbnails-strip" class="flex items-center gap-2 mt-3 overflow-x-auto pb-1 scrollbar-thin">
+          <!-- Inyectado dinámicamente -->
         </div>
       </div>
 
@@ -1576,6 +1613,20 @@
 
           <div class="p-3 bg-sage-50/70 dark:bg-white/5 rounded-xl border border-sage-100 dark:border-white/10 text-xs text-gray-600 dark:text-gray-300 space-y-1">
             <p><strong class="text-sage-800 dark:text-gray-100">Material:</strong> <span id="modal-product-material" class="dark:text-gray-200">Plata Ley S925</span></p>
+          </div>
+
+          <!-- Selector de Modelo / Variante / Color -->
+          <div id="modal-variants-section" class="hidden space-y-1.5 pt-1">
+            <div class="flex items-center justify-between">
+              <label class="text-xs font-bold text-gray-800 dark:text-white flex items-center gap-1.5">
+                <i data-lucide="sparkles" class="w-3.5 h-3.5 text-[#e72380]"></i>
+                <span>Elige Modelo / Color:</span>
+              </label>
+              <span id="modal-selected-variant-label" class="text-xs text-rose-500 font-bold"></span>
+            </div>
+            <div id="modal-variants-list" class="flex flex-wrap gap-2">
+              <!-- Inyectado dinámicamente -->
+            </div>
           </div>
 
           <div id="modal-ring-sizes-container" class="pt-1">

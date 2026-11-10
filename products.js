@@ -42,6 +42,7 @@ const BUSINESS_CONFIG = {
 // 2. CATEGORÍAS DEL CATÁLOGO
 const CATEGORIES = [
   { id: "todos", label: "Todas las piezas", icon: "sparkles" },
+  { id: "ofertas", label: "🔥 Ofertas & Descuentos", icon: "badge-percent" },
   { id: "anillos", label: "Anillos y Tallas", icon: "circle-dot" },
   { id: "collares", label: "Cadenas y Collares", icon: "gem" },
   { id: "aretes", label: "Aretes y Huggies", icon: "ear" },
