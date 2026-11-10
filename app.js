@@ -95,10 +95,10 @@ async function syncProductsFromSupabase() {
         });
 
         // 2. Determinar la foto de portada:
-        // Si el admin asignó una portada propia o personalizada (que no sea /variantes/), se respeta.
-        // Si es un recorte de variante (/variantes/), la foto oficial de presentación es foto_01 de la galería.
+        // Si el admin asignó una foto principal, se respeta 100% de forma permanente.
+        // Solo si está vacía, se toma foto_01 de la galería como fallback inicial.
         let coverPhoto = primaryRow.foto_principal;
-        if (!coverPhoto || coverPhoto.includes("/variantes/")) {
+        if (!coverPhoto) {
           const foto01 = rawGeneralGalleries.find(u => u && (u.includes("foto_01") || u.includes("foto_1.")));
           const cleanNonVar = rawGeneralGalleries.find(u => u && !u.includes("/variantes/"));
           coverPhoto = foto01 || cleanNonVar || primaryRow.foto_principal || (variants[0] ? variants[0].photo : "");
@@ -1345,14 +1345,22 @@ function getFilteredProducts() {
       matchesCategory = prod.category === state.currentCategory;
     }
 
-    // 2. Filtro por Buscador (código, nombre, notas, descripción)
-    const q = state.searchQuery.toLowerCase().trim();
+    // 2. Filtro por Buscador Avanzado (código, nombre, notas, descripción, piedras y variantes sin distinción de acentos)
+    const norm = str => String(str || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+    const q = norm(state.searchQuery);
+
     const matchesQuery = !q || 
-      prod.code.toLowerCase().includes(q) || 
-      prod.name.toLowerCase().includes(q) || 
-      prod.description.toLowerCase().includes(q) ||
-      (prod.notes && prod.notes.toLowerCase().includes(q)) ||
-      (prod.displaySizes && prod.displaySizes.toLowerCase().includes(q));
+      norm(prod.code).includes(q) || 
+      (prod.groupId && norm(prod.groupId).includes(q)) ||
+      norm(prod.name).includes(q) || 
+      norm(prod.description).includes(q) ||
+      (prod.stone && norm(prod.stone).includes(q)) ||
+      (prod.notes && norm(prod.notes).includes(q)) ||
+      (prod.displaySizes && norm(prod.displaySizes).includes(q)) ||
+      (Array.isArray(prod.colors) && prod.colors.some(c => norm(c).includes(q))) ||
+      (Array.isArray(prod.variants) && prod.variants.some(v => 
+        norm(v.color).includes(q) || norm(v.sku).includes(q)
+      ));
 
     // 3. Filtro por Medida / Talla de Anillo
     let matchesSize = true;
@@ -1751,6 +1759,7 @@ function cleanOrderVariantLabel(label) {
   s = s.replace(/(?:stone\s+)?color:\s*/gi, "");
   s = s.replace(/modelo:\s*/gi, "");
   s = s.replace(/[\u00A0\s]+/g, " ");
+  s = s.replace(/\s+color$/i, "");
   s = s.trim();
   if (s.toLowerCase() === "única" || s.toLowerCase() === "unica" || s.toLowerCase() === "modelo principal") {
     return "";
@@ -2431,6 +2440,22 @@ function formatCurrency(amount) {
   return `${BUSINESS_CONFIG.currencySymbol}${Number(amount).toLocaleString('es-MX', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
 }
 
+function prevModalPhoto() {
+  if (state.currentView === "producto") {
+    changeProductPagePhoto(-1);
+    return;
+  }
+}
+window.prevModalPhoto = prevModalPhoto;
+
+function nextModalPhoto() {
+  if (state.currentView === "producto") {
+    changeProductPagePhoto(1);
+    return;
+  }
+}
+window.nextModalPhoto = nextModalPhoto;
+
 function setupEventListeners() {
   const searchInput = document.getElementById("search-input");
   if (searchInput) {
@@ -2491,6 +2516,25 @@ function setupEventListeners() {
 
   // Navegación por teclado en PC (flecha izquierda/derecha y escape)
   document.addEventListener("keydown", (e) => {
+    // Si la vista actual es la subpágina dedicada de la joya
+    if (state.currentView === "producto") {
+      const lb = document.getElementById("lightbox-modal");
+      const isLbOpen = lb && !lb.classList.contains("hidden") && lb.style.display !== "none";
+
+      if (e.key === "ArrowLeft") {
+        changeProductPagePhoto(-1);
+      } else if (e.key === "ArrowRight") {
+        changeProductPagePhoto(1);
+      } else if (e.key === "Escape") {
+        if (isLbOpen) {
+          closeLightbox();
+        } else {
+          returnToCatalog();
+        }
+      }
+      return;
+    }
+
     const modal = document.getElementById("product-modal");
     if (!modal || modal.classList.contains("hidden") || modal.style.display === "none") return;
 

@@ -108,10 +108,10 @@ async function loadProductsFromSupabase() {
       });
 
       // 2. Determinar la foto de portada:
-      // Si el admin asignó una portada propia o personalizada (que no sea /variantes/), se respeta.
-      // Si es un recorte de variante (/variantes/), la foto oficial de presentación es foto_01 de la galería.
+      // Si el admin asignó una foto principal, se respeta 100% de forma permanente.
+      // Solo si está vacía, se toma foto_01 de la galería como fallback inicial.
       let coverPhoto = primaryRow.foto_principal;
-      if (!coverPhoto || coverPhoto.includes("/variantes/")) {
+      if (!coverPhoto) {
         const foto01 = generalGalleries.find(u => u && (u.includes("foto_01") || u.includes("foto_1.")));
         const cleanNonVar = generalGalleries.find(u => u && !u.includes("/variantes/"));
         coverPhoto = foto01 || cleanNonVar || primaryRow.foto_principal || "";
@@ -1791,7 +1791,9 @@ async function processImageForUpload(file) {
 
   // 2. Redimensionar en Canvas a máx 1600px y comprimir a JPEG optimizado (evita timeout y fotos de 20MB)
   return new Promise((resolve) => {
-    if (!file.type.startsWith('image/') && !isHeic) {
+    const isImageByName = /\.(jpe?g|png|webp|gif|bmp|heic|heif|avif)$/i.test(fileName);
+    const isImage = (file.type && file.type.startsWith('image/')) || isHeic || isImageByName;
+    if (!isImage) {
       return resolve(file);
     }
 
@@ -2168,6 +2170,21 @@ function openEditProductModal(productId, targetVariantId = null) {
   lucide.createIcons();
 }
 
+function cleanVariantName(label) {
+  if (!label) return "";
+  let s = String(label).trim();
+  s = s.replace(/color\s+de\s+(?:la\s+)?(?:gema|piedra|metal|cristal):\s*/gi, "");
+  s = s.replace(/(?:stone\s+)?color:\s*/gi, "");
+  s = s.replace(/modelo:\s*/gi, "");
+  s = s.replace(/[\u00A0\s]+/g, " ");
+  s = s.replace(/\s+color$/i, "");
+  s = s.trim();
+  if (s.toLowerCase() === "única" || s.toLowerCase() === "unica" || s.toLowerCase() === "modelo principal") {
+    return "";
+  }
+  return s;
+}
+
 function renderEditVariantPills() {
   const wrapper = document.getElementById("edit-variant-selector-wrapper");
   const list = document.getElementById("edit-variant-pills-list");
@@ -2195,7 +2212,7 @@ function renderEditVariantPills() {
   prod.variants.forEach((v, idx) => {
     const isSelected = state.currentEditingVariantId === v.id;
     const vPhoto = v.foto_principal || prod.foto_principal || '';
-    const vName = v.codigo_sku || v.color_modelo || `Modelo ${idx + 1}`;
+    const vName = cleanVariantName(v.codigo_sku || v.color_modelo) || `Modelo ${idx + 1}`;
     const vPrice = Math.round(v.precio_venta || prod.precio_venta || 0);
 
     pillsHtml += `
