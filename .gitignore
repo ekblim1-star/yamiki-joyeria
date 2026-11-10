@@ -13,3 +13,5 @@ $RECYCLE.BIN/
 # Agent cache & internal
 .agent/
 .agents/
+
+.wrangler/

@@ -1,0 +1,14 @@
+# Git & Agent internal
+.git/
+.agent/
+.agents/
+scratch/
+
+# Backup & scratch files
+*.bak
+*.py
+*.xlsx
+*.pdf
+*.tsx
+toonhub.html
+WhatsApp Image*
