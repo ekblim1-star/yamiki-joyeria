@@ -518,8 +518,7 @@ html.dark #catalogo {
 }
 
 html.dark #novedades-carousel,
-html.dark #guia-medidas,
-html.dark #pedidos-encargo {
+html.dark #guia-medidas {
   background-color: #000000 !important;
   border-color: rgba(255, 255, 255, 0.08) !important;
 }

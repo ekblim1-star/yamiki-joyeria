@@ -25,8 +25,7 @@ const BUSINESS_CONFIG = {
   orderPolicy: {
     advancePayment: "30 días de garantía por defectos de fábrica en todas tus piezas de Plata Ley S925",
     deliveryPayment: "Pago seguro y transparente directo con confirmación de pedido",
-    deliveryTime: "15 a 20 días hábiles aproximadamente tras realizar el pedido grupal",
-    groupOrder: "Pedidos en conjunto directamente con proveedor (reunión de 7 pedidos)"
+    shipping: "Envíos directos a todo México con seguimiento continuo"
   },
 
   email: "contacto@yamikijoyeria.com",
@@ -93,7 +92,7 @@ let PRODUCTS = [
     badge: "🔥 Novedad Destacada",
     notes: null,
     image: "img/products/A-01.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-01. Tallas disponibles de fabricante: 5 - 6 - 7 - 8 - 9 - 10. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-01. Tallas disponibles de fabricante: 5 - 6 - 7 - 8 - 9 - 10. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -113,7 +112,7 @@ let PRODUCTS = [
     badge: "Tallas 5 - 6 - 7 - 8 - 9",
     notes: null,
     image: "img/products/A-02.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-02. Tallas disponibles de fabricante: 5 - 6 - 7 - 8 - 9. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-02. Tallas disponibles de fabricante: 5 - 6 - 7 - 8 - 9. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -133,7 +132,7 @@ let PRODUCTS = [
     badge: "Tallas 6 - 7",
     notes: null,
     image: "img/products/A-03.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-03. Tallas disponibles de fabricante: 6 - 7. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-03. Tallas disponibles de fabricante: 6 - 7. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -153,7 +152,7 @@ let PRODUCTS = [
     badge: "🔥 Novedad Destacada",
     notes: null,
     image: "img/products/A-04.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-04. Diseño ergonómico ajustable que se adapta con facilidad y comodidad a cualquier dedo. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-04. Diseño ergonómico ajustable que se adapta con facilidad y comodidad a cualquier dedo. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -173,7 +172,7 @@ let PRODUCTS = [
     badge: "🔥 Novedad Destacada",
     notes: null,
     image: "img/products/A-05.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-05. Diseño ergonómico ajustable que se adapta con facilidad y comodidad a cualquier dedo. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-05. Diseño ergonómico ajustable que se adapta con facilidad y comodidad a cualquier dedo. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -193,7 +192,7 @@ let PRODUCTS = [
     badge: "Talla Ajustable",
     notes: null,
     image: "img/products/A-06.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-06. Diseño ergonómico ajustable que se adapta con facilidad y comodidad a cualquier dedo. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-06. Diseño ergonómico ajustable que se adapta con facilidad y comodidad a cualquier dedo. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -213,7 +212,7 @@ let PRODUCTS = [
     badge: "Tallas 6 - 7",
     notes: null,
     image: "img/products/A-07.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-07. Tallas disponibles de fabricante: 6 - 7. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-07. Tallas disponibles de fabricante: 6 - 7. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -233,7 +232,7 @@ let PRODUCTS = [
     badge: "Tallas 5 - 6 - 7 - 8 - 9",
     notes: null,
     image: "img/products/A-08.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-08. Tallas disponibles de fabricante: 5 - 6 - 7 - 8 - 9. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-08. Tallas disponibles de fabricante: 5 - 6 - 7 - 8 - 9. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -253,7 +252,7 @@ let PRODUCTS = [
     badge: "Tallas 6 - 7",
     notes: null,
     image: "img/products/A-09.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-09. Tallas disponibles de fabricante: 6 - 7. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-09. Tallas disponibles de fabricante: 6 - 7. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -273,7 +272,7 @@ let PRODUCTS = [
     badge: "Tallas 7 - 8",
     notes: null,
     image: "img/products/A-10.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-10. Tallas disponibles de fabricante: 7 - 8. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-10. Tallas disponibles de fabricante: 7 - 8. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -293,7 +292,7 @@ let PRODUCTS = [
     badge: "🔥 Novedad Destacada",
     notes: null,
     image: "img/products/A-11.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-11. Diseño ergonómico ajustable que se adapta con facilidad y comodidad a cualquier dedo. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-11. Diseño ergonómico ajustable que se adapta con facilidad y comodidad a cualquier dedo. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -313,7 +312,7 @@ let PRODUCTS = [
     badge: "Tallas 6 - 7 - 8",
     notes: null,
     image: "img/products/A-12.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-12. Tallas disponibles de fabricante: 6 - 7 - 8. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-12. Tallas disponibles de fabricante: 6 - 7 - 8. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -333,7 +332,7 @@ let PRODUCTS = [
     badge: "Tallas 6 - 7 - 8",
     notes: null,
     image: "img/products/A-13.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-13. Tallas disponibles de fabricante: 6 - 7 - 8. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-13. Tallas disponibles de fabricante: 6 - 7 - 8. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -353,7 +352,7 @@ let PRODUCTS = [
     badge: "🔥 Novedad Destacada",
     notes: null,
     image: "img/products/A-14.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-14. Tallas disponibles de fabricante: 6 - 7 - 8. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-14. Tallas disponibles de fabricante: 6 - 7 - 8. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -373,7 +372,7 @@ let PRODUCTS = [
     badge: "Tallas 7 - 9",
     notes: null,
     image: "img/products/A-15.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-15. Tallas disponibles de fabricante: 7 - 9. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-15. Tallas disponibles de fabricante: 7 - 9. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -393,7 +392,7 @@ let PRODUCTS = [
     badge: "Tallas 6 - 7 - 9 - 10",
     notes: null,
     image: "img/products/A-16.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-16. Tallas disponibles de fabricante: 6 - 7 - 9 - 10. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-16. Tallas disponibles de fabricante: 6 - 7 - 9 - 10. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -413,7 +412,7 @@ let PRODUCTS = [
     badge: "Plata S925",
     notes: null,
     image: "img/products/A-17.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-17. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-17. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -433,7 +432,7 @@ let PRODUCTS = [
     badge: "Talla Ajustable",
     notes: null,
     image: "img/products/A-18.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-18. Diseño ergonómico ajustable que se adapta con facilidad y comodidad a cualquier dedo. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-18. Diseño ergonómico ajustable que se adapta con facilidad y comodidad a cualquier dedo. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -453,7 +452,7 @@ let PRODUCTS = [
     badge: "Tallas 6",
     notes: null,
     image: "img/products/A-19.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-19. Tallas disponibles de fabricante: 6. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-19. Tallas disponibles de fabricante: 6. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -473,7 +472,7 @@ let PRODUCTS = [
     badge: "Tallas 7 - 8",
     notes: null,
     image: "img/products/A-20.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-20. Tallas disponibles de fabricante: 7 - 8. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-20. Tallas disponibles de fabricante: 7 - 8. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -493,7 +492,7 @@ let PRODUCTS = [
     badge: "Talla Ajustable",
     notes: null,
     image: "img/products/A-21.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-21. Diseño ergonómico ajustable que se adapta con facilidad y comodidad a cualquier dedo. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-21. Diseño ergonómico ajustable que se adapta con facilidad y comodidad a cualquier dedo. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -513,7 +512,7 @@ let PRODUCTS = [
     badge: "Plata S925",
     notes: null,
     image: "img/products/A-22.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-22. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-22. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -533,7 +532,7 @@ let PRODUCTS = [
     badge: "🔥 Novedad Destacada",
     notes: null,
     image: "img/products/A-23.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-23. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-23. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -553,7 +552,7 @@ let PRODUCTS = [
     badge: "Talla Ajustable",
     notes: null,
     image: "img/products/A-24.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-24. Diseño ergonómico ajustable que se adapta con facilidad y comodidad a cualquier dedo. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-24. Diseño ergonómico ajustable que se adapta con facilidad y comodidad a cualquier dedo. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -573,7 +572,7 @@ let PRODUCTS = [
     badge: "Tallas 6",
     notes: null,
     image: "img/products/A-25.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-25. Tallas disponibles de fabricante: 6. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-25. Tallas disponibles de fabricante: 6. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -593,7 +592,7 @@ let PRODUCTS = [
     badge: "Tallas 8",
     notes: null,
     image: "img/products/A-26.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-26. Tallas disponibles de fabricante: 8. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-26. Tallas disponibles de fabricante: 8. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -613,7 +612,7 @@ let PRODUCTS = [
     badge: "Talla Ajustable",
     notes: null,
     image: "img/products/A-27.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-27. Diseño ergonómico ajustable que se adapta con facilidad y comodidad a cualquier dedo. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-27. Diseño ergonómico ajustable que se adapta con facilidad y comodidad a cualquier dedo. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -633,7 +632,7 @@ let PRODUCTS = [
     badge: "Tallas 5 - 6 - 7 - 8 - 9 - 10",
     notes: null,
     image: "img/products/A-19-B.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-19-B. Tallas disponibles de fabricante: 5 - 6 - 7 - 8 - 9 - 10. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-19-B. Tallas disponibles de fabricante: 5 - 6 - 7 - 8 - 9 - 10. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -653,7 +652,7 @@ let PRODUCTS = [
     badge: "Talla Ajustable",
     notes: null,
     image: "img/products/A-20-B.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-20-B. Diseño ergonómico ajustable que se adapta con facilidad y comodidad a cualquier dedo. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-20-B. Diseño ergonómico ajustable que se adapta con facilidad y comodidad a cualquier dedo. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -673,7 +672,7 @@ let PRODUCTS = [
     badge: "Talla Ajustable",
     notes: null,
     image: "img/products/A-21-B.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-21-B. Diseño ergonómico ajustable que se adapta con facilidad y comodidad a cualquier dedo. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-21-B. Diseño ergonómico ajustable que se adapta con facilidad y comodidad a cualquier dedo. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -693,7 +692,7 @@ let PRODUCTS = [
     badge: "Talla Ajustable",
     notes: null,
     image: "img/products/A-22-B.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-22-B. Diseño ergonómico ajustable que se adapta con facilidad y comodidad a cualquier dedo. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-22-B. Diseño ergonómico ajustable que se adapta con facilidad y comodidad a cualquier dedo. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -713,7 +712,7 @@ let PRODUCTS = [
     badge: "Talla Ajustable",
     notes: null,
     image: "img/products/A-23-B.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-23-B. Diseño ergonómico ajustable que se adapta con facilidad y comodidad a cualquier dedo. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-23-B. Diseño ergonómico ajustable que se adapta con facilidad y comodidad a cualquier dedo. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -733,7 +732,7 @@ let PRODUCTS = [
     badge: "Talla Ajustable",
     notes: null,
     image: "img/products/A-24-B.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-24-B. Diseño ergonómico ajustable que se adapta con facilidad y comodidad a cualquier dedo. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-24-B. Diseño ergonómico ajustable que se adapta con facilidad y comodidad a cualquier dedo. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -753,7 +752,7 @@ let PRODUCTS = [
     badge: "Plata S925",
     notes: null,
     image: "img/products/A-25-B.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-25-B. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-25-B. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -773,7 +772,7 @@ let PRODUCTS = [
     badge: "Plata S925",
     notes: null,
     image: "img/products/A-26-B.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-26-B. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-26-B. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -793,7 +792,7 @@ let PRODUCTS = [
     badge: "Plata S925",
     notes: null,
     image: "img/products/A-27-B.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-27-B. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-27-B. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -813,7 +812,7 @@ let PRODUCTS = [
     badge: "Plata S925",
     notes: null,
     image: "img/products/A-28.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-28. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-28. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -833,7 +832,7 @@ let PRODUCTS = [
     badge: "Plata S925",
     notes: null,
     image: "img/products/A-29.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-29. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-29. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -853,7 +852,7 @@ let PRODUCTS = [
     badge: "Plata S925",
     notes: null,
     image: "img/products/A-30.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-30. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-30. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -873,7 +872,7 @@ let PRODUCTS = [
     badge: "Plata S925",
     notes: null,
     image: "img/products/A-31.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-31. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-31. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -893,7 +892,7 @@ let PRODUCTS = [
     badge: "Plata S925",
     notes: null,
     image: "img/products/A-32.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-32. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-32. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -913,7 +912,7 @@ let PRODUCTS = [
     badge: "Plata S925",
     notes: null,
     image: "img/products/A-33.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-33. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-33. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -933,7 +932,7 @@ let PRODUCTS = [
     badge: "🔥 Novedad Destacada",
     notes: null,
     image: "img/products/A-34.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-34. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-34. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -953,7 +952,7 @@ let PRODUCTS = [
     badge: "Plata S925",
     notes: null,
     image: "img/products/A-35.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-35. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-35. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -973,7 +972,7 @@ let PRODUCTS = [
     badge: "Plata S925",
     notes: "Disponible con dije de inicial de la A a la Z",
     image: "img/products/A-36.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-36. Disponible con dije de inicial de la A a la Z. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-36. Disponible con dije de inicial de la A a la Z. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -993,7 +992,7 @@ let PRODUCTS = [
     badge: "Plata S925",
     notes: null,
     image: "img/products/A-37.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-37. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-37. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -1013,7 +1012,7 @@ let PRODUCTS = [
     badge: "Plata S925",
     notes: null,
     image: "img/products/A-38.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-38. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-38. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -1033,7 +1032,7 @@ let PRODUCTS = [
     badge: "Plata S925",
     notes: null,
     image: "img/products/A-39.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-39. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-39. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -1053,7 +1052,7 @@ let PRODUCTS = [
     badge: "Plata S925",
     notes: null,
     image: "img/products/A-40.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-40. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-40. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -1073,7 +1072,7 @@ let PRODUCTS = [
     badge: "Plata S925",
     notes: null,
     image: "img/products/A-41.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-41. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-41. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -1093,7 +1092,7 @@ let PRODUCTS = [
     badge: "Plata S925",
     notes: null,
     image: "img/products/A-42.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-42. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-42. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -1113,7 +1112,7 @@ let PRODUCTS = [
     badge: "Plata S925",
     notes: null,
     image: "img/products/A-43.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-43. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-43. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -1133,7 +1132,7 @@ let PRODUCTS = [
     badge: "🔥 Novedad Destacada",
     notes: null,
     image: "img/products/A-44.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-44. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-44. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -1153,7 +1152,7 @@ let PRODUCTS = [
     badge: "Plata S925",
     notes: null,
     image: "img/products/A-45.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-45. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-45. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -1173,7 +1172,7 @@ let PRODUCTS = [
     badge: "Plata S925",
     notes: null,
     image: "img/products/A-46.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-46. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-46. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -1193,7 +1192,7 @@ let PRODUCTS = [
     badge: "Plata S925",
     notes: null,
     image: "img/products/A-47.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-47. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-47. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -1213,7 +1212,7 @@ let PRODUCTS = [
     badge: "Plata S925",
     notes: null,
     image: "img/products/A-48.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-48. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-48. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -1233,7 +1232,7 @@ let PRODUCTS = [
     badge: "Plata S925",
     notes: null,
     image: "img/products/A-49.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-49. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-49. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -1253,7 +1252,7 @@ let PRODUCTS = [
     badge: "Plata S925",
     notes: null,
     image: "img/products/A-50.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-50. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-50. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -1273,7 +1272,7 @@ let PRODUCTS = [
     badge: "Plata S925",
     notes: null,
     image: "img/products/A-51.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-51. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-51. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -1293,7 +1292,7 @@ let PRODUCTS = [
     badge: "Plata S925",
     notes: null,
     image: "img/products/A-52.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-52. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-52. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -1313,7 +1312,7 @@ let PRODUCTS = [
     badge: "Plata S925",
     notes: null,
     image: "img/products/A-53.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-53. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-53. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -1333,7 +1332,7 @@ let PRODUCTS = [
     badge: "Plata S925",
     notes: null,
     image: "img/products/A-54.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-54. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-54. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -1353,7 +1352,7 @@ let PRODUCTS = [
     badge: "Plata S925",
     notes: null,
     image: "img/products/A-55.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-55. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-55. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -1373,7 +1372,7 @@ let PRODUCTS = [
     badge: "Plata S925",
     notes: null,
     image: "img/products/A-56.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-56. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-56. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -1393,7 +1392,7 @@ let PRODUCTS = [
     badge: "Plata S925",
     notes: null,
     image: "img/products/A-57.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-57. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-57. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -1413,7 +1412,7 @@ let PRODUCTS = [
     badge: "Plata S925",
     notes: null,
     image: "img/products/A-58.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-58. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-58. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -1433,7 +1432,7 @@ let PRODUCTS = [
     badge: "Plata S925",
     notes: null,
     image: "img/products/A-59.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-59. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-59. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -1453,7 +1452,7 @@ let PRODUCTS = [
     badge: "Plata S925",
     notes: null,
     image: "img/products/A-60.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-60. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-60. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -1473,7 +1472,7 @@ let PRODUCTS = [
     badge: "Plata S925",
     notes: null,
     image: "img/products/A-61.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-61. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-61. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -1493,7 +1492,7 @@ let PRODUCTS = [
     badge: "Plata S925",
     notes: null,
     image: "img/products/A-62.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-62. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-62. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -1513,7 +1512,7 @@ let PRODUCTS = [
     badge: "Plata S925",
     notes: null,
     image: "img/products/A-63.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-63. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-63. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -1533,7 +1532,7 @@ let PRODUCTS = [
     badge: "Plata S925",
     notes: null,
     image: "img/products/A-64.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-64. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-64. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -1553,7 +1552,7 @@ let PRODUCTS = [
     badge: "Plata S925",
     notes: null,
     image: "img/products/A-65.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-65. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-65. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -1573,7 +1572,7 @@ let PRODUCTS = [
     badge: "🔥 Novedad Destacada",
     notes: null,
     image: "img/products/A-66.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-66. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-66. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -1593,7 +1592,7 @@ let PRODUCTS = [
     badge: "Plata S925",
     notes: null,
     image: "img/products/A-67.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-67. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-67. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -1613,7 +1612,7 @@ let PRODUCTS = [
     badge: "Plata S925",
     notes: null,
     image: "img/products/A-68.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-68. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-68. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -1633,7 +1632,7 @@ let PRODUCTS = [
     badge: "Plata S925",
     notes: null,
     image: "img/products/A-69.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-69. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-69. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -1653,7 +1652,7 @@ let PRODUCTS = [
     badge: "🔥 Novedad Destacada",
     notes: null,
     image: "img/products/A-70.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-70. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-70. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -1673,7 +1672,7 @@ let PRODUCTS = [
     badge: "Plata S925",
     notes: null,
     image: "img/products/A-71.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-71. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-71. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -1693,7 +1692,7 @@ let PRODUCTS = [
     badge: "Plata S925",
     notes: null,
     image: "img/products/A-72.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-72. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-72. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -1713,7 +1712,7 @@ let PRODUCTS = [
     badge: "Plata S925",
     notes: null,
     image: "img/products/A-73.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-73. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-73. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -1733,7 +1732,7 @@ let PRODUCTS = [
     badge: "Plata S925",
     notes: null,
     image: "img/products/A-74.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-74. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-74. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -1753,7 +1752,7 @@ let PRODUCTS = [
     badge: "Plata S925",
     notes: null,
     image: "img/products/A-75.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-75. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-75. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -1773,7 +1772,7 @@ let PRODUCTS = [
     badge: "Plata S925",
     notes: null,
     image: "img/products/A-76.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-76. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-76. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -1793,7 +1792,7 @@ let PRODUCTS = [
     badge: "Plata S925",
     notes: null,
     image: "img/products/A-77.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-77. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-77. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -1813,7 +1812,7 @@ let PRODUCTS = [
     badge: "Plata S925",
     notes: null,
     image: "img/products/A-78.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-78. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-78. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -1833,7 +1832,7 @@ let PRODUCTS = [
     badge: "Plata S925",
     notes: null,
     image: "img/products/A-79.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-79. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-79. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -1853,7 +1852,7 @@ let PRODUCTS = [
     badge: "Plata S925",
     notes: null,
     image: "img/products/A-80.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-80. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-80. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -1873,7 +1872,7 @@ let PRODUCTS = [
     badge: "Plata S925",
     notes: null,
     image: "img/products/A-81.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-81. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-81. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -1893,7 +1892,7 @@ let PRODUCTS = [
     badge: "Plata S925",
     notes: null,
     image: "img/products/A-82.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-82. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-82. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -1913,7 +1912,7 @@ let PRODUCTS = [
     badge: "Plata S925",
     notes: null,
     image: "img/products/A-83.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-83. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-83. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -1933,7 +1932,7 @@ let PRODUCTS = [
     badge: "Plata S925",
     notes: null,
     image: "img/products/A-84.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-84. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-84. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -1953,7 +1952,7 @@ let PRODUCTS = [
     badge: "Plata S925",
     notes: null,
     image: "img/products/A-85.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-85. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-85. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -1973,7 +1972,7 @@ let PRODUCTS = [
     badge: "Plata S925",
     notes: null,
     image: "img/products/A-86.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-86. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-86. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -1993,7 +1992,7 @@ let PRODUCTS = [
     badge: "Plata S925",
     notes: null,
     image: "img/products/A-87.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-87. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-87. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -2013,7 +2012,7 @@ let PRODUCTS = [
     badge: "Plata S925",
     notes: null,
     image: "img/products/A-88.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-88. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-88. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -2033,7 +2032,7 @@ let PRODUCTS = [
     badge: "Plata S925",
     notes: null,
     image: "img/products/A-89.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-89. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-89. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -2053,7 +2052,7 @@ let PRODUCTS = [
     badge: "Plata S925",
     notes: null,
     image: "img/products/A-90.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-90. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-90. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -2073,7 +2072,7 @@ let PRODUCTS = [
     badge: "Plata S925",
     notes: null,
     image: "img/products/A-91.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-91. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-91. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -2093,7 +2092,7 @@ let PRODUCTS = [
     badge: "🔥 Novedad Destacada",
     notes: "Colores disponibles: Azul, Rosa, Verde y Negro",
     image: "img/products/A-92.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-92. Colores disponibles: Azul, Rosa, Verde y Negro. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-92. Colores disponibles: Azul, Rosa, Verde y Negro. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -2113,7 +2112,7 @@ let PRODUCTS = [
     badge: "Plata S925",
     notes: null,
     image: "img/products/A-93.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-93. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-93. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -2133,7 +2132,7 @@ let PRODUCTS = [
     badge: "Plata S925",
     notes: null,
     image: "img/products/A-94.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-94. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-94. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -2153,7 +2152,7 @@ let PRODUCTS = [
     badge: "Plata S925",
     notes: null,
     image: "img/products/A-95.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-95. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-95. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -2173,7 +2172,7 @@ let PRODUCTS = [
     badge: "Plata S925",
     notes: null,
     image: "img/products/A-96.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-96. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-96. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -2193,7 +2192,7 @@ let PRODUCTS = [
     badge: "Plata S925",
     notes: null,
     image: "img/products/A-97.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-97. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-97. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -2213,7 +2212,7 @@ let PRODUCTS = [
     badge: "Plata S925",
     notes: null,
     image: "img/products/A-98.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-98. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-98. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -2233,7 +2232,7 @@ let PRODUCTS = [
     badge: "Plata S925",
     notes: null,
     image: "img/products/A-99.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-99. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-99. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -2253,7 +2252,7 @@ let PRODUCTS = [
     badge: "Plata S925",
     notes: null,
     image: "img/products/A-100.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-100. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-100. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -2273,7 +2272,7 @@ let PRODUCTS = [
     badge: "🔥 Novedad Destacada",
     notes: null,
     image: "img/products/A-101.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-101. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-101. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -2293,7 +2292,7 @@ let PRODUCTS = [
     badge: "Plata S925",
     notes: null,
     image: "img/products/A-102.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-102. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-102. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -2313,7 +2312,7 @@ let PRODUCTS = [
     badge: "Plata S925",
     notes: null,
     image: "img/products/A-103.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-103. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-103. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -2333,7 +2332,7 @@ let PRODUCTS = [
     badge: "Plata S925",
     notes: null,
     image: "img/products/A-104.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-104. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-104. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -2353,7 +2352,7 @@ let PRODUCTS = [
     badge: "Plata S925",
     notes: null,
     image: "img/products/A-105.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-105. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-105. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -2373,7 +2372,7 @@ let PRODUCTS = [
     badge: "Plata S925",
     notes: null,
     image: "img/products/A-106.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-106. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-106. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -2393,7 +2392,7 @@ let PRODUCTS = [
     badge: "Plata S925",
     notes: null,
     image: "img/products/A-107.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-107. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-107. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -2413,7 +2412,7 @@ let PRODUCTS = [
     badge: "Plata S925",
     notes: null,
     image: "img/products/A-108.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-108. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-108. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -2433,7 +2432,7 @@ let PRODUCTS = [
     badge: "Plata S925",
     notes: null,
     image: "img/products/A-109.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-109. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-109. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -2453,7 +2452,7 @@ let PRODUCTS = [
     badge: "Plata S925",
     notes: null,
     image: "img/products/A-110.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-110. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-110. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -2473,7 +2472,7 @@ let PRODUCTS = [
     badge: "Plata S925",
     notes: null,
     image: "img/products/A-111.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-111. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-111. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -2493,7 +2492,7 @@ let PRODUCTS = [
     badge: "Plata S925",
     notes: null,
     image: "img/products/A-112.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-112. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-112. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -2513,7 +2512,7 @@ let PRODUCTS = [
     badge: "Plata S925",
     notes: null,
     image: "img/products/A-113.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-113. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-113. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -2533,7 +2532,7 @@ let PRODUCTS = [
     badge: "Plata S925",
     notes: null,
     image: "img/products/A-114.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-114. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-114. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -2553,7 +2552,7 @@ let PRODUCTS = [
     badge: "Plata S925",
     notes: null,
     image: "img/products/A-115.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-115. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-115. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -2573,7 +2572,7 @@ let PRODUCTS = [
     badge: "Plata S925",
     notes: null,
     image: "img/products/A-116.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-116. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-116. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -2593,7 +2592,7 @@ let PRODUCTS = [
     badge: "Plata S925",
     notes: null,
     image: "img/products/A-117.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-117. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-117. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -2613,7 +2612,7 @@ let PRODUCTS = [
     badge: "🔥 Novedad Destacada",
     notes: null,
     image: "img/products/A-118.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-118. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-118. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -2633,7 +2632,7 @@ let PRODUCTS = [
     badge: "Plata S925",
     notes: null,
     image: "img/products/A-119.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-119. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-119. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -2653,7 +2652,7 @@ let PRODUCTS = [
     badge: "Plata S925",
     notes: null,
     image: "img/products/A-120.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-120. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-120. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -2673,7 +2672,7 @@ let PRODUCTS = [
     badge: "Plata S925",
     notes: null,
     image: "img/products/A-121.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-121. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-121. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -2693,7 +2692,7 @@ let PRODUCTS = [
     badge: "Plata S925",
     notes: null,
     image: "img/products/A-122.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-122. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-122. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -2713,7 +2712,7 @@ let PRODUCTS = [
     badge: "Plata S925",
     notes: null,
     image: "img/products/A-123.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-123. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-123. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -2733,7 +2732,7 @@ let PRODUCTS = [
     badge: "Plata S925",
     notes: null,
     image: "img/products/A-124.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-124. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-124. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -2753,7 +2752,7 @@ let PRODUCTS = [
     badge: "Plata S925",
     notes: null,
     image: "img/products/A-125.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-125. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-125. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -2773,7 +2772,7 @@ let PRODUCTS = [
     badge: "Plata S925",
     notes: null,
     image: "img/products/A-126.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-126. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-126. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -2793,7 +2792,7 @@ let PRODUCTS = [
     badge: "Plata S925",
     notes: null,
     image: "img/products/A-127.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-127. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-127. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -2813,7 +2812,7 @@ let PRODUCTS = [
     badge: "Plata S925",
     notes: null,
     image: "img/products/A-128.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-128. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-128. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -2833,7 +2832,7 @@ let PRODUCTS = [
     badge: "Plata S925",
     notes: null,
     image: "img/products/A-129.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-129. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-129. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -2853,7 +2852,7 @@ let PRODUCTS = [
     badge: "🔥 Novedad Destacada",
     notes: null,
     image: "img/products/A-130.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-130. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-130. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -2873,7 +2872,7 @@ let PRODUCTS = [
     badge: "Plata S925",
     notes: null,
     image: "img/products/A-131.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-131. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-131. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
   {
@@ -2893,7 +2892,7 @@ let PRODUCTS = [
     badge: "Plata S925",
     notes: null,
     image: "img/products/A-132.jpg",
-    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-132. Pieza sobre encargo: aparta con 50% de anticipo.",
+    description: "Hermosa pieza elaborada en fina Plata Ley S925 garantizada, código de catálogo A-132. Garantía de 30 días por defectos de fábrica en auténtica Plata Ley S925.",
     stock: true
   },
 ];

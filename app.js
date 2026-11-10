@@ -291,7 +291,7 @@ function injectBusinessInfo() {
   document.querySelectorAll("[data-bind='schedule']").forEach(el => el.textContent = BUSINESS_CONFIG.schedule);
   document.querySelectorAll("[data-bind='instagram']").forEach(el => el.textContent = BUSINESS_CONFIG.instagram);
 
-  const generalWhatsappLink = `https://wa.me/${BUSINESS_CONFIG.whatsappNumber}?text=${encodeURIComponent(`¡Hola ${BUSINESS_CONFIG.brandName}! Me gustaría consultar sobre su catálogo de joyería de plata ley S925 sobre pedido.`)}`;
+  const generalWhatsappLink = `https://api.whatsapp.com/send?phone=${BUSINESS_CONFIG.whatsappNumber}&text=${encodeURIComponent(`¡Hola ${BUSINESS_CONFIG.brandName}! Me gustaría consultar sobre su catálogo de joyería en Plata Ley S925.`)}`;
   document.querySelectorAll("[data-bind='whatsappGeneralLink']").forEach(el => {
     el.setAttribute("href", generalWhatsappLink);
     el.setAttribute("target", "_blank");
@@ -1163,10 +1163,9 @@ function handleUrlRouting(event) {
       }
     }
     navigateTo("catalogo", { category: category, pushState: false });
-  } else if (hash.includes("#novedades-carousel") || hash.includes("#pedidos-encargo") || hash.includes("#inicio")) {
+  } else if (hash.includes("#novedades-carousel") || hash.includes("#inicio")) {
     let scrollTarget = "inicio";
     if (hash.includes("novedades-carousel")) scrollTarget = "novedades-carousel";
-    else if (hash.includes("pedidos-encargo")) scrollTarget = "pedidos-encargo";
     navigateTo("home", { scrollTo: scrollTarget, pushState: false });
   } else {
     navigateTo("home", { pushState: false });
@@ -1494,7 +1493,7 @@ function renderProducts() {
               <span class="text-[9px] sm:text-[10px] font-bold uppercase tracking-widest text-rose-500 truncate">
                 ${getCategoryLabel(prod.category)}
               </span>
-              <span class="text-[8px] sm:text-[10px] text-gray-400 font-medium hidden xs:inline">Sobre pedido</span>
+              <span class="text-[8px] sm:text-[10px] text-gray-400 font-medium hidden xs:inline">Plata Ley S925</span>
             </div>
             
             <h3 
@@ -2022,8 +2021,8 @@ function sendOrderToWhatsApp() {
   const totalAmount = state.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   const totalPieces = state.cart.reduce((sum, item) => sum + item.quantity, 0);
 
-  let message = `¡Hola *${BUSINESS_CONFIG.brandName}*! ✨ Deseo realizar el siguiente pedido de joyería en *Plata Ley S925* sobre encargo:\n\n`;
-  message += `💎 *PIEZAS SELECCIONADAS:*\n`;
+  let message = `¡Hola *${BUSINESS_CONFIG.brandName}*! Deseo realizar el siguiente pedido de joyería en *Plata Ley S925*:\n\n`;
+  message += `*PIEZAS SELECCIONADAS:*\n`;
   message += `────────────────────\n`;
 
   state.cart.forEach((item, index) => {
@@ -2043,11 +2042,11 @@ function sendOrderToWhatsApp() {
   });
 
   message += `────────────────────\n`;
-  message += `📦 *Total de piezas:* ${totalPieces}\n`;
-  message += `💰 *TOTAL GENERAL:* *${formatCurrency(totalAmount)} ${BUSINESS_CONFIG.currencyCode}*\n`;
-  message += `🛡️ *GARANTÍA INCLUIDA:* 30 días contra cualquier defecto de fábrica en Plata Ley S925\n\n`;
+  message += `• *Total de piezas:* ${totalPieces}\n`;
+  message += `• *TOTAL GENERAL:* *${formatCurrency(totalAmount)} ${BUSINESS_CONFIG.currencyCode}*\n`;
+  message += `• *GARANTÍA INCLUIDA:* 30 días contra cualquier defecto de fábrica en Plata Ley S925\n\n`;
 
-  message += `👤 *DATOS DEL CLIENTE:*\n`;
+  message += `*DATOS DEL CLIENTE:*\n`;
   message += `• *Nombre:* ${customerName ? customerName : "Por acordar"}\n`;
   if (customerAddress) {
     message += `• *Ciudad/Dirección:* ${customerAddress}\n`;
@@ -2056,7 +2055,7 @@ function sendOrderToWhatsApp() {
     message += `• *Notas:* ${customerNotes}\n`;
   }
 
-  message += `\n¿Me podrían confirmar disponibilidad y los datos de pago/transferencia para procesar mi pedido? ¡Muchas gracias! 💖`;
+  message += `\n¿Me podrían confirmar disponibilidad y los datos de pago/transferencia para procesar mi pedido? ¡Muchas gracias!`;
 
   // Usar endpoint directo de api.whatsapp.com/send para evitar que el redirect 302 de wa.me corrompa los emojis a 
   const whatsappUrl = `https://api.whatsapp.com/send?phone=${BUSINESS_CONFIG.whatsappNumber}&text=${encodeURIComponent(message)}`;
@@ -2929,7 +2928,7 @@ function setupEventListeners() {
   // Control de la barra de navegación permanente y resaltado de pestaña activa
   const mainHeader = document.querySelector("header.glass-nav");
   const navTabLinks = document.querySelectorAll(".desktop-nav .nav-tab-link");
-  const navSections = ["inicio", "novedades-carousel", "catalogo", "guia-medidas", "pedidos-encargo"];
+  const navSections = ["inicio", "novedades-carousel", "catalogo", "guia-medidas"];
 
   function handleNavbarScroll() {
     if (mainHeader) {
