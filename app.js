@@ -230,7 +230,17 @@ const state = {
   heroIndex: 0,
   heroTimer: null,
   heroIsAnimating: false,
-  heroIsMobile: typeof window !== "undefined" ? window.innerWidth < 640 : false
+  heroIsMobile: typeof window !== "undefined" ? window.innerWidth < 640 : false,
+  // Control de historial de navegación y restauración de scroll para modales
+  isProductModalOpen: false,
+  modalScrollPosition: 0,
+  modalPushedHistory: false,
+  isHistoryBackByModalClose: false,
+  isGuideModalOpen: false,
+  guideModalScrollPosition: 0,
+  guideModalPushedHistory: false,
+  isCartDrawerOpen: false,
+  cartDrawerPushedHistory: false
 };
 
 const STORAGE_KEY = "yamiki_cart_s925_v3";
@@ -1083,7 +1093,65 @@ function navigateTo(viewName, options = {}) {
 /**
  * Escucha cambios en el hash de la URL o botones de Atrás / Adelante del navegador
  */
-function handleUrlRouting() {
+function handleUrlRouting(event) {
+  // 1. Si el popstate fue originado por nuestro propio history.back() al cerrar con la X o UI
+  if (state.isHistoryBackByModalClose) {
+    state.isHistoryBackByModalClose = false;
+    const savedY = state.modalScrollPosition;
+    if (typeof savedY === "number") {
+      window.scrollTo({ top: savedY, behavior: "instant" });
+      requestAnimationFrame(() => window.scrollTo({ top: savedY, behavior: "instant" }));
+    }
+    return;
+  }
+
+  // 2. Si el visor Lightbox de infografías está abierto, cerrarlo sin cambiar de página
+  const lightboxModal = document.getElementById("lightbox-modal");
+  const isLightboxOpen = lightboxModal && !lightboxModal.classList.contains("hidden") && lightboxModal.style.display !== "none";
+  if (isLightboxOpen) {
+    closeLightbox();
+    return;
+  }
+
+  // 3. Si la guía de medidas está abierta, cerrarla y volver al modal o vista previa
+  const guideModal = document.getElementById("ring-size-guide-modal");
+  const isGuideModalOpen = state.isGuideModalOpen || (guideModal && !guideModal.classList.contains("hidden") && guideModal.style.display !== "none");
+  if (isGuideModalOpen) {
+    const savedY = state.guideModalScrollPosition;
+    state.guideModalPushedHistory = false;
+    closeRingSizeGuideModal(false);
+    if (typeof savedY === "number" && !state.isProductModalOpen) {
+      window.scrollTo({ top: savedY, behavior: "instant" });
+      requestAnimationFrame(() => window.scrollTo({ top: savedY, behavior: "instant" }));
+    }
+    return;
+  }
+
+  // 4. Si el modal de producto está abierto, cerrarlo y restaurar EXACTAMENTE la posición de scroll donde estaba
+  const productModal = document.getElementById("product-modal");
+  const isProductModalOpen = state.isProductModalOpen || (productModal && !productModal.classList.contains("hidden") && productModal.style.display !== "none");
+  if (isProductModalOpen) {
+    const savedY = state.modalScrollPosition;
+    state.modalPushedHistory = false;
+    closeProductModal(false);
+    if (typeof savedY === "number") {
+      window.scrollTo({ top: savedY, behavior: "instant" });
+      requestAnimationFrame(() => window.scrollTo({ top: savedY, behavior: "instant" }));
+      setTimeout(() => window.scrollTo({ top: savedY, behavior: "instant" }), 50);
+    }
+    return;
+  }
+
+  // 5. Si el carrito está abierto, cerrarlo y no salir de la tienda
+  const cartDrawer = document.getElementById("cart-drawer");
+  const isCartDrawerOpen = state.isCartDrawerOpen || (cartDrawer && !cartDrawer.classList.contains("hidden") && cartDrawer.style.display !== "none");
+  if (isCartDrawerOpen) {
+    state.cartDrawerPushedHistory = false;
+    toggleCartDrawer(false, false);
+    return;
+  }
+
+  // 6. Navegación normal de hash de página
   const hash = window.location.hash || "#/";
 
   if (hash.startsWith("#/catalogo") || hash === "#catalogo") {
@@ -1856,13 +1924,22 @@ function updateCartUI() {
   }
 }
 
-function toggleCartDrawer(open = true) {
+function toggleCartDrawer(open = true, triggerHistoryBack = true) {
   const drawer = document.getElementById("cart-drawer");
   const overlay = document.getElementById("cart-overlay");
   const panel = document.getElementById("cart-panel");
   if (!drawer || !overlay || !panel) return;
 
   if (open) {
+    state.isCartDrawerOpen = true;
+    if (!state.cartDrawerPushedHistory) {
+      state.cartDrawerPushedHistory = true;
+      try {
+        history.pushState({ modalOpen: true, modalType: "cart" }, "");
+      } catch (err) {
+        console.warn("No se pudo registrar historial del carrito:", err);
+      }
+    }
     drawer.style.display = "block";
     drawer.classList.remove("hidden");
     document.body.classList.add("overflow-hidden");
@@ -1873,15 +1950,26 @@ function toggleCartDrawer(open = true) {
       panel.classList.add("translate-x-0");
     });
   } else {
+    state.isCartDrawerOpen = false;
     overlay.classList.remove("opacity-100");
     overlay.classList.add("opacity-0");
     panel.classList.remove("translate-x-0");
     panel.classList.add("translate-x-full");
-    document.body.classList.remove("overflow-hidden");
+    if (!state.isProductModalOpen && !state.isGuideModalOpen) {
+      document.body.classList.remove("overflow-hidden");
+    }
     setTimeout(() => {
       drawer.classList.add("hidden");
       drawer.style.display = "none";
     }, 280);
+
+    if (triggerHistoryBack && state.cartDrawerPushedHistory) {
+      state.cartDrawerPushedHistory = false;
+      state.isHistoryBackByModalClose = true;
+      history.back();
+    } else {
+      state.cartDrawerPushedHistory = false;
+    }
   }
 }
 
@@ -1950,6 +2038,20 @@ function sendOrderToWhatsApp() {
 function openProductModal(productId, defaultSize = null, defaultVariantId = null) {
   const product = PRODUCTS.find(p => String(p.id) === String(productId) || (p.variants && p.variants.some(v => String(v.id) === String(productId))));
   if (!product) return;
+
+  // Registrar posición de desplazamiento antes de abrir o bloquear body
+  state.modalScrollPosition = window.pageYOffset || document.documentElement.scrollTop || window.scrollY || 0;
+  state.isProductModalOpen = true;
+
+  // Empujar estado al historial para interceptar botón Atrás nativo de móvil y PC
+  if (!state.modalPushedHistory) {
+    state.modalPushedHistory = true;
+    try {
+      history.pushState({ modalOpen: true, modalType: "product", productId: productId, scrollY: state.modalScrollPosition }, "");
+    } catch (err) {
+      console.warn("No se pudo registrar historial del producto:", err);
+    }
+  }
 
   state.selectedProductForModal = product;
 
@@ -2379,7 +2481,8 @@ function selectModalSize(size) {
   });
 }
 
-function closeProductModal() {
+function closeProductModal(triggerHistoryBack = true) {
+  state.isProductModalOpen = false;
   const modal = document.getElementById("product-modal");
   if (modal) {
     modal.classList.remove("modal-active");
@@ -2394,6 +2497,27 @@ function closeProductModal() {
       }
     }, 200);
   }
+
+  // Restaurar de inmediato la posición exacta de desplazamiento previa
+  const savedScroll = state.modalScrollPosition;
+  if (typeof savedScroll === "number") {
+    window.scrollTo({ top: savedScroll, behavior: "instant" });
+    requestAnimationFrame(() => {
+      window.scrollTo({ top: savedScroll, behavior: "instant" });
+    });
+    setTimeout(() => {
+      window.scrollTo({ top: savedScroll, behavior: "instant" });
+    }, 50);
+  }
+
+  if (triggerHistoryBack && state.modalPushedHistory) {
+    state.modalPushedHistory = false;
+    state.isHistoryBackByModalClose = true;
+    history.back();
+  } else {
+    state.modalPushedHistory = false;
+  }
+
   state.selectedProductForModal = null;
   state.selectedModalSize = null;
 }
@@ -2412,6 +2536,17 @@ function addModalProductToCart() {
 function openRingSizeGuideModal() {
   const modal = document.getElementById("ring-size-guide-modal");
   if (modal) {
+    state.guideModalScrollPosition = window.pageYOffset || document.documentElement.scrollTop || window.scrollY || 0;
+    state.isGuideModalOpen = true;
+    if (!state.guideModalPushedHistory) {
+      state.guideModalPushedHistory = true;
+      try {
+        history.pushState({ modalOpen: true, modalType: "guide", scrollY: state.guideModalScrollPosition }, "");
+      } catch (err) {
+        console.warn("No se pudo registrar historial de la guía:", err);
+      }
+    }
+
     modal.style.display = "flex";
     modal.classList.remove("hidden");
     document.body.classList.add("overflow-hidden");
@@ -2422,17 +2557,28 @@ function openRingSizeGuideModal() {
   }
 }
 
-function closeRingSizeGuideModal() {
+function closeRingSizeGuideModal(triggerHistoryBack = true) {
+  state.isGuideModalOpen = false;
   const modal = document.getElementById("ring-size-guide-modal");
   if (modal) {
     modal.classList.remove("modal-active");
     setTimeout(() => {
       modal.classList.add("hidden");
       modal.style.display = "none";
-      if (!state.selectedProductForModal && document.getElementById("cart-drawer").classList.contains("hidden")) {
+      const cartDrawer = document.getElementById("cart-drawer");
+      const isCartOpen = cartDrawer && !cartDrawer.classList.contains("hidden") && cartDrawer.style.display !== "none";
+      if (!state.isProductModalOpen && !isCartOpen) {
         document.body.classList.remove("overflow-hidden");
       }
     }, 200);
+  }
+
+  if (triggerHistoryBack && state.guideModalPushedHistory) {
+    state.guideModalPushedHistory = false;
+    state.isHistoryBackByModalClose = true;
+    history.back();
+  } else {
+    state.guideModalPushedHistory = false;
   }
 }
 
