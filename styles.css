@@ -1425,6 +1425,17 @@ html.dark .product-hover-badge:hover svg {
 /* ==============================================================================
    ESTILOS DE GALERÍA DE FOTOS MULTI-IMAGEN Y SELECTOR DE VARIANTES
    ============================================================================== */
+#modal-image-container {
+  touch-action: pan-y;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+#modal-image-container img {
+  -webkit-user-drag: none;
+  user-drag: none;
+}
+
 .gallery-thumb-btn {
   width: 52px;
   height: 52px;

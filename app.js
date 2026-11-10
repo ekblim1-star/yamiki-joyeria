@@ -344,9 +344,9 @@ function getFeaturedProducts() {
 }
 
 // ==============================================================================
-// GESTOR TÁCTIL Y DESLIZAMIENTO CON EL DEDO (SWIPE FLUIDO EN MÓVILES)
+// GESTOR TÁCTIL Y DESLIZAMIENTO CON EL DEDO (SWIPE FLUIDO EN MÓVILES Y ARRASTRE PC)
 // ==============================================================================
-function enableSwipeGesture(element, onSwipeLeft, onSwipeRight) {
+function enableSwipeGesture(element, onSwipeLeft, onSwipeRight, isCarousel = false) {
   if (!element) return;
 
   let startX = 0;
@@ -365,7 +365,7 @@ function enableSwipeGesture(element, onSwipeLeft, onSwipeRight) {
     currentY = startY;
     isSwiping = true;
     startTime = Date.now();
-    stopCarouselAutoPlay();
+    if (isCarousel) stopCarouselAutoPlay();
   }, { passive: true });
 
   element.addEventListener("touchmove", (e) => {
@@ -383,21 +383,21 @@ function enableSwipeGesture(element, onSwipeLeft, onSwipeRight) {
     const absX = Math.abs(diffX);
     const absY = Math.abs(diffY);
 
-    // Si el deslizamiento horizontal es mayor al vertical y supera el umbral de 35px
-    if (absX > 35 && absX > absY) {
+    // Si el deslizamiento horizontal es mayor al vertical y supera el umbral de 30px
+    if (absX > 30 && absX > absY) {
       if (diffX < 0 && typeof onSwipeLeft === "function") {
         onSwipeLeft();
       } else if (diffX > 0 && typeof onSwipeRight === "function") {
         onSwipeRight();
       }
-    } else {
+    } else if (isCarousel) {
       startCarouselAutoPlay();
     }
   }, { passive: true });
 
   element.addEventListener("touchcancel", () => {
     isSwiping = false;
-    startCarouselAutoPlay();
+    if (isCarousel) startCarouselAutoPlay();
   }, { passive: true });
 
   // Mouse Drag Events (Prueba en PC con ratón)
@@ -408,27 +408,29 @@ function enableSwipeGesture(element, onSwipeLeft, onSwipeRight) {
     if (e.button !== 0) return;
     isMouseDown = true;
     mouseStartX = e.clientX;
-    stopCarouselAutoPlay();
+    if (isCarousel) stopCarouselAutoPlay();
   });
 
-  window.addEventListener("mouseup", (e) => {
+  element.addEventListener("mouseup", (e) => {
     if (!isMouseDown) return;
     isMouseDown = false;
     const diffX = e.clientX - mouseStartX;
-    if (Math.abs(diffX) > 40) {
+    if (Math.abs(diffX) > 35) {
       if (diffX < 0 && typeof onSwipeLeft === "function") {
         onSwipeLeft();
       } else if (diffX > 0 && typeof onSwipeRight === "function") {
         onSwipeRight();
       }
-    } else {
+    } else if (isCarousel) {
       startCarouselAutoPlay();
     }
   });
 
-  // Pausar auto-play al posar cursor
-  element.addEventListener("mouseenter", () => stopCarouselAutoPlay());
-  element.addEventListener("mouseleave", () => startCarouselAutoPlay());
+  if (isCarousel) {
+    // Pausar auto-play al posar cursor en el carrusel de inicio
+    element.addEventListener("mouseenter", () => stopCarouselAutoPlay());
+    element.addEventListener("mouseleave", () => startCarouselAutoPlay());
+  }
 }
 
 function initCarousel() {
@@ -533,7 +535,7 @@ function initCarousel() {
   });
 
   // Habilitar swipe táctil y arrastre con ratón
-  enableSwipeGesture(track, () => nextCarouselSlide(true), () => prevCarouselSlide(true));
+  enableSwipeGesture(track, () => nextCarouselSlide(true), () => prevCarouselSlide(true), true);
 
   startCarouselAutoPlay();
 }
@@ -2089,6 +2091,24 @@ function openProductModal(productId, defaultSize = null, defaultVariantId = null
   const foundInitIdx = photoList.findIndex(p => p.url === initPhoto);
   if (foundInitIdx !== -1) state.currentModalPhotoIdx = foundInitIdx;
 
+  // Control de flechas anterior/siguiente y contador de fotos
+  const prevBtn = document.getElementById("modal-prev-photo-btn");
+  const nextBtn = document.getElementById("modal-next-photo-btn");
+  const counter = document.getElementById("modal-photo-counter");
+
+  if (photoList.length > 1) {
+    if (prevBtn) prevBtn.classList.remove("hidden");
+    if (nextBtn) nextBtn.classList.remove("hidden");
+    if (counter) {
+      counter.classList.remove("hidden");
+      counter.textContent = `${state.currentModalPhotoIdx + 1} / ${photoList.length}`;
+    }
+  } else {
+    if (prevBtn) prevBtn.classList.add("hidden");
+    if (nextBtn) nextBtn.classList.add("hidden");
+    if (counter) counter.classList.add("hidden");
+  }
+
   // Renderizar tira de miniaturas
   const strip = document.getElementById("modal-thumbnails-strip");
   if (strip) {
@@ -2165,7 +2185,19 @@ function selectModalPhoto(idx) {
 
   const modalImg = document.getElementById("modal-product-image");
   if (modalImg) {
+    modalImg.style.opacity = "0.75";
     modalImg.src = photo.url;
+    modalImg.onload = () => {
+      modalImg.style.opacity = "1";
+    };
+  }
+
+  const counter = document.getElementById("modal-photo-counter");
+  if (counter && state.modalPhotos && state.modalPhotos.length > 1) {
+    counter.textContent = `${idx + 1} / ${state.modalPhotos.length}`;
+    counter.classList.remove("hidden");
+  } else if (counter) {
+    counter.classList.add("hidden");
   }
 
   const thumbs = document.querySelectorAll("#modal-thumbnails-strip .gallery-thumb-btn");
@@ -2615,6 +2647,31 @@ function setupEventListeners() {
       if (e.target === productModal) closeProductModal();
     });
   }
+
+  // Habilitar swipe táctil en móvil y arrastre con ratón en PC para la galería del modal
+  const modalImgContainer = document.getElementById("modal-image-container");
+  if (modalImgContainer) {
+    enableSwipeGesture(
+      modalImgContainer,
+      () => nextModalPhoto(),
+      () => prevModalPhoto(),
+      false
+    );
+  }
+
+  // Navegación por teclado en PC (flecha izquierda/derecha y escape)
+  document.addEventListener("keydown", (e) => {
+    const modal = document.getElementById("product-modal");
+    if (!modal || modal.classList.contains("hidden") || modal.style.display === "none") return;
+
+    if (e.key === "ArrowLeft") {
+      prevModalPhoto();
+    } else if (e.key === "ArrowRight") {
+      nextModalPhoto();
+    } else if (e.key === "Escape") {
+      closeProductModal();
+    }
+  });
 
   const guideModal = document.getElementById("ring-size-guide-modal");
   if (guideModal) {

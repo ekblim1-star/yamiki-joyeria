@@ -1515,38 +1515,46 @@
 
       <!-- Columna Izquierda: Galería Multimodal con Miniaturas y Flechas -->
       <div class="md:w-1/2 p-3 sm:p-4 bg-gray-50 dark:bg-[#000000] flex flex-col justify-between shrink-0">
-        <!-- Contenedor Foto Principal -->
-        <div class="relative w-full aspect-square rounded-2xl overflow-hidden bg-black/40 border border-gray-200 dark:border-white/10 group flex items-center justify-center">
+        <!-- Contenedor Foto Principal con Swipe Táctil y Botones Visibles en PC -->
+        <div id="modal-image-container" class="relative w-full aspect-square rounded-2xl overflow-hidden bg-black/40 border border-gray-200 dark:border-white/10 group flex items-center justify-center select-none touch-pan-y cursor-grab active:cursor-grabbing">
           <img
             id="modal-product-image"
             src=""
             alt="Joya"
-            class="w-full h-full object-cover object-center transition-all duration-300"
+            class="w-full h-full object-cover object-center transition-all duration-300 pointer-events-none select-none"
           />
-          <div id="modal-product-discount-badge" class="hidden absolute top-3 left-3 bg-[#e72380] text-white px-2.5 py-1 rounded-lg text-xs font-black shadow-md border border-white/20">
+          <div id="modal-product-discount-badge" class="hidden absolute top-3 left-3 bg-[#e72380] text-white px-2.5 py-1 rounded-lg text-xs font-black shadow-md border border-white/20 z-10">
           </div>
-          <div class="absolute bottom-3 left-3 bg-white/95 dark:bg-[#181818]/95 backdrop-blur-xs px-2.5 py-1 rounded-md text-[10px] font-bold text-sage-800 dark:text-rose-300 border border-gray-200 dark:border-white/10 shadow-xs">
+          
+          <!-- Contador de Fotos en Esquina Superior Derecha -->
+          <div id="modal-photo-counter" class="hidden absolute top-3 right-3 bg-black/70 backdrop-blur-md text-white px-2.5 py-1 rounded-full text-[11px] font-bold shadow-md border border-white/15 z-10 select-none">
+            1 / 1
+          </div>
+
+          <div class="absolute bottom-3 left-3 bg-white/95 dark:bg-[#181818]/95 backdrop-blur-xs px-2.5 py-1 rounded-md text-[10px] font-bold text-sage-800 dark:text-rose-300 border border-gray-200 dark:border-white/10 shadow-xs z-10 select-none">
             PLATA S925 SOBRE PEDIDO
           </div>
 
-          <!-- Flechas Anterior / Siguiente -->
+          <!-- Flechas Anterior / Siguiente (Visibles y Elegantes en PC y Móvil) -->
           <button
             type="button"
-            onclick="prevModalPhoto()"
+            onclick="event.stopPropagation(); prevModalPhoto();"
             id="modal-prev-photo-btn"
-            class="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/60 hover:bg-black/90 text-white flex items-center justify-center transition btn-press opacity-0 group-hover:opacity-100 shadow-md"
-            title="Foto anterior"
+            class="absolute left-2.5 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/90 hover:bg-white dark:bg-black/75 dark:hover:bg-black text-gray-800 dark:text-white flex items-center justify-center transition-all duration-200 btn-press shadow-lg border border-black/10 dark:border-white/20 z-20 cursor-pointer"
+            title="Foto anterior (o flecha izquierda en teclado)"
+            aria-label="Foto anterior"
           >
-            <i data-lucide="chevron-left" class="w-4 h-4"></i>
+            <i data-lucide="chevron-left" class="w-5 h-5"></i>
           </button>
           <button
             type="button"
-            onclick="nextModalPhoto()"
+            onclick="event.stopPropagation(); nextModalPhoto();"
             id="modal-next-photo-btn"
-            class="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/60 hover:bg-black/90 text-white flex items-center justify-center transition btn-press opacity-0 group-hover:opacity-100 shadow-md"
-            title="Siguiente foto"
+            class="absolute right-2.5 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/90 hover:bg-white dark:bg-black/75 dark:hover:bg-black text-gray-800 dark:text-white flex items-center justify-center transition-all duration-200 btn-press shadow-lg border border-black/10 dark:border-white/20 z-20 cursor-pointer"
+            title="Siguiente foto (o flecha derecha en teclado)"
+            aria-label="Siguiente foto"
           >
-            <i data-lucide="chevron-right" class="w-4 h-4"></i>
+            <i data-lucide="chevron-right" class="w-5 h-5"></i>
           </button>
         </div>
 
