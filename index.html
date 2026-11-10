@@ -77,7 +77,6 @@
 
   <link rel="preload" as="image" href="img/hero-bg-mobile-light.png" media="(max-width: 639px)">
   <link rel="preload" as="image" href="img/hero-bg-pc-light.png" media="(min-width: 640px)">
-  <link rel="preload" as="image" href="img/yamiki-hero-logo.png">
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body class="bg-[#f6f6f6] text-[#262E2B] flex flex-col min-h-screen selection:bg-rose-200 selection:text-sage-800">
@@ -312,15 +311,7 @@
       <!-- 1. Textura Grain Overlay (SVG fractalNoise) -->
       <div class="grain-overlay absolute inset-0 pointer-events-none opacity-20 z-[15]"></div>
 
-      <!-- 2. Logo Grande "YAMIKI" (Oculto porque el nuevo fondo ya incluye el diseño integrado) -->
-      <div class="hidden absolute inset-x-0 flex items-center justify-center pointer-events-none select-none z-[2]" style="top: 8%;">
-        <img 
-          src="img/yamiki-hero-logo.png" 
-          alt="Yamiki Joyería" 
-          class="hero-big-logo w-[280px] sm:w-[420px] md:w-[540px] lg:w-[620px] max-w-[85vw] h-auto object-contain select-none pointer-events-none"
-          draggable="false"
-        />
-      </div>
+
 
       <!-- 3. Etiqueta Superior Izquierda -->
       <div class="absolute top-4 left-4 sm:top-6 sm:left-8 z-[25] flex items-center gap-2">
