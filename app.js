@@ -1668,6 +1668,31 @@ function saveCartToStorage() {
   }
 }
 
+function cleanOrderTitle(title) {
+  if (!title) return "Joya de Plata Ley S925";
+  let t = String(title).replace(/^[,.\s]+/, "").trim();
+  // Quitar la parte de palabras clave tras la primera coma que no sea numérica (ej: no cortar 3,5 quilates)
+  const parts = t.split(/,\s+(?![0-9])/);
+  let main = parts[0].trim();
+  // Quitar coletillas de búsqueda de AliExpress
+  main = main.replace(/\s+(para mujer|de lujo|de alta calidad|regalo de joyería|regalo de boda|joyería fina|sortija de compromiso)$/i, "").trim();
+  return main.length > 5 ? main : t;
+}
+
+function cleanOrderVariantLabel(label) {
+  if (!label) return "";
+  let s = String(label).trim();
+  s = s.replace(/color\s+de\s+la\s+gema:\s*/gi, "");
+  s = s.replace(/color:\s*/gi, "");
+  s = s.replace(/modelo:\s*/gi, "");
+  s = s.replace(/[\u00A0\s]+/g, " ");
+  s = s.trim();
+  if (s.toLowerCase() === "única" || s.toLowerCase() === "unica" || s.toLowerCase() === "modelo principal") {
+    return "";
+  }
+  return s;
+}
+
 function addToCart(productId, quantity = 1, selectedSize = null, event = null, selectedVariant = null) {
   if (event) event.stopPropagation();
 
@@ -1679,9 +1704,12 @@ function addToCart(productId, quantity = 1, selectedSize = null, event = null, s
   const variantCode = variant ? variant.sku : product.code;
   const variantPhoto = variant ? variant.photo : product.image;
   const variantPrice = variant ? variant.price : product.price;
-  const variantName = (variant && variant.color && variant.color !== "Única" && variant.color !== "Modelo Principal") 
-    ? `${product.name} (${variant.color})` 
-    : product.name;
+  
+  const cleanColor = cleanOrderVariantLabel(variant ? variant.color : null);
+  const cleanTitle = cleanOrderTitle(product.name);
+  const variantName = (cleanColor && cleanColor !== "Única" && cleanColor !== "Modelo Principal" && cleanColor.toLowerCase() !== variantCode.toLowerCase()) 
+    ? `${cleanTitle} (${cleanColor})` 
+    : cleanTitle;
 
   let sizeToSet = selectedSize;
   const validSizes = variant ? variant.sizes : product.sizes;
@@ -1700,7 +1728,8 @@ function addToCart(productId, quantity = 1, selectedSize = null, event = null, s
       id: product.id,
       variantId: variantId,
       code: variantCode,
-      name: variantName,
+      name: cleanTitle,
+      variantColor: cleanColor,
       price: variantPrice,
       image: variantPhoto,
       category: product.category,
@@ -1992,26 +2021,28 @@ function sendOrderToWhatsApp() {
 
   const totalAmount = state.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   const totalPieces = state.cart.reduce((sum, item) => sum + item.quantity, 0);
-  const advanceAmount = Math.round(totalAmount * 0.5);
-  const remainingAmount = totalAmount - advanceAmount;
 
   let message = `¡Hola *${BUSINESS_CONFIG.brandName}*! ✨ Deseo realizar el siguiente pedido de joyería en *Plata Ley S925* sobre encargo:\n\n`;
-  message += `🛍️ *PIEZAS SELECCIONADAS:*\n`;
-  message += `------------------------------------\n`;
+  message += `💎 *PIEZAS SELECCIONADAS:*\n`;
+  message += `────────────────────\n`;
 
   state.cart.forEach((item, index) => {
     const itemSubtotal = formatCurrency(item.price * item.quantity);
-    let sizeDetails = "";
-    if (item.isRing && item.selectedSize) {
-      sizeDetails = ` (Talla: *${item.selectedSize}*)`;
-    }
+    const title = cleanOrderTitle(item.name);
+    const variantLabel = cleanOrderVariantLabel(item.variantColor || item.color);
 
-    message += `${index + 1}. *[${item.code}]* ${item.name}${sizeDetails}\n`;
+    message += `${index + 1}. *[${item.code}]* ${title}\n`;
+    if (variantLabel && variantLabel.toLowerCase() !== item.code.toLowerCase()) {
+      message += `   • Modelo: *${variantLabel}*\n`;
+    }
+    if (item.isRing && item.selectedSize) {
+      message += `   • Talla: *${item.selectedSize}*\n`;
+    }
     message += `   • Cantidad: ${item.quantity} pza(s) x ${formatCurrency(item.price)}\n`;
-    message += `   • Subtotal: ${itemSubtotal}\n`;
+    message += `   • Subtotal: *${itemSubtotal}*\n\n`;
   });
 
-  message += `------------------------------------\n`;
+  message += `────────────────────\n`;
   message += `📦 *Total de piezas:* ${totalPieces}\n`;
   message += `💰 *TOTAL GENERAL:* *${formatCurrency(totalAmount)} ${BUSINESS_CONFIG.currencyCode}*\n`;
   message += `🛡️ *GARANTÍA INCLUIDA:* 30 días contra cualquier defecto de fábrica en Plata Ley S925\n\n`;
@@ -2027,7 +2058,8 @@ function sendOrderToWhatsApp() {
 
   message += `\n¿Me podrían confirmar disponibilidad y los datos de pago/transferencia para procesar mi pedido? ¡Muchas gracias! 💖`;
 
-  const whatsappUrl = `https://wa.me/${BUSINESS_CONFIG.whatsappNumber}?text=${encodeURIComponent(message)}`;
+  // Usar endpoint directo de api.whatsapp.com/send para evitar que el redirect 302 de wa.me corrompa los emojis a 
+  const whatsappUrl = `https://api.whatsapp.com/send?phone=${BUSINESS_CONFIG.whatsappNumber}&text=${encodeURIComponent(message)}`;
   window.open(whatsappUrl, "_blank");
   showToast("¡Redirigiendo a WhatsApp con tu pedido y tallas!", null, "success");
 }
