@@ -97,32 +97,48 @@ async function loadProductsFromSupabase() {
     groupMap.forEach((rows, groupId) => {
       const primaryRow = rows.find(r => r.activo !== false && r.estado_stock !== "Agotada") || rows[0];
 
-      // La foto de portada guardada en base de datos es la fuente de verdad absoluta
-      const coverPhoto = primaryRow.foto_principal || "";
-
-      // Galería consolidada respetando el orden exacto configurado por el admin (foto_principal primero)
+      // 1. Recopilar todas las fotos de galería general
       const generalGalleries = [];
-      if (coverPhoto) {
-        generalGalleries.push(coverPhoto);
-      }
-      if (Array.isArray(primaryRow.galeria_fotos)) {
-        primaryRow.galeria_fotos.forEach(u => {
-          if (u && !generalGalleries.includes(u)) generalGalleries.push(u);
-        });
-      }
       rows.forEach(r => {
-        if (r.foto_principal && !generalGalleries.includes(r.foto_principal)) {
-          generalGalleries.push(r.foto_principal);
-        }
         if (Array.isArray(r.galeria_fotos)) {
           r.galeria_fotos.forEach(u => {
             if (u && !generalGalleries.includes(u)) generalGalleries.push(u);
           });
         }
       });
+
+      // 2. Determinar la foto de portada:
+      // Si el admin asignó una portada propia o personalizada (que no sea /variantes/), se respeta.
+      // Si es un recorte de variante (/variantes/), la foto oficial de presentación es foto_01 de la galería.
+      let coverPhoto = primaryRow.foto_principal;
+      if (!coverPhoto || coverPhoto.includes("/variantes/")) {
+        const foto01 = generalGalleries.find(u => u && (u.includes("foto_01") || u.includes("foto_1.")));
+        const cleanNonVar = generalGalleries.find(u => u && !u.includes("/variantes/"));
+        coverPhoto = foto01 || cleanNonVar || primaryRow.foto_principal || "";
+      }
+
+      // 3. Galería consolidada con coverPhoto como primera foto (#1)
+      const consolidatedGallery = [];
+      if (coverPhoto) {
+        consolidatedGallery.push(coverPhoto);
+      }
+      generalGalleries.forEach(u => {
+        if (u && !consolidatedGallery.includes(u)) consolidatedGallery.push(u);
+      });
+      rows.forEach(r => {
+        if (r.foto_principal && !consolidatedGallery.includes(r.foto_principal)) {
+          consolidatedGallery.push(r.foto_principal);
+        }
+        if (Array.isArray(r.galeria_fotos)) {
+          r.galeria_fotos.forEach(u => {
+            if (u && !consolidatedGallery.includes(u)) consolidatedGallery.push(u);
+          });
+        }
+      });
       const isNovedad = rows.some(r => r.es_novedad === true);
       const isOferta = rows.some(r => r.es_destacado === true || (r.badge && (r.badge.includes("%") || r.badge.includes("🔥"))));
       const allAgotado = rows.every(r => r.estado_stock === "Agotada" || r.activo === false);
+      const supplierLink = rows.find(r => r.enlace_aliexpress)?.enlace_aliexpress || primaryRow.enlace_aliexpress || "";
 
       groupedList.push({
         ...primaryRow,
@@ -132,7 +148,8 @@ async function loadProductsFromSupabase() {
         variants: rows,
         hasMultipleVariants: rows.length > 1,
         foto_principal: coverPhoto,
-        galeria_fotos: generalGalleries,
+        galeria_fotos: consolidatedGallery,
+        enlace_aliexpress: supplierLink,
         es_novedad: isNovedad,
         es_destacado: isOferta,
         estado_stock: allAgotado ? "Agotada" : "Disponible"

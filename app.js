@@ -84,26 +84,41 @@ async function syncProductsFromSupabase() {
           };
         });
 
-        // 1. La foto de portada guardada en base de datos es la fuente de verdad absoluta
-        const coverPhoto = primaryRow.foto_principal || (variants[0] ? variants[0].photo : "");
-
-        // 2. Construir la galería completa preservando el orden exacto configurado por el admin
-        const generalGalleries = [];
-        if (coverPhoto) {
-          generalGalleries.push(coverPhoto);
-        }
-        if (Array.isArray(primaryRow.galeria_fotos)) {
-          primaryRow.galeria_fotos.forEach(u => {
-            if (u && !generalGalleries.includes(u)) generalGalleries.push(u);
-          });
-        }
+        // 1. Recopilar fotos generales
+        const rawGeneralGalleries = [];
         rows.forEach(r => {
-          if (r.foto_principal && !generalGalleries.includes(r.foto_principal)) {
-            generalGalleries.push(r.foto_principal);
+          if (Array.isArray(r.galeria_fotos)) {
+            r.galeria_fotos.forEach(u => {
+              if (u && !rawGeneralGalleries.includes(u)) rawGeneralGalleries.push(u);
+            });
+          }
+        });
+
+        // 2. Determinar la foto de portada:
+        // Si el admin asignó una portada propia o personalizada (que no sea /variantes/), se respeta.
+        // Si es un recorte de variante (/variantes/), la foto oficial de presentación es foto_01 de la galería.
+        let coverPhoto = primaryRow.foto_principal;
+        if (!coverPhoto || coverPhoto.includes("/variantes/")) {
+          const foto01 = rawGeneralGalleries.find(u => u && (u.includes("foto_01") || u.includes("foto_1.")));
+          const cleanNonVar = rawGeneralGalleries.find(u => u && !u.includes("/variantes/"));
+          coverPhoto = foto01 || cleanNonVar || primaryRow.foto_principal || (variants[0] ? variants[0].photo : "");
+        }
+
+        // 3. Galería consolidada con coverPhoto como primera foto (#1)
+        const consolidatedGallery = [];
+        if (coverPhoto) {
+          consolidatedGallery.push(coverPhoto);
+        }
+        rawGeneralGalleries.forEach(u => {
+          if (u && !consolidatedGallery.includes(u)) consolidatedGallery.push(u);
+        });
+        rows.forEach(r => {
+          if (r.foto_principal && !consolidatedGallery.includes(r.foto_principal)) {
+            consolidatedGallery.push(r.foto_principal);
           }
           if (Array.isArray(r.galeria_fotos)) {
             r.galeria_fotos.forEach(u => {
-              if (u && !generalGalleries.includes(u)) generalGalleries.push(u);
+              if (u && !consolidatedGallery.includes(u)) consolidatedGallery.push(u);
             });
           }
         });
@@ -174,7 +189,7 @@ async function syncProductsFromSupabase() {
           description: primaryRow.descripcion || primaryRow.titulo,
           stock: !allAgotado,
           variants: variants,
-          gallery: generalGalleries
+          gallery: consolidatedGallery
         });
       });
 
@@ -1629,8 +1644,8 @@ function handleQuickAddToCart(productId, event) {
   const prod = PRODUCTS.find(p => p.id === productId);
   if (!prod) return;
 
-  // Si es un anillo con varias tallas, abrir modal para que elija su medida exacta
-  if (prod.isRing && prod.sizes && prod.sizes.length > 1 && prod.sizes[0] !== "Ajustable") {
+  // Si la joya tiene varios modelos o tallas de anillo, abrir modal para que elija su favorito
+  if (prod.hasMultipleVariants || (prod.isRing && prod.sizes && prod.sizes.length > 1 && prod.sizes[0] !== "Ajustable")) {
     openProductModal(productId);
     return;
   }
@@ -2092,14 +2107,16 @@ function openProductModal(productId, defaultSize = null, defaultVariantId = null
 
   state.selectedProductForModal = product;
 
-  // Seleccionar variante inicial
-  let activeVariant = product.variants ? product.variants[0] : null;
+  // Seleccionar variante inicial:
+  // Solo si el usuario abrió una variante explícita (defaultVariantId) o si la joya solo tiene 1 variante única.
+  // Si la joya tiene varios modelos, NO se pre-selecciona ninguno por defecto:
+  // el modal abre limpiamente en Foto 1 y el usuario elige su modelo con un toque.
+  let activeVariant = null;
   if (defaultVariantId && product.variants) {
     const found = product.variants.find(v => String(v.id) === String(defaultVariantId));
     if (found) activeVariant = found;
-  } else if (product.variants) {
-    const matched = product.variants.find(v => String(v.id) === String(productId));
-    if (matched) activeVariant = matched;
+  } else if (product.variants && product.variants.length === 1) {
+    activeVariant = product.variants[0];
   }
   state.selectedModalVariant = activeVariant;
 
@@ -2147,7 +2164,13 @@ function openProductModal(productId, defaultSize = null, defaultVariantId = null
   const modalDiscPill = document.getElementById("modal-product-discount-pill");
   const modalDiscBadge = document.getElementById("modal-product-discount-badge");
 
-  if (modalPrice) modalPrice.textContent = formatCurrency(curPrice);
+  if (modalPrice) {
+    if (!activeVariant && product.hasMultipleVariants && product.minPrice !== product.maxPrice && product.maxPrice > product.price) {
+      modalPrice.textContent = `Desde ${formatCurrency(product.price)}`;
+    } else {
+      modalPrice.textContent = formatCurrency(curPrice);
+    }
+  }
 
   if (isDisc && curOrigPrice && curOrigPrice > curPrice) {
     const pct = Math.round(((curOrigPrice - curPrice) / curOrigPrice) * 100);
@@ -2211,8 +2234,8 @@ function openProductModal(productId, defaultSize = null, defaultVariantId = null
             variantId: String(v.id)
           });
         } else {
-          // Si la URL ya estaba en la galería, vincular variantId para interactividad bidireccional
-          const existing = photoList.find(p => p.url === v.photo);
+          // Si la URL ya estaba en la galería, vincular variantId para interactividad bidireccional (excepto si es Foto 1 / Portada)
+          const existing = photoList.find((p, pIdx) => pIdx > 0 && p.url === v.photo);
           if (existing && !existing.variantId) {
             existing.variantId = String(v.id);
           }
@@ -2308,11 +2331,15 @@ function openProductModal(productId, defaultSize = null, defaultVariantId = null
   if (variantsSection && variantsList) {
     if (product.variants && product.variants.length > 1) {
       variantsSection.classList.remove("hidden");
-      if (variantLabel && activeVariant) {
-        variantLabel.textContent = activeVariant.color && activeVariant.color !== 'Única' ? activeVariant.color : activeVariant.sku;
+      if (variantLabel) {
+        if (activeVariant) {
+          variantLabel.textContent = activeVariant.color && activeVariant.color !== 'Única' ? activeVariant.color : activeVariant.sku;
+        } else {
+          variantLabel.textContent = "Elige un modelo:";
+        }
       }
       variantsList.innerHTML = product.variants.map(v => {
-        const isSelected = activeVariant && v.id === activeVariant.id;
+        const isSelected = activeVariant && String(v.id) === String(activeVariant.id);
         const labelText = v.color && v.color !== 'Única' ? v.color : v.sku;
         return `
           <button
@@ -2589,9 +2616,25 @@ function closeProductModal(triggerHistoryBack = true) {
 
 function addModalProductToCart() {
   if (!state.selectedProductForModal) return;
+  const product = state.selectedProductForModal;
+
+  // Si tiene varios modelos y el cliente no ha seleccionado ninguno, solicitarlo amablemente
+  if (product.hasMultipleVariants && !state.selectedModalVariant) {
+    showToast("Por favor selecciona un modelo antes de agregar al pedido.", "error");
+    const variantsSection = document.getElementById("modal-variants-section");
+    if (variantsSection) {
+      variantsSection.scrollIntoView({ behavior: "smooth", block: "center" });
+      variantsSection.classList.add("ring-2", "ring-[#e72380]", "p-2", "rounded-2xl");
+      setTimeout(() => {
+        variantsSection.classList.remove("ring-2", "ring-[#e72380]", "p-2", "rounded-2xl");
+      }, 1500);
+    }
+    return;
+  }
+
   const qtyInput = document.getElementById("modal-qty-input");
   const qty = qtyInput ? Math.max(1, parseInt(qtyInput.value) || 1) : 1;
-  addToCart(state.selectedProductForModal.id, qty, state.selectedModalSize, null, state.selectedModalVariant);
+  addToCart(product.id, qty, state.selectedModalSize, null, state.selectedModalVariant);
   closeProductModal();
 }
 
