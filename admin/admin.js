@@ -482,20 +482,48 @@ async function toggleDescuento(productId, newValue) {
   if (!prod) return;
 
   try {
-    const badgeText = newValue ? (prod.badge && prod.badge.includes("%") ? prod.badge : "-20% OFF") : "PLATA S925";
+    let finalPrice = prod.precio_venta;
+    let finalEspec = prod.especificaciones || "";
+    let finalBadge = prod.badge || "PLATA S925";
+
+    if (newValue) {
+      // Activar oferta rápida (20% de descuento)
+      let normalPrice = prod.precio_venta;
+      const m = finalEspec.match(/\[?PrecioOriginal:\s*([\d.]+)\]?/i);
+      if (m) {
+        normalPrice = parseFloat(m[1]);
+      } else {
+        finalEspec = `[PrecioOriginal: ${normalPrice}] ${finalEspec}`.trim();
+      }
+      finalPrice = Math.round(normalPrice * 0.8);
+      finalBadge = "-20% OFF";
+    } else {
+      // Desactivar oferta: restaurar precio normal habitual
+      const m = finalEspec.match(/\[?PrecioOriginal:\s*([\d.]+)\]?/i);
+      if (m) {
+        finalPrice = parseFloat(m[1]);
+        finalEspec = finalEspec.replace(/\[?PrecioOriginal:\s*[\d.]+\]?\s*\|?\s*/gi, "").trim();
+      }
+      finalBadge = "PLATA S925";
+    }
+
     const { error } = await supabaseClient
       .from("productos")
       .update({
+        precio_venta: finalPrice,
         es_destacado: newValue,
-        badge: badgeText,
+        badge: finalBadge,
+        especificaciones: finalEspec || null,
         updated_at: new Date().toISOString()
       })
       .eq("id", productId);
 
     if (error) throw error;
 
+    prod.precio_venta = finalPrice;
     prod.es_destacado = newValue;
-    prod.badge = badgeText;
+    prod.badge = finalBadge;
+    prod.especificaciones = finalEspec;
 
     calculateStats();
     applyFilters();
@@ -503,7 +531,7 @@ async function toggleDescuento(productId, newValue) {
       renderOfertasView();
     }
 
-    showToast("Oferta Actualizada", `"${prod.titulo.slice(0, 25)}..." ${newValue ? 'marcada en Oferta 🔥' : 'quitada de Ofertas'}.`, "success");
+    showToast("Oferta Actualizada", `"${prod.titulo.slice(0, 25)}..." ${newValue ? 'puesta en Oferta (-20%) 🔥' : 'precio regular restaurado'}.`, "success");
   } catch (err) {
     console.error("Error al cambiar estado de oferta:", err);
     showToast("Error", err.message || "No se pudo actualizar el descuento.", "error");
@@ -1659,37 +1687,43 @@ function handleEditAddUrl() {
 }
 
 function updateEditDiscountNotice() {
-  const saleInput = document.getElementById("edit-precio");
-  const origInput = document.getElementById("edit-precio-original");
+  const normalInput = document.getElementById("edit-precio");
+  const promoInput = document.getElementById("edit-precio-oferta");
   const checkDesc = document.getElementById("edit-es-descuento");
   const notice = document.getElementById("edit-descuento-live-notice");
   const badgeInput = document.getElementById("edit-badge-oferta");
   if (!notice) return;
 
-  const sale = parseFloat(saleInput ? saleInput.value : 0) || 0;
-  const orig = parseFloat(origInput ? origInput.value : 0) || 0;
+  const normal = parseFloat(normalInput ? normalInput.value : 0) || 0;
+  const promo = parseFloat(promoInput ? promoInput.value : 0) || 0;
   const isChecked = checkDesc ? checkDesc.checked : false;
 
   if (!isChecked) {
-    notice.innerHTML = '<span class="text-gray-400">💡 Activa el descuento e ingresa el precio original para ver el cálculo en vivo.</span>';
+    notice.innerHTML = `<span class="text-gray-400">💡 Promoción desactivada. La joya se venderá siempre a su precio regular de <strong>$${normal || 0} MXN</strong>.</span>`;
     return;
   }
 
-  if (!orig || orig <= sale) {
-    notice.innerHTML = `<span class="text-amber-400 font-bold">⚠️ El precio original (${orig ? '$' + orig : 'vacío'}) debe ser mayor al precio de venta ($${sale}) para calcular el descuento.</span>`;
+  if (!promo) {
+    notice.innerHTML = `<span class="text-gray-300">💡 Ingresa en cuánto quieres dar la joya en oferta para calcular el porcentaje de descuento y el badge automáticamente.</span>`;
     return;
   }
 
-  const pct = Math.round(((orig - sale) / orig) * 100);
-  const ahorro = Math.round(orig - sale);
+  if (promo >= normal) {
+    notice.innerHTML = `<span class="text-amber-400 font-bold">⚠️ El precio en oferta ($${promo}) debe ser menor al precio normal ($${normal}) para poder aplicar un descuento.</span>`;
+    return;
+  }
+
+  const pct = Math.round(((normal - promo) / normal) * 100);
+  const ahorro = Math.round(normal - promo);
 
   notice.innerHTML = `
-    <div class="space-y-0.5">
+    <div class="space-y-1">
       <div class="text-emerald-400 font-extrabold text-xs flex items-center gap-1.5">
-        <span>✨ ¡Descuento de ${pct}% de ahorro!</span>
+        <i data-lucide="sparkles" class="w-4 h-4 text-emerald-400"></i>
+        <span>✨ ¡Promoción Activa! ${pct}% de Descuento Especial</span>
       </div>
-      <div class="text-gray-300 text-[11px]">
-        Estás rebajando la joya de <span class="line-through text-gray-400 font-semibold">$${orig} MXN</span> a <strong class="text-white font-bold">$${sale} MXN</strong> (el cliente ahorra <strong>$${ahorro} MXN</strong>).
+      <div class="text-gray-300 text-[11px] leading-relaxed">
+        La joya se venderá al público a <strong class="text-emerald-400 text-xs">$${promo} MXN</strong> (su precio normal de <span class="line-through text-gray-400 font-medium">$${normal} MXN</span> aparecerá tachado). El cliente ahorra <strong class="text-white font-bold">$${ahorro} MXN</strong>.
       </div>
     </div>
   `;
@@ -1720,7 +1754,6 @@ function openEditProductModal(productId) {
   const cleanT = (prod.tallas || "Ajustable").replace(/\(.*?agotad.*?\)/gi, "").trim();
   document.getElementById("edit-tallas").value = cleanT;
   
-  document.getElementById("edit-precio").value = Math.round(prod.precio_venta || 0);
   document.getElementById("edit-costo").value = prod.costo_real ? Math.round(prod.costo_real) : "";
   document.getElementById("edit-stock").value = prod.estado_stock || "Disponible";
   document.getElementById("edit-enlace").value = prod.enlace_aliexpress || "";
@@ -1728,20 +1761,34 @@ function openEditProductModal(productId) {
   document.getElementById("edit-es-novedad").checked = prod.es_novedad === true;
   document.getElementById("edit-activo").checked = prod.activo !== false && prod.estado_stock !== "Agotada";
 
+  // Manejo inteligente de Precios (Normal vs Oferta)
+  let normalPrice = Math.round(prod.precio_venta || 0);
+  let promoPrice = "";
   const isOferta = prod.es_destacado === true || (prod.badge && (prod.badge.includes("%") || prod.badge.includes("🔥")));
-  const checkDesc = document.getElementById("edit-es-descuento");
-  if (checkDesc) checkDesc.checked = isOferta;
 
-  let origPrice = "";
+  let origInSpec = null;
   if (prod.especificaciones) {
     const m = prod.especificaciones.match(/\[?PrecioOriginal:\s*([\d.]+)\]?/i);
-    if (m) origPrice = Math.round(parseFloat(m[1]));
+    if (m) origInSpec = Math.round(parseFloat(m[1]));
   }
-  if (!origPrice && isOferta && prod.precio_venta) {
-    origPrice = Math.round(prod.precio_venta * 1.25);
+
+  if (origInSpec && isOferta) {
+    // Si ya estaba en oferta, origInSpec es el precio normal, y prod.precio_venta es el precio en oferta
+    normalPrice = origInSpec;
+    promoPrice = Math.round(prod.precio_venta || 0);
+  } else if (!origInSpec && isOferta) {
+    // Si estaba marcado en oferta pero no tenía PrecioOriginal guardado
+    normalPrice = Math.round(prod.precio_venta * 1.25);
+    promoPrice = Math.round(prod.precio_venta);
   }
-  const inputOrig = document.getElementById("edit-precio-original");
-  if (inputOrig) inputOrig.value = origPrice;
+
+  document.getElementById("edit-precio").value = normalPrice;
+
+  const promoInput = document.getElementById("edit-precio-oferta");
+  if (promoInput) promoInput.value = promoPrice;
+
+  const checkDesc = document.getElementById("edit-es-descuento");
+  if (checkDesc) checkDesc.checked = isOferta;
 
   const inputBadge = document.getElementById("edit-badge-oferta");
   if (inputBadge) inputBadge.value = prod.badge && prod.badge !== "PLATA S925" ? prod.badge : (isOferta ? "-20% OFF" : "");
@@ -1790,7 +1837,7 @@ async function handleEditProductSubmit(e) {
     let tallas = document.getElementById("edit-tallas").value.trim();
     tallas = tallas.replace(/\(.*?agotad.*?\)/gi, "").trim() || "Ajustable";
     
-    const precio = parseFloat(document.getElementById("edit-precio").value);
+    const normalPrice = parseFloat(document.getElementById("edit-precio").value);
     const costo = parseFloat(document.getElementById("edit-costo").value || 0);
     const stock = document.getElementById("edit-stock").value;
     const enlace = document.getElementById("edit-enlace").value.trim();
@@ -1810,20 +1857,29 @@ async function handleEditProductSubmit(e) {
     }
 
     const esDescuento = document.getElementById("edit-es-descuento") ? document.getElementById("edit-es-descuento").checked : false;
-    const precioOriginal = document.getElementById("edit-precio-original") ? parseFloat(document.getElementById("edit-precio-original").value || 0) : null;
+    const promoInput = document.getElementById("edit-precio-oferta");
+    const promoPrice = promoInput ? parseFloat(promoInput.value || 0) : 0;
     const badgeOferta = document.getElementById("edit-badge-oferta") ? document.getElementById("edit-badge-oferta").value.trim() : "";
 
+    let finalSellingPrice = normalPrice;
     let finalBadge = prod.badge || "PLATA S925";
-    if (esDescuento) {
-      finalBadge = badgeOferta || (finalBadge.includes("%") ? finalBadge : "-20% OFF");
-    } else if (finalBadge.includes("%") || finalBadge.includes("🔥")) {
-      finalBadge = "PLATA S925";
-    }
-
     let finalEspec = prod.especificaciones || "";
-    finalEspec = finalEspec.replace(/\[?PrecioOriginal:\s*[\d.]+\]?\s*\|?\s*/gi, "").trim();
-    if (esDescuento && precioOriginal && precioOriginal > precio) {
-      finalEspec = `[PrecioOriginal: ${precioOriginal}] ${finalEspec}`.trim();
+
+    // Limpiar previo PrecioOriginal
+    finalEspec = finalEspec.replace(/\b\[?PrecioOriginal:\s*[\d.]+\]?\s*\|?\s*/gi, "").trim();
+
+    if (esDescuento && promoPrice > 0 && promoPrice < normalPrice) {
+      // Promoción ACTIVA: se vende al precio rebajado y se guarda el precio normal como PrecioOriginal
+      finalSellingPrice = promoPrice;
+      finalEspec = `[PrecioOriginal: ${normalPrice}] ${finalEspec}`.trim();
+      const pct = Math.round(((normalPrice - promoPrice) / normalPrice) * 100);
+      finalBadge = badgeOferta || `-${pct}% OFF`;
+    } else {
+      // Promoción INACTIVA: se vende a su precio normal habitual
+      finalSellingPrice = normalPrice;
+      if (finalBadge.includes("%") || finalBadge.includes("🔥")) {
+        finalBadge = "PLATA S925";
+      }
     }
 
     // Manejar lista de fotos (principal + galería)
@@ -1836,14 +1892,14 @@ async function handleEditProductSubmit(e) {
       descripcion: descripcion,
       categoria: categoria,
       tallas: tallas,
-      precio_venta: precio,
+      precio_venta: finalSellingPrice,
       costo_real: costo > 0 ? costo : null,
       estado_stock: stock,
       enlace_aliexpress: enlace || null,
       foto_principal: mainPhotoUrl,
       galeria_fotos: newGallery,
       es_novedad: esNovedad,
-      es_destacado: esDescuento,
+      es_destacado: esDescuento && promoPrice > 0 && promoPrice < normalPrice,
       badge: finalBadge,
       especificaciones: finalEspec || null,
       activo: stock === "Agotada" ? false : activo,
@@ -1864,6 +1920,9 @@ async function handleEditProductSubmit(e) {
     applyFilters();
     if (state.activeTab === "portada") {
       renderPortadaView();
+    }
+    if (state.activeTab === "ofertas") {
+      renderOfertasView();
     }
 
     closeEditProductModal();

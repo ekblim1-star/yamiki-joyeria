@@ -830,8 +830,11 @@
             <!-- Precios y Stock -->
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div>
-                <label class="block font-bold text-gray-300 mb-1">Precio Venta (MXN) *</label>
-                <input type="number" step="1" id="edit-precio" oninput="updateEditDiscountNotice()" required class="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-xl text-white text-xs font-bold focus:outline-none focus:border-[#e72380]" />
+                <label class="block font-bold text-white mb-1 flex items-center justify-between">
+                  <span>Precio Normal / Habitual (MXN) *</span>
+                </label>
+                <input type="number" step="1" id="edit-precio" oninput="updateEditDiscountNotice()" required placeholder="Ej. 396" class="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-xl text-white text-xs font-bold focus:outline-none focus:border-[#e72380]" />
+                <span class="text-[10px] text-gray-400 mt-0.5 block">Precio regular de la joya</span>
               </div>
               <div>
                 <label class="block font-bold text-gray-400 mb-1">Costo Real (Privado)</label>
@@ -861,8 +864,12 @@
 
               <div id="edit-descuento-fields" class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
                 <div>
-                  <label class="block font-bold text-gray-300 text-[11px] mb-1">Precio Original Anterior (Tachado en Tienda)</label>
-                  <input type="number" step="1" id="edit-precio-original" oninput="updateEditDiscountNotice()" placeholder="Ej. 200 (se verá tachado)" class="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-xl text-white text-xs focus:outline-none focus:border-[#e72380]" />
+                  <label class="block font-bold text-white text-[11px] mb-1 flex items-center gap-1">
+                    <i data-lucide="tag" class="w-3.5 h-3.5 text-[#e72380]"></i>
+                    <span>Precio en Oferta (¿En cuánto lo quieres dar?) *</span>
+                  </label>
+                  <input type="number" step="1" id="edit-precio-oferta" oninput="updateEditDiscountNotice()" placeholder="Ej. 300 (precio rebajado)" class="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-xl text-white text-xs font-bold focus:outline-none focus:border-[#e72380]" />
+                  <span class="text-[10px] text-rose-300/80 mt-0.5 block">Solo se cobrará esto mientras la oferta esté activa.</span>
                 </div>
                 <div>
                   <label class="block font-bold text-gray-300 text-[11px] mb-1">Etiqueta Badge en Foto</label>
