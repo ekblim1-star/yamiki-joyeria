@@ -1,0 +1,1985 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#000000" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <title>Yamiki | Joyería en Plata Ley S925 - Catálogo Oficial</title>
+  <meta name="description" content="Joyería de plata única y elegante hecha para ti. Catálogo exclusivo de 141 piezas en Plata Ley S925: collares, anillos con medidas, aretes y sets sobre pedido. Envíos y pedidos directos por WhatsApp." />
+  
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>✨</text></svg>">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Google Fonts: Plus Jakarta Sans (Tipografía Unificada de Alta Gama) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <script>
+    (function() {
+      try {
+        var saved = localStorage.getItem('yamiki_theme');
+        var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+        if (saved === 'dark' || (!saved && prefersDark)) {
+          document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+        }
+      } catch (e) {}
+    })();
+  </script>
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'system-ui', '-apple-system', 'sans-serif'],
+            serif: ['"Plus Jakarta Sans"', 'system-ui', '-apple-system', 'sans-serif'],
+          },
+          colors: {
+            sage: {
+              50: '#f6f6f6',
+              100: '#e2f0e6',
+              200: '#b8dcc3',
+              300: '#9ac9a8',
+              400: '#7db68e',
+              500: '#5ea373',
+              600: '#477d59',
+              700: '#355f43',
+              800: '#23412e',
+              900: '#000000',
+              950: '#000000',
+            },
+            rose: {
+              50: '#fdf2f7',
+              100: '#fae4ef',
+              200: '#f5b1d0',
+              300: '#f085b7',
+              400: '#eb599d',
+              500: '#e72380',
+              600: '#e72380',
+            },
+            pearl: '#f6f6f6',
+          }
+        }
+      }
+    };
+  </script>
+
+  <link rel="preload" as="image" href="img/hero-bg-mobile-light.png" media="(max-width: 639px)">
+  <link rel="preload" as="image" href="img/hero-bg-pc-light.png" media="(min-width: 640px)">
+  <link rel="preload" as="image" href="img/yamiki-hero-logo.png">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="bg-[#f6f6f6] text-[#262E2B] flex flex-col min-h-screen selection:bg-rose-200 selection:text-sage-800">
+
+  <!-- ========================================================================
+       BARRA DE ANUNCIO SUPERIOR (COMPACTA)
+       ======================================================================== -->
+  <div class="bg-sage-900 text-sage-100 text-[10px] sm:text-[11px] py-1.5 px-4 text-center font-medium tracking-wide flex items-center justify-center gap-2 border-b border-sage-800">
+    <i data-lucide="sparkles" class="w-3 h-3 text-rose-300 animate-pulse"></i>
+    <span data-bind="topAnnouncement">✨ Catálogo Plata Ley S925 sobre pedido | Anticipo del 50% | WhatsApp: +52 993 290 2704</span>
+  </div>
+
+  <!-- ========================================================================
+       CABECERA (HEADER) Y NAVEGACIÓN PERMANENTE (COMPACTA Y ELEGANTE)
+       ======================================================================== -->
+  <header class="sticky top-0 z-50 glass-nav transition-all duration-300">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="relative flex items-center justify-between h-14 sm:h-16">
+        
+        <!-- Botón Menú Móvil (Izquierda en Móvil) -->
+        <div class="flex items-center md:hidden z-10">
+          <button 
+            type="button" 
+            id="mobile-menu-btn" 
+            class="p-2 -ml-1 rounded-full text-[#000000] dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-white/10 transition btn-press"
+            aria-label="Menú de Navegación"
+            title="Abrir Menú"
+          >
+            <i data-lucide="menu" class="w-5 h-5"></i>
+          </button>
+        </div>
+
+        <!-- Logo con Diamante Radiante y Marca Yamiki (Centrado en Móvil, Izquierda en PC) -->
+        <a 
+          href="#/" 
+          onclick="navigateTo('home'); return false;" 
+          class="navbar-brand-logo flex items-center gap-2 sm:gap-2.5 md:gap-3 group select-none flex-shrink-0" 
+          title="Volver al Inicio"
+        >
+          <!-- Icono de Joya Principal con Diamante Pulido (Tamaño Compacto) -->
+          <div class="relative w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-gradient-to-br from-[#000000] via-[#2D3C35] to-[#e72380] dark:from-[#000000] dark:via-[#1F2B24] dark:to-[#e72380] flex items-center justify-center text-white shadow-xs group-hover:scale-105 transition-all duration-200 flex-shrink-0 border border-white/20">
+            <i data-lucide="gem" class="w-4 h-4 sm:w-4.5 sm:h-4.5 text-white drop-shadow-xs" style="fill: rgba(255,255,255,0.3);"></i>
+            <span class="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-rose-500 border border-white dark:border-[#000000] animate-pulse"></span>
+          </div>
+
+          <!-- Textos y Diamante de la Marca -->
+          <div class="flex flex-col justify-center">
+            <div class="flex items-center gap-1.5 leading-none">
+              <span class="font-sans text-lg sm:text-xl font-extrabold tracking-tight text-[#000000] dark:text-white group-hover:text-[#e72380] dark:group-hover:text-rose-400 transition-colors">
+                Yamiki
+              </span>
+              <!-- Diamante Emblemático de Joyería: 100% visible, brillante y facetado -->
+              <span class="inline-flex items-center justify-center px-1.5 py-0.5 rounded-md bg-gradient-to-r from-rose-500 to-rose-600 text-white shadow-xs ring-1 ring-rose-400/40 transform group-hover:scale-110 transition-transform duration-200" title="Plata S925 & Joyería Fina">
+                <i data-lucide="gem" class="w-3 h-3 sm:w-3.5 sm:h-3.5 text-white drop-shadow-xs" style="fill: rgba(255,255,255,0.45);"></i>
+              </span>
+            </div>
+            
+            <div class="flex items-center gap-1 mt-0.5">
+              <i data-lucide="sparkles" class="w-2.5 h-2.5 text-[#e72380] dark:text-rose-400 flex-shrink-0"></i>
+              <span class="block text-[9px] sm:text-[10px] tracking-wider uppercase font-bold text-[#e72380] dark:text-rose-400 leading-none whitespace-nowrap">
+                Joyería de Plata S925
+              </span>
+            </div>
+          </div>
+        </a>
+
+        <!-- Enlaces de Navegación de Escritorio (PC) - Siempre Accesibles -->
+        <nav class="desktop-nav hidden md:flex items-center gap-4 lg:gap-6 text-xs sm:text-sm font-semibold text-[#000000] dark:text-gray-100">
+          <a href="#/" onclick="navigateTo('home'); return false;" id="nav-link-home" class="nav-tab-link active-nav-tab py-1 border-b-2 border-transparent hover:border-[#e72380] hover:text-[#e72380] dark:hover:text-rose-400 transition-all flex items-center gap-1.5">
+            <i data-lucide="home" class="w-3.5 h-3.5 text-sage-600 dark:text-sage-400"></i>
+            <span>Inicio</span>
+          </a>
+          <a href="#/catalogo" onclick="navigateTo('catalogo'); return false;" id="nav-link-catalogo" class="nav-tab-link py-1 border-b-2 border-transparent hover:border-[#e72380] hover:text-[#e72380] dark:hover:text-rose-400 transition-all flex items-center gap-1.5">
+            <i data-lucide="gem" class="w-3.5 h-3.5 text-rose-500"></i>
+            <span>Catálogo</span>
+          </a>
+          <a href="#/inicio#novedades-carousel" onclick="navigateTo('home', { scrollTo: 'novedades-carousel' }); return false;" id="nav-link-novedades" class="nav-tab-link py-1 border-b-2 border-transparent hover:border-[#e72380] hover:text-[#e72380] dark:hover:text-rose-400 transition-all flex items-center gap-1">
+            <i data-lucide="sparkles" class="w-3 h-3 text-rose-500"></i>
+            <span>Novedades</span>
+          </a>
+          <a href="javascript:void(0)" onclick="openRingSizeGuideModal()" id="nav-link-tallas" class="nav-tab-link py-1 border-b-2 border-transparent hover:border-[#e72380] flex items-center gap-1 text-[#e72380] dark:text-rose-400 font-bold transition-all" title="Abre la guía interactiva de medidas">
+            <i data-lucide="ruler" class="w-3.5 h-3.5"></i>
+            <span>Guía de Tallas</span>
+          </a>
+          <a href="#/inicio#pedidos-encargo" onclick="navigateTo('home', { scrollTo: 'pedidos-encargo' }); return false;" id="nav-link-pedidos" class="nav-tab-link py-1 border-b-2 border-transparent hover:border-[#e72380] hover:text-[#e72380] dark:hover:text-rose-400 transition-all">Pedidos & Anticipo</a>
+        </nav>
+
+        <!-- Botones de Acción (Formato Compacto) -->
+        <div class="flex items-center gap-2 sm:gap-2.5 z-10">
+          
+          <!-- Botón Guía rápida de tallas -->
+          <button 
+            type="button" 
+            onclick="openRingSizeGuideModal()"
+            class="hidden lg:inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full border border-sage-200 bg-white hover:bg-sage-50 text-[#000000] dark:bg-[#121212] dark:border-white/10 dark:text-gray-200 text-xs font-semibold transition shadow-xs btn-press"
+            title="Aprende cómo medir tu dedo para elegir la talla correcta de anillo"
+          >
+            <i data-lucide="ruler" class="w-3.5 h-3.5 text-[#e72380] dark:text-rose-400"></i>
+            <span>¿Cómo medir tu anillo?</span>
+          </button>
+
+          <!-- Botón WhatsApp Oficial (Solo Logo Oficial) -->
+          <a 
+            href="https://wa.me/529932902704" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            class="p-2 rounded-full bg-[#25D366]/10 text-[#25D366] hover:bg-[#25D366] hover:text-white dark:bg-[#25D366]/20 dark:text-[#25D366] dark:hover:bg-[#25D366] dark:hover:text-white transition btn-press border border-[#25D366]/30 flex items-center justify-center shadow-xs"
+            title="WhatsApp Oficial (+52 993 290 2704)"
+            aria-label="WhatsApp Oficial"
+          >
+            <svg class="w-4 h-4 sm:w-4.5 sm:h-4.5 fill-current" viewBox="0 0 24 24">
+              <path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0 0 12.04 2zm.01 1.67c2.2 0 4.26.86 5.82 2.42a8.225 8.225 0 0 1 2.41 5.83c0 4.54-3.7 8.24-8.24 8.24-1.48 0-2.93-.4-4.2-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.196 8.196 0 0 1-1.26-4.38c0-4.54 3.7-8.24 8.24-8.24zm4.52 11.66c-.25-.13-1.47-.72-1.7-.81-.23-.08-.39-.13-.56.13-.17.25-.64.81-.79.97-.14.17-.29.19-.54.06-.25-.13-1.06-.39-2.01-1.24-.74-.66-1.25-1.48-1.39-1.73-.14-.25-.02-.39.11-.51.11-.11.25-.29.37-.43.13-.15.17-.25.25-.42.08-.17.04-.31-.02-.44-.06-.13-.56-1.34-.76-1.84-.2-.48-.4-.42-.56-.43h-.47c-.17 0-.44.06-.67.31-.23.25-.88.86-.88 2.1 0 1.24.9 2.44 1.03 2.61.13.17 1.77 2.7 4.29 3.79.6.26 1.07.41 1.44.53.6.19 1.15.16 1.58.1.48-.07 1.47-.6 1.68-1.18.21-.58.21-1.07.15-1.18-.06-.11-.23-.18-.48-.3z"/>
+            </svg>
+          </a>
+
+
+
+          <!-- Botón Modo Noche / Modo Día -->
+          <button
+            type="button"
+            id="theme-toggle-btn"
+            onclick="toggleDarkMode()"
+            class="p-2 rounded-full bg-sage-50 hover:bg-sage-100 text-[#000000] dark:bg-[#121212] dark:text-gray-100 dark:hover:bg-[#202C25] transition btn-press shadow-xs border border-sage-200 dark:border-white/10"
+            aria-label="Cambiar entre modo día y noche"
+            title="Cambiar a Modo Noche / Modo Día"
+          >
+            <i data-lucide="moon" id="theme-toggle-icon" class="w-4 h-4 sm:w-4.5 sm:h-4.5 transition-transform duration-300"></i>
+          </button>
+
+          <!-- Botón Abrir Carrito -->
+          <button 
+            type="button" 
+            onclick="toggleCartDrawer(true)"
+            class="relative p-2 rounded-full bg-sage-50 hover:bg-sage-100 text-[#000000] dark:bg-[#121212] dark:text-gray-100 dark:hover:bg-[#202C25] transition btn-press border border-sage-200 dark:border-white/10 flex items-center justify-center shadow-xs"
+            aria-label="Abrir Carrito de Compras"
+          >
+            <i data-lucide="shopping-bag" class="w-4 h-4 sm:w-4.5 sm:h-4.5 text-[#2D3C35] dark:text-gray-200"></i>
+            <span class="cart-counter-badge hidden" aria-label="Cantidad de piezas en el pedido">
+              0
+            </span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Menú desplegable para móviles - Sistema de Subpáginas Limpias -->
+    <div id="mobile-menu" class="hidden md:hidden bg-white/98 dark:bg-[#000000]/98 border-b border-gray-200 dark:border-white/10 px-4 pt-2 pb-6 space-y-3 backdrop-blur-md shadow-lg">
+      <a href="#/" onclick="navigateTo('home'); document.getElementById('mobile-menu').classList.add('hidden'); return false;" class="block py-2 text-base font-semibold text-[#000000] hover:text-[#e72380] dark:text-gray-100 dark:hover:text-rose-400 border-b border-gray-100 dark:border-white/5 flex items-center gap-2">
+        <i data-lucide="home" class="w-4 h-4 text-sage-600"></i>
+        <span>Página de Inicio (Home)</span>
+      </a>
+      <a href="#/catalogo" onclick="navigateTo('catalogo'); document.getElementById('mobile-menu').classList.add('hidden'); return false;" class="block py-2 text-base font-semibold text-[#000000] hover:text-[#e72380] dark:text-gray-100 dark:hover:text-rose-400 border-b border-gray-100 dark:border-white/5 flex items-center gap-2">
+        <i data-lucide="gem" class="w-4 h-4 text-rose-500"></i>
+        <span>Catálogo Completo con Filtros</span>
+      </a>
+      <a href="#/inicio#novedades-carousel" onclick="navigateTo('home', { scrollTo: 'novedades-carousel' }); document.getElementById('mobile-menu').classList.add('hidden'); return false;" class="block py-2 text-base font-semibold text-[#000000] hover:text-[#e72380] dark:text-gray-100 dark:hover:text-rose-400 border-b border-gray-100 dark:border-white/5 flex items-center gap-2">
+        <i data-lucide="sparkles" class="w-4 h-4 text-rose-500"></i>
+        <span>Novedades & Lo Más Reciente</span>
+      </a>
+      <a href="javascript:void(0)" onclick="openRingSizeGuideModal(); document.getElementById('mobile-menu').classList.add('hidden');" class="block py-2 text-base font-bold text-[#e72380] dark:text-rose-400 border-b border-gray-100 dark:border-white/5 flex items-center gap-2">
+        <i data-lucide="ruler" class="w-4 h-4"></i>
+        <span>Guía de Medidas de Anillos</span>
+      </a>
+      <a href="#/inicio#pedidos-encargo" onclick="navigateTo('home', { scrollTo: 'pedidos-encargo' }); document.getElementById('mobile-menu').classList.add('hidden'); return false;" class="block py-2 text-base font-semibold text-[#000000] hover:text-[#e72380] dark:text-gray-100 dark:hover:text-rose-400 border-b border-gray-100 dark:border-white/5">Pedidos Especiales (50% Anticipo)</a>
+
+      <div class="pt-3 flex items-center justify-between">
+        <span class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Tema Visual</span>
+        <button
+          type="button"
+          onclick="toggleDarkMode()"
+          id="mobile-theme-toggle-text"
+          class="px-3.5 py-1.5 rounded-full text-xs font-bold transition btn-press bg-sage-100 dark:bg-white/10 text-sage-800 dark:text-white"
+        >
+          🌙 Modo Noche
+        </button>
+      </div>
+
+      <div class="pt-3 border-t border-gray-100 dark:border-white/5 space-y-2">
+        <span class="block text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Nuestras Redes Oficiales</span>
+        
+        <div class="grid grid-cols-2 gap-2">
+          <!-- Instagram con logo oficial -->
+          <a 
+            href="https://www.instagram.com/yamiki_oficial?exln=MW5teW12N3Fpa3cxNA%3D%3D&utm_source=qr" 
+            target="_blank"
+            rel="noopener noreferrer"
+            class="flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-white text-xs font-bold transition btn-press shadow-xs"
+            style="background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285AEB 90%);"
+          >
+            <svg class="w-4.5 h-4.5 fill-white shrink-0" viewBox="0 0 24 24">
+              <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+            </svg>
+            <span>Instagram</span>
+          </a>
+
+          <!-- Facebook con logo oficial -->
+          <a 
+            href="https://www.facebook.com/share/1FDfvHc4p3/?mibextid=wwXIfr" 
+            target="_blank"
+            rel="noopener noreferrer"
+            class="flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl bg-[#1877F2] hover:bg-[#166fe5] text-white text-xs font-bold transition btn-press shadow-xs"
+          >
+            <svg class="w-4.5 h-4.5 fill-white shrink-0" viewBox="0 0 24 24">
+              <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+            </svg>
+            <span>Facebook</span>
+          </a>
+        </div>
+
+        <!-- WhatsApp con logo oficial -->
+        <a 
+          href="https://wa.me/529932902704" 
+          target="_blank"
+          rel="noopener noreferrer"
+          class="w-full inline-flex items-center justify-center gap-2 py-2.5 rounded-xl bg-[#25D366] hover:bg-[#20ba5a] text-white font-bold text-xs sm:text-sm shadow-sm transition btn-press mt-1"
+        >
+          <svg class="w-4.5 h-4.5 fill-white shrink-0" viewBox="0 0 24 24">
+            <path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0 0 12.04 2zm.01 1.67c2.2 0 4.26.86 5.82 2.42a8.225 8.225 0 0 1 2.41 5.83c0 4.54-3.7 8.24-8.24 8.24-1.48 0-2.93-.4-4.2-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.196 8.196 0 0 1-1.26-4.38c0-4.54 3.7-8.24 8.24-8.24zm4.52 11.66c-.25-.13-1.47-.72-1.7-.81-.23-.08-.39-.13-.56.13-.17.25-.64.81-.79.97-.14.17-.29.19-.54.06-.25-.13-1.06-.39-2.01-1.24-.74-.66-1.25-1.48-1.39-1.73-.14-.25-.02-.39.11-.51.11-.11.25-.29.37-.43.13-.15.17-.25.25-.42.08-.17.04-.31-.02-.44-.06-.13-.56-1.34-.76-1.84-.2-.48-.4-.42-.56-.43h-.47c-.17 0-.44.06-.67.31-.23.25-.88.86-.88 2.1 0 1.24.9 2.44 1.03 2.61.13.17 1.77 2.7 4.29 3.79.6.26 1.07.41 1.44.53.6.19 1.15.16 1.58.1.48-.07 1.47-.6 1.68-1.18.21-.58.21-1.07.15-1.18-.06-.11-.23-.18-.48-.3z"/>
+          </svg>
+          <span>WhatsApp</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- ========================================================================
+       PORTADA (HERO SECTION) - CARRUSEL 3D CON FONDO YAMIKI
+       ======================================================================== -->
+  
+  <!-- ========================================================================
+       VISTA 1: PÁGINA DE INICIO (HOME)
+       ======================================================================== -->
+  <main id="view-home" class="page-view flex flex-col flex-grow">
+    <section id="inicio" class="relative w-full overflow-hidden select-none font-sans hero-section-bg">
+    <div id="yamiki-hero-root" class="relative w-full h-[84svh] sm:h-[88vh] min-h-[500px] max-h-[860px] overflow-hidden hero-3d-bg">
+
+      <!-- 1. Textura Grain Overlay (SVG fractalNoise) -->
+      <div class="grain-overlay absolute inset-0 pointer-events-none opacity-20 z-[15]"></div>
+
+      <!-- 2. Logo Grande "YAMIKI" (Oculto porque el nuevo fondo ya incluye el diseño integrado) -->
+      <div class="hidden absolute inset-x-0 flex items-center justify-center pointer-events-none select-none z-[2]" style="top: 8%;">
+        <img 
+          src="img/yamiki-hero-logo.png" 
+          alt="Yamiki Joyería" 
+          class="hero-big-logo w-[280px] sm:w-[420px] md:w-[540px] lg:w-[620px] max-w-[85vw] h-auto object-contain select-none pointer-events-none"
+          draggable="false"
+        />
+      </div>
+
+      <!-- 3. Etiqueta Superior Izquierda -->
+      <div class="absolute top-4 left-4 sm:top-6 sm:left-8 z-[25] flex items-center gap-2">
+        <span class="inline-flex items-center gap-2 px-3 py-1 sm:px-3.5 sm:py-1.5 rounded-full bg-white/90 text-gray-900 border border-gray-200/90 shadow-sm dark:bg-black/60 dark:text-white dark:border-white/20 text-[11px] sm:text-xs font-semibold uppercase tracking-[0.14em]">
+          <span class="w-2 h-2 rounded-full bg-rose-500 animate-pulse"></span>
+          Joyería Plata Ley S925
+        </span>
+      </div>
+
+      <!-- 4. Contenedor del Carrusel 3D de Joyas -->
+      <div id="hero-carousel-container" class="absolute inset-0 z-[10] pointer-events-auto">
+        <!-- Inyectado y animado automáticamente desde app.js -->
+      </div>
+
+      <!-- 5. Controles Inferiores Izquierda (Botones circulares + botón CTA Explorar Joyas) -->
+      <div class="absolute bottom-5 left-4 sm:bottom-8 sm:left-8 z-[25] flex items-center gap-2.5 sm:gap-3">
+        <div class="flex items-center gap-1.5 sm:gap-2">
+          <button 
+            type="button" 
+            onclick="navigateHero('prev')" 
+            class="btn-press w-10 h-10 sm:w-11 sm:h-11 rounded-full border border-gray-200 bg-white/95 text-gray-900 shadow-md hover:bg-gray-100 dark:bg-white/10 dark:text-white dark:border-white/30 dark:hover:bg-white/20 backdrop-blur-md flex items-center justify-center transition-all hover:scale-105 active:scale-95 cursor-pointer"
+            aria-label="Pieza anterior"
+          >
+            <i data-lucide="arrow-left" class="w-4 h-4 sm:w-4.5 sm:h-4.5 stroke-[2.25]"></i>
+          </button>
+          <button 
+            type="button" 
+            onclick="navigateHero('next')" 
+            class="btn-press w-10 h-10 sm:w-11 sm:h-11 rounded-full border border-gray-200 bg-white/95 text-gray-900 shadow-md hover:bg-gray-100 dark:bg-white/10 dark:text-white dark:border-white/30 dark:hover:bg-white/20 backdrop-blur-md flex items-center justify-center transition-all hover:scale-105 active:scale-95 cursor-pointer"
+            aria-label="Siguiente pieza"
+          >
+            <i data-lucide="arrow-right" class="w-4 h-4 sm:w-4.5 sm:h-4.5 stroke-[2.25]"></i>
+          </button>
+        </div>
+
+        <a 
+          href="#catalogo" 
+          class="btn-press inline-flex items-center gap-2 px-4 py-2 sm:px-5 sm:py-2.5 rounded-full bg-[#000000] hover:bg-[#2D3C35] text-white text-xs sm:text-sm font-bold uppercase tracking-wider transition-all shadow-md group dark:bg-white/15 dark:hover:bg-white/25 dark:border dark:border-white/30"
+        >
+          <span>Explorar Joyas</span>
+          <i data-lucide="arrow-right" class="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[2.25] transition-transform duration-200 group-hover:translate-x-1"></i>
+        </a>
+      </div>
+
+    </div>
+  </section>
+    
+  <!-- ========================================================================
+       SECCIÓN: GRID DE CATEGORÍAS DESTACADAS (LIFESTYLE CARDS CON OVERLAY)
+       ======================================================================== -->
+  <section id="categorias-destacadas" class="py-12 sm:py-16 md:py-20 bg-[#f6f6f6] dark:bg-[#0E1311] border-b border-gray-200/60 dark:border-white/5 relative">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <!-- Encabezado de la Sección -->
+      <div class="text-center max-w-2xl mx-auto mb-8 sm:mb-12">
+        <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/40 text-xs font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400 mb-3 shadow-xs">
+          <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+          <span>Colecciones Exclusivas S925</span>
+        </div>
+        <h2 class="font-sans text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight text-sage-900 dark:text-white">
+          Explora por Categoría
+        </h2>
+        <p class="mt-2 text-sm sm:text-base text-gray-600 dark:text-gray-300">
+          Encuentra la pieza perfecta para cada ocasión. Toca cualquier categoría para ver todos los modelos disponibles en nuestro catálogo.
+        </p>
+      </div>
+
+      <!-- Grid Visual de 4 Categorías de Estilo de Vida -->
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-5 lg:gap-6">
+        
+        <!-- Tarjeta 1: Anillos -->
+        <div 
+          onclick="navigateTo('catalogo', { category: 'anillos' })" onkeydown="if(event.key==='Enter'||event.key===' '){navigateTo('catalogo', { category: 'anillos' });event.preventDefault();}" 
+          class="category-card group relative h-64 sm:h-72 md:h-80 lg:h-96 rounded-2xl overflow-hidden cursor-pointer shadow-md hover:shadow-xl border border-gray-200/80 dark:border-white/10"
+          role="button"
+          tabindex="0"
+          aria-label="Ver categoría de Anillos de Plata S925"
+        >
+          <img 
+            src="img/categories/anillos.jpg" 
+            alt="Anillos de Plata S925 Yamiki" 
+            class="category-card-img w-full h-full object-cover object-center"
+            loading="lazy"
+          />
+          <div class="category-card-overlay absolute inset-0 flex flex-col justify-end p-4 sm:p-5 text-white">
+            <span class="text-[11px] sm:text-xs font-semibold tracking-wider uppercase text-rose-300 drop-shadow-sm flex items-center gap-1 mb-1">
+              <i data-lucide="circle-dot" class="w-3 h-3"></i>
+              29 Modelos
+            </span>
+            <h3 class="font-sans text-lg sm:text-xl md:text-2xl font-bold tracking-tight text-white drop-shadow-sm group-hover:text-rose-100 transition-colors">
+              Anillos
+            </h3>
+            <p class="text-xs text-gray-200/90 hidden sm:block mt-0.5 line-clamp-1">
+              Solitarios, circonias y ajustables
+            </p>
+            <div class="mt-2.5 flex items-center gap-1.5 text-xs font-semibold text-white/95 group-hover:translate-x-1 transition-transform">
+              <span>Explorar</span>
+              <i data-lucide="arrow-right" class="w-3.5 h-3.5 text-rose-400"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tarjeta 2: Collares -->
+        <div 
+          onclick="navigateTo('catalogo', { category: 'collares' })" onkeydown="if(event.key==='Enter'||event.key===' '){navigateTo('catalogo', { category: 'collares' });event.preventDefault();}" 
+          class="category-card group relative h-64 sm:h-72 md:h-80 lg:h-96 rounded-2xl overflow-hidden cursor-pointer shadow-md hover:shadow-xl border border-gray-200/80 dark:border-white/10"
+          role="button"
+          tabindex="0"
+          aria-label="Ver categoría de Collares y Cadenas de Plata S925"
+        >
+          <img 
+            src="img/categories/collares.jpg" 
+            alt="Collares y Cadenas de Plata S925 Yamiki" 
+            class="category-card-img w-full h-full object-cover object-center"
+            loading="lazy"
+          />
+          <div class="category-card-overlay absolute inset-0 flex flex-col justify-end p-4 sm:p-5 text-white">
+            <span class="text-[11px] sm:text-xs font-semibold tracking-wider uppercase text-rose-300 drop-shadow-sm flex items-center gap-1 mb-1">
+              <i data-lucide="gem" class="w-3 h-3"></i>
+              63 Modelos
+            </span>
+            <h3 class="font-sans text-lg sm:text-xl md:text-2xl font-bold tracking-tight text-white drop-shadow-sm group-hover:text-rose-100 transition-colors">
+              Collares
+            </h3>
+            <p class="text-xs text-gray-200/90 hidden sm:block mt-0.5 line-clamp-1">
+              Dijes finos, gargantillas y cadenas
+            </p>
+            <div class="mt-2.5 flex items-center gap-1.5 text-xs font-semibold text-white/95 group-hover:translate-x-1 transition-transform">
+              <span>Explorar</span>
+              <i data-lucide="arrow-right" class="w-3.5 h-3.5 text-rose-400"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tarjeta 3: Aretes -->
+        <div 
+          onclick="navigateTo('catalogo', { category: 'aretes' })" onkeydown="if(event.key==='Enter'||event.key===' '){navigateTo('catalogo', { category: 'aretes' });event.preventDefault();}" 
+          class="category-card group relative h-64 sm:h-72 md:h-80 lg:h-96 rounded-2xl overflow-hidden cursor-pointer shadow-md hover:shadow-xl border border-gray-200/80 dark:border-white/10"
+          role="button"
+          tabindex="0"
+          aria-label="Ver categoría de Aretes y Huggies de Plata S925"
+        >
+          <img 
+            src="img/categories/aretes.jpg" 
+            alt="Aretes y Huggies de Plata S925 Yamiki" 
+            class="category-card-img w-full h-full object-cover object-center"
+            loading="lazy"
+          />
+          <div class="category-card-overlay absolute inset-0 flex flex-col justify-end p-4 sm:p-5 text-white">
+            <span class="text-[11px] sm:text-xs font-semibold tracking-wider uppercase text-rose-300 drop-shadow-sm flex items-center gap-1 mb-1">
+              <i data-lucide="ear" class="w-3 h-3"></i>
+              48 Modelos
+            </span>
+            <h3 class="font-sans text-lg sm:text-xl md:text-2xl font-bold tracking-tight text-white drop-shadow-sm group-hover:text-rose-100 transition-colors">
+              Aretes
+            </h3>
+            <p class="text-xs text-gray-200/90 hidden sm:block mt-0.5 line-clamp-1">
+              Broqueles, huggies y colgantes
+            </p>
+            <div class="mt-2.5 flex items-center gap-1.5 text-xs font-semibold text-white/95 group-hover:translate-x-1 transition-transform">
+              <span>Explorar</span>
+              <i data-lucide="arrow-right" class="w-3.5 h-3.5 text-rose-400"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tarjeta 4: Pulseras & Sets -->
+        <div 
+          onclick="navigateTo('catalogo', { category: 'sets' })" onkeydown="if(event.key==='Enter'||event.key===' '){navigateTo('catalogo', { category: 'sets' });event.preventDefault();}" 
+          class="category-card group relative h-64 sm:h-72 md:h-80 lg:h-96 rounded-2xl overflow-hidden cursor-pointer shadow-md hover:shadow-xl border border-gray-200/80 dark:border-white/10"
+          role="button"
+          tabindex="0"
+          aria-label="Ver categoría de Pulseras y Sets de Plata S925"
+        >
+          <img 
+            src="img/categories/pulseras.jpg" 
+            alt="Pulseras y Sets de Plata S925 Yamiki" 
+            class="category-card-img w-full h-full object-cover object-center"
+            loading="lazy"
+          />
+          <div class="category-card-overlay absolute inset-0 flex flex-col justify-end p-4 sm:p-5 text-white">
+            <span class="text-[11px] sm:text-xs font-semibold tracking-wider uppercase text-rose-300 drop-shadow-sm flex items-center gap-1 mb-1">
+              <i data-lucide="sparkles" class="w-3 h-3"></i>
+              Exclusivos
+            </span>
+            <h3 class="font-sans text-lg sm:text-xl md:text-2xl font-bold tracking-tight text-white drop-shadow-sm group-hover:text-rose-100 transition-colors">
+              Pulseras & Sets
+            </h3>
+            <p class="text-xs text-gray-200/90 hidden sm:block mt-0.5 line-clamp-1">
+              Brazaletes, combinaciones y juegos
+            </p>
+            <div class="mt-2.5 flex items-center gap-1.5 text-xs font-semibold text-white/95 group-hover:translate-x-1 transition-transform">
+              <span>Explorar</span>
+              <i data-lucide="arrow-right" class="w-3.5 h-3.5 text-rose-400"></i>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+    <section id="novedades-carousel" class="py-12 bg-white border-y border-gray-100 relative">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <!-- Encabezado del Carrusel -->
+      <div class="flex flex-col sm:flex-row items-center justify-between mb-6 gap-4">
+        <div>
+          <div class="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-rose-500 mb-1">
+            <i data-lucide="sparkles" class="w-4 h-4"></i>
+            <span>Lo Más Nuevo & Tendencias</span>
+          </div>
+          <h2 class="font-sans text-2xl sm:text-3xl font-extrabold tracking-tight text-sage-900">Novedades Destacadas en Plata S925</h2>
+        </div>
+
+        <!-- Botones de Control del Carrusel -->
+        <div class="flex items-center gap-2">
+          <button 
+            type="button" 
+            onclick="prevCarouselSlide(true)" 
+            class="p-2.5 rounded-full border border-gray-200 bg-white hover:bg-sage-50 text-sage-800 transition shadow-xs btn-press"
+            aria-label="Pieza anterior"
+          >
+            <i data-lucide="chevron-left" class="w-5 h-5"></i>
+          </button>
+          <button 
+            type="button" 
+            onclick="nextCarouselSlide(true)" 
+            class="p-2.5 rounded-full border border-gray-200 bg-white hover:bg-sage-50 text-sage-800 transition shadow-xs btn-press"
+            aria-label="Siguiente pieza"
+          >
+            <i data-lucide="chevron-right" class="w-5 h-5"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Contenedor del Carrusel -->
+      <div id="carousel-container" class="overflow-hidden relative rounded-2xl">
+        <div id="carousel-track" class="carousel-track">
+          <!-- Slides inyectados dinámicamente desde app.js -->
+        </div>
+      </div>
+
+      <!-- Indicadores de puntos -->
+      <div id="carousel-dots" class="flex items-center justify-center gap-2 mt-4">
+        <!-- Puntos generados dinámicamente -->
+      </div>
+
+    </div>
+  </section>
+    
+  <!-- ========================================================================
+       BANNER CTA: INVITACIÓN A EXPLORAR EL CATÁLOGO COMPLETO
+       ======================================================================== -->
+  <section class="py-14 sm:py-16 bg-gradient-to-br from-sage-900 via-sage-950 to-[#0c1210] text-white relative overflow-hidden border-y border-white/10">
+    <div class="absolute -right-20 -bottom-20 w-80 h-80 bg-rose-500/10 rounded-full blur-3xl pointer-events-none"></div>
+    <div class="absolute -left-20 -top-20 w-80 h-80 bg-sage-500/10 rounded-full blur-3xl pointer-events-none"></div>
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10 space-y-5">
+      <span class="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-white/10 text-rose-300 text-xs font-bold uppercase tracking-wider border border-white/15">
+        <i data-lucide="gem" class="w-3.5 h-3.5 text-rose-400"></i>
+        <span>Colección Oficial Yamiki</span>
+      </span>
+      <h2 class="font-sans text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-white">
+        ¿Buscas un modelo o medida en especial?
+      </h2>
+      <p class="max-w-2xl mx-auto text-sm sm:text-base text-gray-300 leading-relaxed">
+        Explora nuestros 141 modelos con filtros avanzados por medida de anillo (#5 a #9), circonias, colores y precio directo de importación.
+      </p>
+      <div class="pt-2 flex flex-wrap items-center justify-center gap-3">
+        <button 
+          type="button" 
+          onclick="navigateTo('catalogo')" 
+          class="inline-flex items-center gap-2.5 px-7 py-3.5 rounded-full bg-gradient-to-r from-rose-500 to-rose-600 hover:from-rose-600 hover:to-rose-700 text-white font-bold text-sm shadow-lg shadow-rose-900/30 transition-all transform hover:-translate-y-0.5 active:translate-y-0"
+        >
+          <i data-lucide="sparkles" class="w-4 h-4"></i>
+          <span>Ver Catálogo Completo</span>
+          <i data-lucide="arrow-right" class="w-4 h-4"></i>
+        </button>
+        <button 
+          type="button" 
+          onclick="openRingSizeGuideModal()" 
+          class="inline-flex items-center gap-2 px-5 py-3.5 rounded-full bg-white/10 hover:bg-white/15 text-white font-semibold text-sm border border-white/20 transition-all"
+        >
+          <i data-lucide="ruler" class="w-4 h-4 text-rose-400"></i>
+          <span>Guía de Medidas</span>
+        </button>
+      </div>
+    </div>
+  </section>
+
+    <section id="pedidos-encargo" class="py-16 md:py-24 bg-[#f6f6f6] border-t border-gray-100">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <div class="text-center max-w-2xl mx-auto mb-10">
+        <span class="text-xs uppercase tracking-widest text-rose-500 font-semibold block mb-2">Información Importante</span>
+        <h2 class="font-sans text-3xl sm:text-4xl font-extrabold text-sage-900 mb-3 tracking-tight">Pedidos Sobre Encargo</h2>
+        <p class="text-gray-600 text-sm leading-relaxed">
+          Estas piezas se solicitan directamente con nuestro proveedor de Plata Ley S925 mediante compras grupales para ofrecerte el mejor precio directo.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+        
+        <div class="p-5 rounded-2xl bg-white border border-gray-100 space-y-2">
+          <div class="w-10 h-10 rounded-xl bg-sage-100 text-sage-700 flex items-center justify-center">
+            <i data-lucide="wallet" class="w-5 h-5"></i>
+          </div>
+          <h4 class="font-sans font-bold text-base text-gray-900">Anticipo del 50%</h4>
+          <p class="text-xs text-gray-500 leading-relaxed">
+            Para confirmar tu pedido y asegurar tu diseño y talla seleccionada se requiere el 50% de anticipo. El 50% restante se liquida al recibir tu pieza.
+          </p>
+        </div>
+
+        <div class="p-5 rounded-2xl bg-white border border-gray-100 space-y-2">
+          <div class="w-10 h-10 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center">
+            <i data-lucide="users" class="w-5 h-5"></i>
+          </div>
+          <h4 class="font-sans font-bold text-base text-gray-900">Pedido Grupal</h4>
+          <p class="text-xs text-gray-500 leading-relaxed">
+            Reunimos un mínimo de 7 pedidos para realizar la compra con el proveedor. Si alcanzamos la meta antes de la fecha, ¡compramos de inmediato!
+          </p>
+        </div>
+
+        <div class="p-5 rounded-2xl bg-white border border-gray-100 space-y-2">
+          <div class="w-10 h-10 rounded-xl bg-sage-100 text-sage-700 flex items-center justify-center">
+            <i data-lucide="clock" class="w-5 h-5"></i>
+          </div>
+          <h4 class="font-sans font-bold text-base text-gray-900">Tiempo de Entrega</h4>
+          <p class="text-xs text-gray-500 leading-relaxed">
+            Aproximadamente de 15 a 20 días naturales una vez realizado el pedido grupal con el proveedor, con seguimiento continuo.
+          </p>
+        </div>
+
+        <div class="p-5 rounded-2xl bg-white border border-gray-100 space-y-2">
+          <div class="w-10 h-10 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center">
+            <i data-lucide="calendar-check" class="w-5 h-5"></i>
+          </div>
+          <h4 class="font-sans font-bold text-base text-gray-900">Plazo para Recoger</h4>
+          <p class="text-xs text-gray-500 leading-relaxed">
+            Una vez que tu pedido llegue y te notifiquemos, cuentas con 20 días naturales para liquidar tu saldo y recoger tu hermosa joya de plata.
+          </p>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+  </main>
+
+  <!-- ========================================================================
+       VISTA 2: PÁGINA DE CATÁLOGO (CATALOGO / FILTRADO)
+       ======================================================================== -->
+  <main id="view-catalogo" class="page-view flex flex-col flex-grow hidden">
+    
+  <!-- ========================================================================
+       BARRA DE BREADCRUMBS & NAVEGACIÓN RÁPIDA DEL CATÁLOGO
+       ======================================================================== -->
+  <div class="bg-white dark:bg-[#121915] border-b border-gray-200 dark:border-white/10 py-3.5 shadow-xs sticky top-[57px] sm:top-[65px] z-40 backdrop-blur-md">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-4">
+      <nav class="flex items-center gap-2 text-xs sm:text-sm font-medium text-gray-500 dark:text-gray-400">
+        <a href="#/" onclick="navigateTo('home'); return false;" class="hover:text-rose-500 dark:hover:text-rose-400 flex items-center gap-1.5 transition">
+          <i data-lucide="home" class="w-3.5 h-3.5 text-sage-600 dark:text-sage-400"></i>
+          <span>Inicio</span>
+        </a>
+        <i data-lucide="chevron-right" class="w-3.5 h-3.5 text-gray-300 dark:text-gray-600"></i>
+        <a href="#/catalogo" onclick="navigateTo('catalogo'); return false;" class="text-sage-900 dark:text-white font-bold flex items-center gap-1.5 hover:text-rose-500 dark:hover:text-rose-400 transition">
+          <i data-lucide="gem" class="w-3.5 h-3.5 text-rose-500"></i>
+          <span>Catálogo de Joyería</span>
+        </a>
+        <span id="breadcrumb-category-badge" class="hidden text-xs px-2.5 py-0.5 rounded-full bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400 font-semibold border border-rose-200 dark:border-rose-900/50 flex items-center gap-1"></span>
+      </nav>
+
+      <div class="flex items-center gap-2">
+        <button 
+          type="button" 
+          onclick="navigateTo('home')" 
+          class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold text-gray-700 dark:text-gray-300 bg-gray-100 hover:bg-gray-200 dark:bg-white/10 dark:hover:bg-white/15 transition"
+        >
+          <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
+          <span>Volver a Inicio</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+    <section id="catalogo" class="py-16 md:py-24 bg-[#f6f6f6] relative">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <div class="text-center max-w-2xl mx-auto mb-10">
+        <span class="text-xs uppercase tracking-widest text-rose-500 font-semibold block mb-2">Colección Completa</span>
+        <h2 class="font-sans text-3xl sm:text-4xl lg:text-5xl font-extrabold text-sage-900 mb-3 tracking-tight">Catálogo de Joyería de Plata S925</h2>
+        <p class="text-gray-600 text-sm sm:text-base leading-relaxed">
+          Explora 141 modelos con fotos, precios y especificaciones. Filtra por categoría, por tu medida de anillo o por estilo/color.
+        </p>
+      </div>
+
+      <!-- PANEL DE FILTROS MODERNOS Y DESPLEGABLES ("QUE SE ABREN") -->
+      <div class="bg-white p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-sage-100 shadow-sm space-y-4 mb-8">
+        
+        <!-- Fila 1: Buscador y Acceso Rápido a Guía de Medidas -->
+        <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+          
+          <div class="relative flex-grow">
+            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
+              <i data-lucide="search" class="w-4 h-4"></i>
+            </div>
+            <input 
+              type="text" 
+              id="search-input" 
+              placeholder="Buscar por código (ej. A-01, A-35, A-92) o palabra..." 
+              class="w-full pl-10 pr-9 py-2.5 rounded-xl sm:rounded-2xl border border-gray-200 bg-gray-50/60 focus:bg-white focus:outline-none focus:ring-2 focus:ring-sage-400 text-xs sm:text-sm transition shadow-xs text-gray-800 placeholder-gray-400"
+            />
+            <button 
+              type="button" 
+              id="search-clear-btn" 
+              onclick="clearSearchInput()" 
+              class="hidden absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 transition"
+              title="Borrar búsqueda"
+            >
+              <i data-lucide="x" class="w-4 h-4"></i>
+            </button>
+          </div>
+
+          <!-- Botón de acceso directo a la guía de medidas oficial -->
+          <button 
+            type="button" 
+            onclick="openRingSizeGuideModal()" 
+            class="px-4 py-2.5 rounded-xl sm:rounded-2xl border border-rose-200 bg-rose-50/70 hover:bg-rose-100 text-rose-700 text-xs sm:text-sm font-semibold flex items-center justify-center gap-1.5 transition btn-press shrink-0 shadow-xs"
+          >
+            <i data-lucide="ruler" class="w-4 h-4 text-rose-500"></i>
+            <span>¿Cómo medir tu dedo?</span>
+          </button>
+
+        </div>
+
+        <!-- Fila 2: BARRA DE 4 FILTROS INTERACTIVOS ("QUE SE ABREN") -->
+        <!-- En móvil: Cuadrícula limpia 2x2. En escritorio: 4 columnas en 1 fila -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3">
+          
+          <!-- Dropdown 1: CATEGORÍA -->
+          <div class="relative dropdown-filter-wrapper" id="wrapper-dropdown-category">
+            <button 
+              type="button" 
+              id="filter-btn-category"
+              onclick="toggleFilterDropdown('category', event)" 
+              class="dropdown-filter-btn w-full text-left px-3 sm:px-4 py-2.5 rounded-xl sm:rounded-2xl border border-gray-200 bg-gray-50/70 hover:bg-white focus:bg-white text-xs sm:text-sm font-semibold text-gray-700 flex items-center justify-between gap-1.5 transition btn-press shadow-xs hover:border-sage-300"
+              aria-expanded="false"
+              aria-haspopup="true"
+            >
+              <div class="flex items-center gap-1.5 min-w-0 truncate">
+                <i data-lucide="sparkles" class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-sage-600 shrink-0"></i>
+                <div class="min-w-0 truncate">
+                  <span class="text-[9px] uppercase tracking-wider font-bold text-gray-400 block leading-tight">Categoría</span>
+                  <span id="filter-label-category" class="truncate block text-xs sm:text-sm text-gray-900 font-bold">Todas las piezas</span>
+                </div>
+              </div>
+              <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-gray-400 shrink-0 transition-transform duration-200 dropdown-arrow"></i>
+            </button>
+
+            <!-- Menú Desplegable -->
+            <div 
+              id="dropdown-menu-category" 
+              class="filter-dropdown-menu hidden absolute z-40 top-full mt-1.5 left-0 w-64 max-w-[calc(100vw-2rem)] bg-white rounded-2xl shadow-xl border border-gray-200/90 p-2 transform origin-top-left"
+            >
+              <!-- Inyectado dinámicamente -->
+            </div>
+          </div>
+
+          <!-- Dropdown 2: TALLA DE ANILLO -->
+          <div class="relative dropdown-filter-wrapper" id="wrapper-dropdown-size">
+            <button 
+              type="button" 
+              id="filter-btn-size"
+              onclick="toggleFilterDropdown('size', event)" 
+              class="dropdown-filter-btn w-full text-left px-3 sm:px-4 py-2.5 rounded-xl sm:rounded-2xl border border-gray-200 bg-gray-50/70 hover:bg-white focus:bg-white text-xs sm:text-sm font-semibold text-gray-700 flex items-center justify-between gap-1.5 transition btn-press shadow-xs hover:border-sage-300"
+              aria-expanded="false"
+              aria-haspopup="true"
+            >
+              <div class="flex items-center gap-1.5 min-w-0 truncate">
+                <i data-lucide="ruler" class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-rose-500 shrink-0"></i>
+                <div class="min-w-0 truncate">
+                  <span class="text-[9px] uppercase tracking-wider font-bold text-gray-400 block leading-tight">Medida / Talla</span>
+                  <span id="filter-label-size" class="truncate block text-xs sm:text-sm text-gray-900 font-bold">Todas las tallas</span>
+                </div>
+              </div>
+              <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-gray-400 shrink-0 transition-transform duration-200 dropdown-arrow"></i>
+            </button>
+
+            <!-- Menú Desplegable -->
+            <div 
+              id="dropdown-menu-size" 
+              class="filter-dropdown-menu hidden absolute z-40 top-full mt-1.5 left-0 sm:left-auto right-0 sm:right-auto w-72 max-w-[calc(100vw-2rem)] bg-white rounded-2xl shadow-xl border border-gray-200/90 p-3 transform origin-top"
+            >
+              <!-- Inyectado dinámicamente -->
+            </div>
+          </div>
+
+          <!-- Dropdown 3: ESTILO / COLOR / ACABADO -->
+          <div class="relative dropdown-filter-wrapper" id="wrapper-dropdown-style">
+            <button 
+              type="button" 
+              id="filter-btn-style"
+              onclick="toggleFilterDropdown('style', event)" 
+              class="dropdown-filter-btn w-full text-left px-3 sm:px-4 py-2.5 rounded-xl sm:rounded-2xl border border-gray-200 bg-gray-50/70 hover:bg-white focus:bg-white text-xs sm:text-sm font-semibold text-gray-700 flex items-center justify-between gap-1.5 transition btn-press shadow-xs hover:border-sage-300"
+              aria-expanded="false"
+              aria-haspopup="true"
+            >
+              <div class="flex items-center gap-1.5 min-w-0 truncate">
+                <i data-lucide="palette" class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-500 shrink-0"></i>
+                <div class="min-w-0 truncate">
+                  <span class="text-[9px] uppercase tracking-wider font-bold text-gray-400 block leading-tight">Estilo / Color</span>
+                  <span id="filter-label-style" class="truncate block text-xs sm:text-sm text-gray-900 font-bold">Todos los acabados</span>
+                </div>
+              </div>
+              <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-gray-400 shrink-0 transition-transform duration-200 dropdown-arrow"></i>
+            </button>
+
+            <!-- Menú Desplegable -->
+            <div 
+              id="dropdown-menu-style" 
+              class="filter-dropdown-menu hidden absolute z-40 top-full mt-1.5 left-0 sm:left-auto right-0 w-72 max-w-[calc(100vw-2rem)] bg-white rounded-2xl shadow-xl border border-gray-200/90 p-2 transform origin-top-right"
+            >
+              <!-- Inyectado dinámicamente -->
+            </div>
+          </div>
+
+          <!-- Dropdown 4: ORDENAR -->
+          <div class="relative dropdown-filter-wrapper" id="wrapper-dropdown-sort">
+            <button 
+              type="button" 
+              id="filter-btn-sort"
+              onclick="toggleFilterDropdown('sort', event)" 
+              class="dropdown-filter-btn w-full text-left px-3 sm:px-4 py-2.5 rounded-xl sm:rounded-2xl border border-gray-200 bg-gray-50/70 hover:bg-white focus:bg-white text-xs sm:text-sm font-semibold text-gray-700 flex items-center justify-between gap-1.5 transition btn-press shadow-xs hover:border-sage-300"
+              aria-expanded="false"
+              aria-haspopup="true"
+            >
+              <div class="flex items-center gap-1.5 min-w-0 truncate">
+                <i data-lucide="arrow-up-down" class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-sage-600 shrink-0"></i>
+                <div class="min-w-0 truncate">
+                  <span class="text-[9px] uppercase tracking-wider font-bold text-gray-400 block leading-tight">Ordenar</span>
+                  <span id="filter-label-sort" class="truncate block text-xs sm:text-sm text-gray-900 font-bold">Recomendados</span>
+                </div>
+              </div>
+              <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-gray-400 shrink-0 transition-transform duration-200 dropdown-arrow"></i>
+            </button>
+
+            <!-- Menú Desplegable -->
+            <div 
+              id="dropdown-menu-sort" 
+              class="filter-dropdown-menu hidden absolute z-40 top-full mt-1.5 right-0 w-64 max-w-[calc(100vw-2rem)] bg-white rounded-2xl shadow-xl border border-gray-200/90 p-2 transform origin-top-right"
+            >
+              <!-- Inyectado dinámicamente -->
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Fila 3: Píldoras de Filtros Activos y Contador de Resultados -->
+        <div class="pt-2 border-t border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div id="active-filters-badges" class="min-w-0">
+            <!-- Píldoras inyectadas dinámicamente -->
+          </div>
+          <div class="text-xs text-gray-500 font-medium shrink-0 flex items-center gap-1.5">
+            <i data-lucide="sparkle" class="w-3.5 h-3.5 text-sage-600"></i>
+            <span id="products-count" class="font-bold text-sage-800">Cargando catálogo...</span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Cuadrícula de Productos (4 anillos visibles a la vez en móvil) -->
+      <div id="products-grid" class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-6">
+        <!-- Renderizado dinámico desde app.js con imágenes reales -->
+      </div>
+
+      <!-- Paginación -->
+      <div id="pagination-container" class="mt-10">
+        <!-- Generado dinámicamente -->
+      </div>
+
+    </div>
+  </section>
+    <section id="guia-medidas" class="py-16 md:py-24 bg-white border-t border-gray-200/70">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <div class="text-center max-w-3xl mx-auto mb-10">
+        <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-rose-100/80 text-rose-700 text-xs font-bold mb-3 border border-rose-200/60 shadow-xs">
+          <span>♡</span>
+          <span>Guía Oficial de Tallas Yamiki</span>
+          <span>♡</span>
+        </div>
+        <h2 class="font-sans text-3xl sm:text-4xl lg:text-5xl font-extrabold text-sage-900 mb-3 tracking-tight">
+          ¿Cómo saber tu medida exacta de anillo?
+        </h2>
+        <p class="text-gray-600 text-xs sm:text-base leading-relaxed max-w-2xl mx-auto">
+          Puedes hacerlo de dos formas fáciles desde casa. Utiliza nuestras infografías oficiales y la tabla comparativa con medidas mexicanas, europeas, centímetros y milímetros para Plata S925.
+        </p>
+      </div>
+
+      <!-- 1. Galería de Infografías Oficiales Yamiki (Referencia Gráfica) -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-10">
+        
+        <!-- Infografía 1: Métodos de Medición -->
+        <div class="bg-white rounded-3xl p-4 sm:p-5 border border-rose-200/80 shadow-sm flex flex-col justify-between group hover:shadow-md transition-shadow">
+          <div>
+            <div class="flex items-center justify-between mb-3 pb-2 border-b border-rose-100">
+              <div class="flex items-center gap-2">
+                <span class="text-rose-500 font-bold text-base">♡</span>
+                <h3 class="font-sans font-bold text-sm sm:text-base text-gray-900">¿Cómo medir tu anillo? (Método 1 y 2)</h3>
+              </div>
+              <button 
+                type="button" 
+                onclick="openLightbox('img/guide/como-medir-tu-anillo.jpg', '¿Cómo medir tu anillo? - Infografía Oficial Yamiki')"
+                class="text-[11px] font-bold text-rose-600 bg-rose-50 hover:bg-rose-100 px-3 py-1.5 rounded-full flex items-center gap-1 transition btn-press border border-rose-200/70"
+                title="Ampliar infografía"
+              >
+                <i data-lucide="maximize-2" class="w-3.5 h-3.5"></i>
+                <span>Ver Completa</span>
+              </button>
+            </div>
+            <p class="text-[11px] text-gray-500 mb-3">Infografía gráfica paso a paso con tira de papel, hilo o anillo existente.</p>
+            <div 
+              onclick="openLightbox('img/guide/como-medir-tu-anillo.jpg', '¿Cómo medir tu anillo? - Infografía Oficial Yamiki')"
+              class="rounded-2xl overflow-hidden cursor-pointer border border-gray-100 relative bg-gray-50 aspect-[4/3] flex items-center justify-center group/img"
+            >
+              <img 
+                src="img/guide/como-medir-tu-anillo.jpg" 
+                alt="¿Cómo medir tu anillo? Infografía Oficial Yamiki" 
+                class="w-full h-full object-cover object-top group-hover/img:scale-105 transition-transform duration-500" 
+                loading="lazy" 
+              />
+              <div class="absolute inset-0 bg-black/20 dark:bg-black/40 opacity-0 group-hover/img:opacity-100 transition-opacity duration-200 flex items-center justify-center">
+                <span class="product-hover-badge text-xs font-bold px-3.5 py-1.5 rounded-full flex items-center gap-1.5">
+                  <i data-lucide="zoom-in" class="w-4 h-4"></i>
+                  Toca para ampliar
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Infografía 2: Tabla de Tallas MX / EU / cm / mm -->
+        <div class="bg-white rounded-3xl p-4 sm:p-5 border border-sage-200/80 shadow-sm flex flex-col justify-between group hover:shadow-md transition-shadow">
+          <div>
+            <div class="flex items-center justify-between mb-3 pb-2 border-b border-sage-100">
+              <div class="flex items-center gap-2">
+                <span class="text-sage-600 font-bold text-base">♡</span>
+                <h3 class="font-sans font-bold text-sm sm:text-base text-gray-900">Guía de Tallas (MX, EU, cm, mm)</h3>
+              </div>
+              <button 
+                type="button" 
+                onclick="openLightbox('img/guide/tabla-tallas-anillos.jpg', 'Guía de tallas de anillos - Tabla Oficial Yamiki')"
+                class="text-[11px] font-bold text-sage-800 bg-sage-50 hover:bg-sage-100 px-3 py-1.5 rounded-full flex items-center gap-1 transition btn-press border border-sage-200/70"
+                title="Ampliar tabla gráfica"
+              >
+                <i data-lucide="maximize-2" class="w-3.5 h-3.5"></i>
+                <span>Ver Completa</span>
+              </button>
+            </div>
+            <p class="text-[11px] text-gray-500 mb-3">Tabla oficial ilustrada con equivalencias exactas desde Talla 5 hasta 13.</p>
+            <div 
+              onclick="openLightbox('img/guide/tabla-tallas-anillos.jpg', 'Guía de tallas de anillos - Tabla Oficial Yamiki')"
+              class="rounded-2xl overflow-hidden cursor-pointer border border-gray-100 relative bg-gray-50 aspect-[4/3] flex items-center justify-center group/img"
+            >
+              <img 
+                src="img/guide/tabla-tallas-anillos.jpg" 
+                alt="Guía de tallas de anillos Tabla Oficial Yamiki" 
+                class="w-full h-full object-cover object-top group-hover/img:scale-105 transition-transform duration-500" 
+                loading="lazy" 
+              />
+              <div class="absolute inset-0 bg-black/20 dark:bg-black/40 opacity-0 group-hover/img:opacity-100 transition-opacity duration-200 flex items-center justify-center">
+                <span class="product-hover-badge text-xs font-bold px-3.5 py-1.5 rounded-full flex items-center gap-1.5">
+                  <i data-lucide="zoom-in" class="w-4 h-4"></i>
+                  Toca para ampliar
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- 2. Detalle Paso a Paso y Tabla Interactiva -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        
+        <!-- Columna Izquierda: Los 2 Métodos y Tips Oficiales -->
+        <div class="lg:col-span-6 space-y-5">
+          
+          <!-- Método 1 (Copia exacta de la infografía) -->
+          <div class="bg-[#fdf2f7] p-5 sm:p-6 rounded-3xl border border-rose-200/80 space-y-3.5 shadow-xs">
+            <div class="flex items-center gap-3">
+              <span class="w-8 h-8 rounded-full bg-rose-500 text-white font-bold flex items-center justify-center text-sm shadow-xs">1</span>
+              <div>
+                <h3 class="font-sans text-base sm:text-lg font-bold text-gray-900">Método 1: Con una tira de papel o hilo</h3>
+                <p class="text-[11px] text-gray-500">Recomendado si vas a medir tu dedo directamente</p>
+              </div>
+            </div>
+
+            <div class="space-y-2 text-xs text-gray-700 pt-1">
+              <div class="flex items-start gap-2.5 p-2.5 bg-white rounded-xl border border-rose-100">
+                <span class="w-5 h-5 rounded-full bg-rose-100 text-rose-600 font-bold flex items-center justify-center text-[10px] flex-shrink-0 mt-0.5">1</span>
+                <p class="leading-relaxed"><strong>Recorta una tira</strong> de papel de 1 cm de ancho o usa un trozo de hilo.</p>
+              </div>
+
+              <div class="flex items-start gap-2.5 p-2.5 bg-white rounded-xl border border-rose-100">
+                <span class="w-5 h-5 rounded-full bg-rose-100 text-rose-600 font-bold flex items-center justify-center text-[10px] flex-shrink-0 mt-0.5">2</span>
+                <p class="leading-relaxed"><strong>Rodea tu dedo</strong> en la parte más gruesa y marca con una pluma donde se complete la vuelta.</p>
+              </div>
+
+              <div class="flex items-start gap-2.5 p-2.5 bg-white rounded-xl border border-rose-100">
+                <span class="w-5 h-5 rounded-full bg-rose-100 text-rose-600 font-bold flex items-center justify-center text-[10px] flex-shrink-0 mt-0.5">3</span>
+                <p class="leading-relaxed"><strong>Mide la longitud</strong> de la tira con una regla plana desde el inicio hasta la marca. Esa es la circunferencia de tu dedo.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Método 2 (Copia exacta de la infografía) -->
+          <div class="bg-[#f6f6f6] p-5 sm:p-6 rounded-3xl border border-sage-200/80 space-y-3.5 shadow-xs">
+            <div class="flex items-center gap-3">
+              <span class="w-8 h-8 rounded-full bg-sage-600 text-white font-bold flex items-center justify-center text-sm shadow-xs">2</span>
+              <div>
+                <h3 class="font-sans text-base sm:text-lg font-bold text-gray-900">Método 2: Con un anillo que ya tengas</h3>
+                <p class="text-[11px] text-gray-500">Ideal si ya usas un anillo que te quede cómodo</p>
+              </div>
+            </div>
+
+            <div class="space-y-2 text-xs text-gray-700 pt-1">
+              <div class="flex items-start gap-2.5 p-2.5 bg-white rounded-xl border border-sage-100">
+                <span class="w-5 h-5 rounded-full bg-sage-100 text-sage-700 font-bold flex items-center justify-center text-[10px] flex-shrink-0 mt-0.5">1</span>
+                <p class="leading-relaxed"><strong>Coloca tu anillo</strong> sobre una superficie plana. Mide el diámetro interno del anillo (de un borde interno al otro) con una regla.</p>
+              </div>
+
+              <div class="flex items-start gap-2.5 p-2.5 bg-white rounded-xl border border-sage-100">
+                <span class="w-5 h-5 rounded-full bg-sage-100 text-sage-700 font-bold flex items-center justify-center text-[10px] flex-shrink-0 mt-0.5">2</span>
+                <p class="leading-relaxed"><strong>El resultado</strong> es el diámetro de tu anillo en cm o mm. Luego busca tu talla en la tabla de medidas.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tips Oficiales Yamiki -->
+          <div class="p-4 sm:p-5 rounded-2xl bg-white border border-rose-200/90 shadow-xs space-y-2 text-xs">
+            <p class="font-bold text-rose-600 flex items-center gap-1.5 text-sm">
+              <span class="text-rose-500">♡</span>
+              <span>Tips Oficiales Yamiki</span>
+            </p>
+            <ul class="space-y-1.5 text-gray-700 text-xs leading-relaxed">
+              <li class="flex items-start gap-2">
+                <span class="text-rose-400 mt-0.5">♥</span>
+                <span>Mide varias veces para mayor precisión.</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <span class="text-rose-400 mt-0.5">♥</span>
+                <span>Si tu medida queda entre dos tallas, elige la más grande.</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <span class="text-rose-400 mt-0.5">♥</span>
+                <span>Las medidas pueden variar ligeramente según el grosor del anillo.</span>
+              </li>
+            </ul>
+          </div>
+
+        </div>
+
+        <!-- Columna Derecha: Tabla Completa de Equivalencias MX, EU, cm, mm (Oficial) -->
+        <div class="lg:col-span-6 bg-white p-5 sm:p-7 rounded-3xl shadow-sm border border-gray-200/90 space-y-4">
+          
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-gray-100 gap-2">
+            <div>
+              <div class="flex items-center gap-1.5 text-rose-500 text-xs font-bold mb-0.5">
+                <span>♡</span>
+                <span>Tabla Oficial de Tallas</span>
+                <span>♡</span>
+              </div>
+              <h3 class="font-sans text-lg sm:text-xl font-extrabold text-gray-900">Medidas Mexicanas, Europeas y en cm/mm</h3>
+            </div>
+            <span class="text-[11px] font-bold px-2.5 py-1 rounded-full bg-sage-100 text-sage-800 self-start sm:self-auto">
+              Plata S925
+            </span>
+          </div>
+
+          <!-- Buscador rápido en la tabla -->
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+              <i data-lucide="search" class="w-3.5 h-3.5"></i>
+            </div>
+            <input 
+              type="text" 
+              oninput="filterSizeTable(this.value, 'size-table-body-main')"
+              placeholder="Escribe tu medida en mm o cm (ej. 17.3, 54, 7)..." 
+              class="w-full pl-8 pr-3 py-2 text-xs rounded-xl border border-gray-200 bg-gray-50/60 focus:bg-white focus:outline-none focus:ring-1 focus:ring-sage-500 transition"
+            />
+          </div>
+
+          <!-- Tabla responsiva -->
+          <div class="overflow-x-auto rounded-2xl border border-gray-200 shadow-xs">
+            <table class="w-full text-xs text-left">
+              <thead>
+                <tr class="text-gray-800 font-bold border-b border-gray-200 text-[11px]">
+                  <th class="py-2.5 px-3 text-center bg-[#fdf2f7] text-rose-700 border-r border-rose-100">Talla MX</th>
+                  <th class="py-2.5 px-3 text-center bg-[#f6f6f6] text-sage-800 border-r border-sage-100">Talla EU</th>
+                  <th class="py-2.5 px-3 text-center bg-[#fdf2f7] text-rose-700 border-r border-rose-100">Circunferencia (cm / mm)</th>
+                  <th class="py-2.5 px-3 text-center bg-[#f6f6f6] text-sage-800">Diámetro Interno (cm / mm)</th>
+                </tr>
+              </thead>
+              <tbody id="size-table-body-main" class="divide-y divide-gray-100 text-[11px] text-center">
+                <tr class="hover:bg-rose-50/60 transition">
+                  <td class="py-2 px-3 font-bold text-rose-700 bg-rose-50/30 border-r border-rose-100 text-sm">5</td>
+                  <td class="py-2 px-3 font-semibold text-sage-800 bg-sage-50/20 border-r border-sage-100">49</td>
+                  <td class="py-2 px-3 text-gray-700 border-r border-rose-100">4.93 cm <span class="text-gray-400 font-normal">(49.3 mm)</span></td>
+                  <td class="py-2 px-3 text-gray-700">1.57 cm <span class="text-gray-400 font-normal">(15.7 mm)</span></td>
+                </tr>
+                <tr class="hover:bg-rose-50/60 transition">
+                  <td class="py-2 px-3 font-bold text-rose-700 bg-rose-50/30 border-r border-rose-100 text-sm">6</td>
+                  <td class="py-2 px-3 font-semibold text-sage-800 bg-sage-50/20 border-r border-sage-100">52</td>
+                  <td class="py-2 px-3 text-gray-700 border-r border-rose-100">5.19 cm <span class="text-gray-400 font-normal">(51.9 mm)</span></td>
+                  <td class="py-2 px-3 text-gray-700">1.65 cm <span class="text-gray-400 font-normal">(16.5 mm)</span></td>
+                </tr>
+                <tr class="hover:bg-rose-50/60 transition">
+                  <td class="py-2 px-3 font-bold text-rose-700 bg-rose-50/30 border-r border-rose-100 text-sm">7</td>
+                  <td class="py-2 px-3 font-semibold text-sage-800 bg-sage-50/20 border-r border-sage-100">54</td>
+                  <td class="py-2 px-3 text-gray-700 border-r border-rose-100">5.44 cm <span class="text-gray-400 font-normal">(54.4 mm)</span></td>
+                  <td class="py-2 px-3 text-gray-700">1.73 cm <span class="text-gray-400 font-normal">(17.3 mm)</span></td>
+                </tr>
+                <tr class="hover:bg-rose-50/60 transition">
+                  <td class="py-2 px-3 font-bold text-rose-700 bg-rose-50/30 border-r border-rose-100 text-sm">8</td>
+                  <td class="py-2 px-3 font-semibold text-sage-800 bg-sage-50/20 border-r border-sage-100">57</td>
+                  <td class="py-2 px-3 text-gray-700 border-r border-rose-100">5.70 cm <span class="text-gray-400 font-normal">(57.0 mm)</span></td>
+                  <td class="py-2 px-3 text-gray-700">1.81 cm <span class="text-gray-400 font-normal">(18.1 mm)</span></td>
+                </tr>
+                <tr class="hover:bg-rose-50/60 transition">
+                  <td class="py-2 px-3 font-bold text-rose-700 bg-rose-50/30 border-r border-rose-100 text-sm">9</td>
+                  <td class="py-2 px-3 font-semibold text-sage-800 bg-sage-50/20 border-r border-sage-100">59</td>
+                  <td class="py-2 px-3 text-gray-700 border-r border-rose-100">5.95 cm <span class="text-gray-400 font-normal">(59.5 mm)</span></td>
+                  <td class="py-2 px-3 text-gray-700">1.89 cm <span class="text-gray-400 font-normal">(18.9 mm)</span></td>
+                </tr>
+                <tr class="hover:bg-rose-50/60 transition">
+                  <td class="py-2 px-3 font-bold text-rose-700 bg-rose-50/30 border-r border-rose-100 text-sm">10</td>
+                  <td class="py-2 px-3 font-semibold text-sage-800 bg-sage-50/20 border-r border-sage-100">62</td>
+                  <td class="py-2 px-3 text-gray-700 border-r border-rose-100">6.21 cm <span class="text-gray-400 font-normal">(62.1 mm)</span></td>
+                  <td class="py-2 px-3 text-gray-700">1.98 cm <span class="text-gray-400 font-normal">(19.8 mm)</span></td>
+                </tr>
+                <tr class="hover:bg-rose-50/60 transition">
+                  <td class="py-2 px-3 font-bold text-rose-700 bg-rose-50/30 border-r border-rose-100 text-sm">11</td>
+                  <td class="py-2 px-3 font-semibold text-sage-800 bg-sage-50/20 border-r border-sage-100">65</td>
+                  <td class="py-2 px-3 text-gray-700 border-r border-rose-100">6.46 cm <span class="text-gray-400 font-normal">(64.6 mm)</span></td>
+                  <td class="py-2 px-3 text-gray-700">2.06 cm <span class="text-gray-400 font-normal">(20.6 mm)</span></td>
+                </tr>
+                <tr class="hover:bg-rose-50/60 transition">
+                  <td class="py-2 px-3 font-bold text-rose-700 bg-rose-50/30 border-r border-rose-100 text-sm">12</td>
+                  <td class="py-2 px-3 font-semibold text-sage-800 bg-sage-50/20 border-r border-sage-100">67</td>
+                  <td class="py-2 px-3 text-gray-700 border-r border-rose-100">6.72 cm <span class="text-gray-400 font-normal">(67.2 mm)</span></td>
+                  <td class="py-2 px-3 text-gray-700">2.14 cm <span class="text-gray-400 font-normal">(21.4 mm)</span></td>
+                </tr>
+                <tr class="hover:bg-rose-50/60 transition">
+                  <td class="py-2 px-3 font-bold text-rose-700 bg-rose-50/30 border-r border-rose-100 text-sm">13</td>
+                  <td class="py-2 px-3 font-semibold text-sage-800 bg-sage-50/20 border-r border-sage-100">70</td>
+                  <td class="py-2 px-3 text-gray-700 border-r border-rose-100">6.97 cm <span class="text-gray-400 font-normal">(69.7 mm)</span></td>
+                  <td class="py-2 px-3 text-gray-700">2.22 cm <span class="text-gray-400 font-normal">(22.2 mm)</span></td>
+                </tr>
+                <tr class="bg-rose-50/80 font-bold text-rose-700">
+                  <td class="py-2.5 px-3 text-center border-r border-rose-200">Ajustable</td>
+                  <td colspan="3" class="py-2.5 px-3 text-center text-xs">
+                    ♡ Talla Ajustable: ¡Se amolda con comodidad a cualquier dedo! ♡
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="pt-2 flex flex-col sm:flex-row sm:items-center justify-between text-xs text-gray-500 gap-2">
+            <span class="flex items-center gap-1 text-[11px]">
+              <i data-lucide="help-circle" class="w-3.5 h-3.5 text-rose-500"></i>
+              ¿Aún tienes dudas sobre qué talla elegir?
+            </span>
+            <a 
+              href="https://wa.me/529932902704" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              class="inline-flex items-center gap-1.5 text-sage-800 hover:text-sage-950 font-bold underline text-[11px]"
+            >
+              <i data-lucide="message-circle" class="w-3.5 h-3.5 text-green-600"></i>
+              Asesoría por WhatsApp →
+            </a>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+  </main>
+
+
+  <!-- ========================================================================
+       PIE DE PÁGINA (FOOTER)
+       ======================================================================== -->
+  <footer class="bg-sage-950 text-sage-300 pt-12 pb-8 border-t border-sage-800">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <div class="grid grid-cols-1 md:grid-cols-12 gap-8 pb-10 border-b border-sage-800/80">
+        
+        <div class="md:col-span-5 space-y-3.5">
+          <div class="flex items-center gap-2.5">
+            <div class="w-8 h-8 rounded-full bg-rose-400 text-sage-950 flex items-center justify-center font-bold">
+              ✨
+            </div>
+            <span class="font-sans text-2xl font-extrabold text-white tracking-wide" data-bind="brandName">Yamiki</span>
+          </div>
+          <p class="text-xs text-sage-400 max-w-sm leading-relaxed" data-bind="slogan">
+            Joyería de plata única y elegante hecha para ti.
+          </p>
+          <p class="text-xs text-rose-300 font-semibold">WhatsApp Oficial: +52 993 290 2704</p>
+
+          <!-- Iconos rápidos de Redes Sociales con Logos Oficiales -->
+          <div class="pt-1 flex items-center gap-2.5">
+            <a 
+              href="https://www.instagram.com/yamiki_oficial?exln=MW5teW12N3Fpa3cxNA%3D%3D&utm_source=qr" 
+              target="_blank"
+              rel="noopener noreferrer"
+              class="w-9 h-9 rounded-full flex items-center justify-center text-white transition-all duration-300 transform hover:scale-110 shadow-sm border border-white/15"
+              style="background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285AEB 90%);"
+              title="Instagram Oficial: @yamiki_oficial"
+              aria-label="Instagram Oficial de Yamiki"
+            >
+              <svg class="w-4.5 h-4.5 fill-white" viewBox="0 0 24 24">
+                <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+              </svg>
+            </a>
+
+            <a 
+              href="https://www.facebook.com/share/1FDfvHc4p3/?mibextid=wwXIfr" 
+              target="_blank"
+              rel="noopener noreferrer"
+              class="w-9 h-9 rounded-full bg-[#1877F2] hover:bg-[#166fe5] text-white flex items-center justify-center transition-all duration-300 transform hover:scale-110 shadow-sm border border-white/15"
+              title="Facebook Oficial: Yamiki Joyería"
+              aria-label="Facebook Oficial de Yamiki"
+            >
+              <svg class="w-4.5 h-4.5 fill-white" viewBox="0 0 24 24">
+                <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+              </svg>
+            </a>
+
+            <a 
+              href="https://wa.me/529932902704" 
+              target="_blank"
+              rel="noopener noreferrer"
+              class="w-9 h-9 rounded-full bg-[#25D366] hover:bg-[#20ba5a] text-white flex items-center justify-center transition-all duration-300 transform hover:scale-110 shadow-sm border border-white/15"
+              title="WhatsApp: +52 993 290 2704"
+              aria-label="WhatsApp Oficial de Yamiki"
+            >
+              <svg class="w-4.5 h-4.5 fill-white" viewBox="0 0 24 24">
+                <path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0 0 12.04 2zm.01 1.67c2.2 0 4.26.86 5.82 2.42a8.225 8.225 0 0 1 2.41 5.83c0 4.54-3.7 8.24-8.24 8.24-1.48 0-2.93-.4-4.2-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.196 8.196 0 0 1-1.26-4.38c0-4.54 3.7-8.24 8.24-8.24zm4.52 11.66c-.25-.13-1.47-.72-1.7-.81-.23-.08-.39-.13-.56.13-.17.25-.64.81-.79.97-.14.17-.29.19-.54.06-.25-.13-1.06-.39-2.01-1.24-.74-.66-1.25-1.48-1.39-1.73-.14-.25-.02-.39.11-.51.11-.11.25-.29.37-.43.13-.15.17-.25.25-.42.08-.17.04-.31-.02-.44-.06-.13-.56-1.34-.76-1.84-.2-.48-.4-.42-.56-.43h-.47c-.17 0-.44.06-.67.31-.23.25-.88.86-.88 2.1 0 1.24.9 2.44 1.03 2.61.13.17 1.77 2.7 4.29 3.79.6.26 1.07.41 1.44.53.6.19 1.15.16 1.58.1.48-.07 1.47-.6 1.68-1.18.21-.58.21-1.07.15-1.18-.06-.11-.23-.18-.48-.3z"/>
+              </svg>
+            </a>
+          </div>
+        </div>
+
+        <div class="md:col-span-3 space-y-2">
+          <h5 class="text-xs font-bold uppercase tracking-widest text-rose-300">Navegación</h5>
+          <ul class="space-y-1.5 text-xs text-sage-400">
+            <li><a href="#/" onclick="navigateTo('home'); return false;" class="hover:text-white transition">Inicio</a></li>
+            <li><a href="#/inicio#novedades-carousel" onclick="navigateTo('home', { scrollTo: 'novedades-carousel' }); return false;" class="hover:text-white transition">Novedades</a></li>
+            <li><a href="#/catalogo" onclick="navigateTo('catalogo'); return false;" class="hover:text-white transition">Catálogo Completo</a></li>
+            <li><a href="javascript:void(0)" onclick="openRingSizeGuideModal()" class="hover:text-white transition">Guía de Tallas de Anillo</a></li>
+            <li><a href="#/inicio#pedidos-encargo" onclick="navigateTo('home', { scrollTo: 'pedidos-encargo' }); return false;" class="hover:text-white transition">Políticas de Anticipo</a></li>
+          </ul>
+        </div>
+
+        <div class="md:col-span-4 space-y-2.5">
+          <h5 class="text-xs font-bold uppercase tracking-widest text-rose-300">Contacto & Redes Oficiales</h5>
+          <div class="space-y-2 text-xs">
+            <!-- Botón Instagram Oficial con Logo SVG -->
+            <a 
+              href="https://www.instagram.com/yamiki_oficial?exln=MW5teW12N3Fpa3cxNA%3D%3D&utm_source=qr" 
+              target="_blank"
+              rel="noopener noreferrer"
+              class="inline-flex items-center gap-2.5 px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/15 text-white text-xs font-semibold border border-white/10 hover:border-pink-400/50 transition w-full group"
+            >
+              <span class="w-6 h-6 rounded-lg flex items-center justify-center shrink-0" style="background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285AEB 90%);">
+                <svg class="w-3.5 h-3.5 fill-white" viewBox="0 0 24 24">
+                  <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                </svg>
+              </span>
+              <span>Instagram: @yamiki_oficial</span>
+            </a>
+
+            <!-- Botón Facebook Oficial con Logo SVG -->
+            <a 
+              href="https://www.facebook.com/share/1FDfvHc4p3/?mibextid=wwXIfr" 
+              target="_blank"
+              rel="noopener noreferrer"
+              class="inline-flex items-center gap-2.5 px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/15 text-white text-xs font-semibold border border-white/10 hover:border-blue-400/50 transition w-full group"
+            >
+              <span class="w-6 h-6 rounded-lg bg-[#1877F2] flex items-center justify-center shrink-0">
+                <svg class="w-3.5 h-3.5 fill-white" viewBox="0 0 24 24">
+                  <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                </svg>
+              </span>
+              <span>Facebook: Yamiki Joyería</span>
+            </a>
+
+            <!-- Botón WhatsApp Oficial con Logo SVG -->
+            <a 
+              href="https://wa.me/529932902704" 
+              target="_blank"
+              rel="noopener noreferrer"
+              class="inline-flex items-center gap-2.5 px-3.5 py-2 rounded-xl bg-[#25D366] text-white text-xs font-bold hover:bg-[#20ba5a] transition shadow-xs w-full group"
+            >
+              <span class="w-6 h-6 rounded-lg bg-white/20 flex items-center justify-center shrink-0">
+                <svg class="w-3.5 h-3.5 fill-white" viewBox="0 0 24 24">
+                  <path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0 0 12.04 2zm.01 1.67c2.2 0 4.26.86 5.82 2.42a8.225 8.225 0 0 1 2.41 5.83c0 4.54-3.7 8.24-8.24 8.24-1.48 0-2.93-.4-4.2-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.196 8.196 0 0 1-1.26-4.38c0-4.54 3.7-8.24 8.24-8.24zm4.52 11.66c-.25-.13-1.47-.72-1.7-.81-.23-.08-.39-.13-.56.13-.17.25-.64.81-.79.97-.14.17-.29.19-.54.06-.25-.13-1.06-.39-2.01-1.24-.74-.66-1.25-1.48-1.39-1.73-.14-.25-.02-.39.11-.51.11-.11.25-.29.37-.43.13-.15.17-.25.25-.42.08-.17.04-.31-.02-.44-.06-.13-.56-1.34-.76-1.84-.2-.48-.4-.42-.56-.43h-.47c-.17 0-.44.06-.67.31-.23.25-.88.86-.88 2.1 0 1.24.9 2.44 1.03 2.61.13.17 1.77 2.7 4.29 3.79.6.26 1.07.41 1.44.53.6.19 1.15.16 1.58.1.48-.07 1.47-.6 1.68-1.18.21-.58.21-1.07.15-1.18-.06-.11-.23-.18-.48-.3z"/>
+                </svg>
+              </span>
+              <span>WhatsApp: +52 993 290 2704</span>
+            </a>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="pt-6 flex flex-col sm:flex-row items-center justify-between text-xs text-sage-500 gap-3">
+        <p>© 2024 Yamiki Joyería. Catálogo oficial Plata S925.</p>
+        <p class="text-[11px]">Diseñado en verde salvia & rosa pastel 💖</p>
+      </div>
+
+    </div>
+  </footer>
+
+  <!-- ========================================================================
+       CARRITO DE COMPRAS FLOTANTE (SLIDE-OVER DRAWER CON MEDIDAS DE ANILLO)
+       ======================================================================== -->
+  <div id="cart-drawer" style="display: none;" class="fixed inset-0 z-50 hidden overflow-hidden pointer-events-none" role="dialog" aria-modal="true">
+    
+    <div 
+      id="cart-overlay" 
+      onclick="toggleCartDrawer(false)" 
+      class="fixed inset-0 bg-black/50 backdrop-blur-xs transition-opacity duration-300 opacity-0 pointer-events-auto"
+    ></div>
+
+    <div class="fixed inset-y-0 right-0 w-full max-w-md flex overflow-hidden pointer-events-none">
+      <div 
+        id="cart-panel" 
+        class="w-full max-w-md bg-white shadow-2xl flex flex-col transform translate-x-full transition-transform duration-300 ease-in-out pointer-events-auto"
+      >
+        
+        <!-- Cabecera del Carrito -->
+        <div class="p-5 border-b border-gray-100 dark:border-white/10 flex items-center justify-between bg-[#f6f6f6] dark:bg-[#000000]">
+          <div class="flex items-center gap-2.5">
+            <div class="w-8 h-8 rounded-full bg-sage-100 text-sage-700 flex items-center justify-center">
+              <i data-lucide="shopping-bag" class="w-4 h-4"></i>
+            </div>
+            <div>
+              <h3 class="font-sans text-lg font-extrabold text-gray-900 tracking-tight">Tu Pedido S925</h3>
+              <p class="text-[11px] text-gray-500">Piezas sobre encargo</p>
+            </div>
+          </div>
+          
+          <div class="flex items-center gap-2">
+            <button 
+              type="button" 
+              onclick="clearCart()" 
+              class="text-xs text-gray-400 hover:text-red-500 transition px-2 py-1 rounded" 
+              title="Vaciar todo el pedido"
+            >
+              Vaciar
+            </button>
+            <button 
+              type="button" 
+              onclick="toggleCartDrawer(false)" 
+              class="p-2 text-gray-400 hover:text-gray-700 rounded-full hover:bg-gray-100 transition"
+              aria-label="Cerrar Carrito"
+            >
+              <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Alerta de tallas de anillos si hay en el carrito -->
+        <div id="cart-ring-size-alert" class="hidden bg-rose-50 border-b border-rose-200 px-4 py-2.5 flex items-center justify-between gap-2 text-xs">
+          <div class="flex items-center gap-1.5 text-rose-700 font-semibold">
+            <i data-lucide="ruler" class="w-4 h-4 text-rose-500 flex-shrink-0"></i>
+            <span>Revisa que las tallas de tus anillos sean correctas</span>
+          </div>
+          <button 
+            type="button" 
+            onclick="openRingSizeGuideModal()"
+            class="text-[11px] font-bold text-rose-600 hover:text-rose-800 underline whitespace-nowrap"
+          >
+            Ver Guía
+          </button>
+        </div>
+
+        <!-- Contenido Central: Lista de Artículos -->
+        <div class="flex-grow overflow-y-auto p-4 space-y-3">
+          
+          <div id="cart-empty-state" class="py-16 text-center space-y-4">
+            <div class="w-16 h-16 rounded-full bg-rose-50 text-rose-400 flex items-center justify-center mx-auto">
+              <i data-lucide="shopping-bag" class="w-8 h-8"></i>
+            </div>
+            <div class="space-y-1">
+              <h4 class="font-sans text-lg font-bold text-gray-800">Tu pedido está vacío</h4>
+              <p class="text-xs text-gray-500 max-w-xs mx-auto">Selecciona tus joyas de plata favoritas en el catálogo para añadirlas.</p>
+            </div>
+            <button 
+              onclick="toggleCartDrawer(false)" 
+              class="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-full bg-sage-600 text-white text-xs font-semibold hover:bg-sage-700 transition shadow-sm"
+            >
+              <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+              Explorar Catálogo
+            </button>
+          </div>
+
+          <div id="cart-items-container" class="space-y-3">
+            <!-- Renderizado dinámico desde app.js -->
+          </div>
+
+          <!-- Formulario rápido de datos con soporte completo Día/Noche -->
+          <div id="cart-customer-fields" class="mt-6 pt-4 border-t border-gray-100 dark:border-white/10 space-y-3 bg-[#fdf2f7] dark:bg-[#121212] p-4 rounded-2xl border border-rose-100 dark:border-white/10 shadow-xs">
+            <div class="flex items-center gap-1.5 text-xs font-bold text-rose-600 dark:text-rose-400">
+              <i data-lucide="user-check" class="w-3.5 h-3.5"></i>
+              <span>Datos del pedido para WhatsApp:</span>
+            </div>
+
+            <div>
+              <label class="block text-[11px] font-semibold text-gray-600 dark:text-gray-300 mb-1">Nombre completo:</label>
+              <input 
+                type="text" 
+                id="checkout-customer-name" 
+                placeholder="Ej. Mariana López" 
+                class="w-full px-3 py-2 text-xs rounded-xl border border-gray-200 dark:border-white/15 focus:outline-none focus:ring-2 focus:ring-rose-400/50 bg-white dark:bg-[#000000] text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 transition"
+              />
+            </div>
+
+            <div>
+              <label class="block text-[11px] font-semibold text-gray-600 dark:text-gray-300 mb-1">Ciudad o Código Postal de entrega:</label>
+              <input 
+                type="text" 
+                id="checkout-customer-address" 
+                placeholder="Ej. Villahermosa, Tab. o C.P. 86000" 
+                class="w-full px-3 py-2 text-xs rounded-xl border border-gray-200 dark:border-white/15 focus:outline-none focus:ring-2 focus:ring-rose-400/50 bg-white dark:bg-[#000000] text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 transition"
+              />
+            </div>
+
+            <div>
+              <label class="block text-[11px] font-semibold text-gray-600 dark:text-gray-300 mb-1">Notas especiales (ej. colores o dedicatoria):</label>
+              <input 
+                type="text" 
+                id="checkout-customer-notes" 
+                placeholder="Ej. En los aretes A-92 deseo color Rosa" 
+                class="w-full px-3 py-2 text-xs rounded-xl border border-gray-200 dark:border-white/15 focus:outline-none focus:ring-2 focus:ring-rose-400/50 bg-white dark:bg-[#000000] text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 transition"
+              />
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Pie del Carrito: Anticipo del 50% y Botón de WhatsApp -->
+        <div id="cart-footer" class="p-5 bg-white dark:bg-[#000000] border-t border-gray-100 dark:border-white/10 space-y-3 shadow-lg">
+          
+          <div class="space-y-1.5 text-xs">
+            <div class="flex justify-between text-gray-500">
+              <span>Total del Pedido:</span>
+              <span id="cart-subtotal" class="font-bold text-gray-900">$0</span>
+            </div>
+            
+            <div class="p-2.5 rounded-xl bg-sage-50 border border-sage-200 space-y-1 text-xs">
+              <div class="flex justify-between text-sage-800 font-bold">
+                <span class="flex items-center gap-1">
+                  <i data-lucide="wallet" class="w-3.5 h-3.5 text-sage-600"></i>
+                  Anticipo 50% para encargar:
+                </span>
+                <span id="cart-advance" class="text-sage-800 text-sm">$0</span>
+              </div>
+              <div class="flex justify-between text-[11px] text-gray-500">
+                <span>Saldo restante a la entrega (50%):</span>
+                <span id="cart-remaining" class="font-semibold text-gray-700">$0</span>
+              </div>
+            </div>
+
+            <div class="flex justify-between text-base font-bold text-gray-900 pt-1">
+              <span>Total General:</span>
+              <span id="cart-total" class="text-sage-800 font-sans font-extrabold text-xl">$0</span>
+            </div>
+          </div>
+
+          <!-- Botón de WhatsApp con el número +52 993 290 2704 -->
+          <button 
+            type="button" 
+            onclick="sendOrderToWhatsApp()"
+            class="w-full py-3.5 px-4 rounded-2xl bg-[#25D366] hover:bg-[#20ba5a] text-white font-bold text-sm flex items-center justify-center gap-2.5 transition shadow-lg hover:shadow-[#25D366]/30 btn-press"
+          >
+            <i data-lucide="message-circle" class="w-5 h-5"></i>
+            <span>Enviar Pedido a WhatsApp (+52 993 290 2704)</span>
+          </button>
+
+          <p class="text-[10px] text-gray-400 text-center flex items-center justify-center gap-1">
+            <i data-lucide="lock" class="w-3 h-3"></i>
+            Se abrirá WhatsApp con el resumen de piezas, tallas y monto del anticipo
+          </p>
+
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       MODAL DE VISTA RÁPIDA (CON SELECTOR DE TALLA DE ANILLO)
+       ======================================================================== -->
+  <div id="product-modal" style="display: none;" class="modal-container fixed inset-0 z-[60] hidden flex items-center justify-center p-4">
+    <div class="modal-overlay fixed inset-0 bg-black/60 backdrop-blur-xs" onclick="closeProductModal()"></div>
+    <div class="modal-dialog bg-white dark:bg-[#000000] rounded-3xl max-w-2xl w-full overflow-hidden shadow-2xl border border-gray-100 dark:border-white/10 relative max-h-[90vh] flex flex-col md:flex-row z-10">
+      
+      <button 
+        onclick="closeProductModal()"
+        class="absolute top-4 right-4 z-20 w-8 h-8 rounded-full bg-white/90 dark:bg-[#1a1a1a]/90 text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white flex items-center justify-center shadow-md transition btn-press border border-gray-200 dark:border-white/10"
+        aria-label="Cerrar ventana"
+      >
+        <i data-lucide="x" class="w-4 h-4"></i>
+      </button>
+
+      <div class="md:w-1/2 h-52 sm:h-64 md:h-auto bg-gray-50 dark:bg-[#000000] relative overflow-hidden shrink-0 flex items-center justify-center">
+        <img 
+          id="modal-product-image" 
+          src="" 
+          alt="Joya" 
+          class="w-full h-full object-cover object-center"
+        />
+        <div class="absolute top-3 left-3 bg-sage-900/85 dark:bg-black/85 backdrop-blur-xs px-2.5 py-1 rounded-md text-xs font-extrabold text-white border border-white/10">
+          <span id="modal-product-code">A-01</span>
+        </div>
+        <div class="absolute bottom-3 left-3 bg-white/95 dark:bg-[#181818]/95 backdrop-blur-xs px-2.5 py-1 rounded-md text-[10px] font-bold text-sage-800 dark:text-rose-300 border border-gray-200 dark:border-white/10 shadow-xs">
+          PLATA S925 SOBRE PEDIDO
+        </div>
+      </div>
+
+      <div class="md:w-1/2 p-6 flex flex-col justify-between overflow-y-auto max-h-[50vh] md:max-h-none bg-white dark:bg-[#000000]">
+        <div class="space-y-3">
+          <span id="modal-product-category" class="text-[11px] font-semibold uppercase tracking-wider text-rose-500 dark:text-rose-400">Categoría</span>
+          <h3 id="modal-product-name" class="font-sans text-2xl font-bold text-gray-900 dark:text-white leading-snug">Nombre de la Joya</h3>
+          
+          <div class="flex items-baseline gap-2">
+            <span id="modal-product-price" class="text-2xl font-bold text-sage-800 dark:text-rose-400 font-sans">$0</span>
+            <span class="text-xs text-gray-400 dark:text-gray-400">MXN (50% anticipo al encargar)</span>
+          </div>
+
+          <div class="p-3 bg-sage-50/70 dark:bg-white/5 rounded-xl border border-sage-100 dark:border-white/10 text-xs text-gray-600 dark:text-gray-300 space-y-1">
+            <p><strong class="text-sage-800 dark:text-gray-100">Material:</strong> <span id="modal-product-material" class="dark:text-gray-200">Plata Ley S925</span></p>
+          </div>
+
+          <div id="modal-ring-sizes-container" class="pt-1">
+            <!-- Inyectado dinámicamente -->
+          </div>
+
+          <p id="modal-product-description" class="text-xs text-gray-500 dark:text-gray-300 leading-relaxed">
+            Descripción de la pieza.
+          </p>
+        </div>
+
+        <div class="pt-5 mt-4 border-t border-gray-100 dark:border-white/10 flex items-center gap-3">
+          <div class="flex items-center border border-gray-200 dark:border-white/10 rounded-xl overflow-hidden bg-gray-50 dark:bg-[#181818]">
+            <button 
+              type="button" 
+              onclick="const el = document.getElementById('modal-qty-input'); el.value = Math.max(1, parseInt(el.value || 1) - 1);" 
+              class="px-3 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-white/10 font-bold btn-press transition"
+            >-</button>
+            <input 
+              type="number" 
+              id="modal-qty-input" 
+              value="1" 
+              min="1" 
+              class="w-10 text-center bg-transparent text-xs font-bold text-gray-800 dark:text-white focus:outline-none" 
+              readonly
+            />
+            <button 
+              type="button" 
+              onclick="const el = document.getElementById('modal-qty-input'); el.value = parseInt(el.value || 1) + 1;" 
+              class="px-3 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-white/10 font-bold btn-press transition"
+            >+</button>
+          </div>
+
+          <button 
+            type="button" 
+            onclick="addModalProductToCart()"
+            class="add-to-cart-btn flex-grow py-3 px-4 rounded-xl text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition shadow-md btn-press"
+          >
+            <i data-lucide="shopping-bag" class="w-4 h-4"></i>
+            <span>Agregar al Pedido</span>
+          </button>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       MODAL DE GUÍA OFICIAL DE MEDIDAS YAMIKI (CON INFOGRAFÍAS Y TABS)
+       ======================================================================== -->
+  <div id="ring-size-guide-modal" style="display: none;" class="modal-container fixed inset-0 z-[70] hidden flex items-center justify-center p-3 sm:p-4">
+    <div class="modal-overlay fixed inset-0 bg-black/60" onclick="closeRingSizeGuideModal()"></div>
+    <div class="modal-dialog bg-white dark:bg-[#000000] rounded-3xl max-w-2xl w-full p-5 sm:p-7 shadow-2xl border border-gray-100 dark:border-white/10 relative max-h-[92vh] overflow-y-auto z-10 flex flex-col justify-between">
+      
+      <!-- Botón cerrar -->
+      <button 
+        onclick="closeRingSizeGuideModal()"
+        class="absolute top-4 right-4 z-20 w-8 h-8 rounded-full bg-gray-100 dark:bg-[#1a1a1a] text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white flex items-center justify-center transition btn-press border border-transparent dark:border-white/10"
+        aria-label="Cerrar Guía"
+      >
+        <i data-lucide="x" class="w-4 h-4"></i>
+      </button>
+
+      <!-- Encabezado con Corazones Yamiki -->
+      <div class="flex items-center gap-3 mb-4 pb-3 border-b border-gray-100 dark:border-white/10 pr-8">
+        <div class="w-10 h-10 rounded-2xl bg-rose-100 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 flex items-center justify-center flex-shrink-0">
+          <i data-lucide="ruler" class="w-5 h-5"></i>
+        </div>
+        <div>
+          <h3 class="font-sans text-lg sm:text-xl font-extrabold text-gray-900 dark:text-white leading-tight flex items-center gap-1.5">
+            <span>¿Cómo medir tu anillo?</span>
+            <span class="text-rose-500 text-sm">♡</span>
+          </h3>
+          <p class="text-[11px] text-gray-500 dark:text-gray-400">Guía oficial ilustrada y tabla de tallas Yamiki Plata S925</p>
+        </div>
+      </div>
+
+      <!-- Selector de Pestañas (Tabs) -->
+      <div class="flex items-center gap-1.5 p-1 bg-gray-100 dark:bg-white/5 rounded-2xl mb-4 text-xs font-semibold border border-transparent dark:border-white/10">
+        <button 
+          id="guide-tab-btn-infografias" 
+          type="button" 
+          onclick="switchGuideModalTab('infografias')"
+          class="flex-1 py-2 px-3 rounded-xl text-xs font-bold transition bg-rose-500 text-white shadow-xs btn-press flex items-center justify-center gap-1"
+        >
+          <span>♡</span>
+          <span>Infografía Oficial</span>
+        </button>
+        <button 
+          id="guide-tab-btn-tabla" 
+          type="button" 
+          onclick="switchGuideModalTab('tabla')"
+          class="flex-1 py-2 px-3 rounded-xl text-xs font-semibold transition bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-white/5 dark:text-gray-300 dark:hover:bg-white/10 btn-press flex items-center justify-center gap-1"
+        >
+          <i data-lucide="table" class="w-3.5 h-3.5"></i>
+          <span>Tabla MX/EU</span>
+        </button>
+        <button 
+          id="guide-tab-btn-pasos" 
+          type="button" 
+          onclick="switchGuideModalTab('pasos')"
+          class="flex-1 py-2 px-3 rounded-xl text-xs font-semibold transition bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-white/5 dark:text-gray-300 dark:hover:bg-white/10 btn-press flex items-center justify-center gap-1"
+        >
+          <i data-lucide="list-ordered" class="w-3.5 h-3.5"></i>
+          <span>Paso a Paso</span>
+        </button>
+      </div>
+
+      <!-- Contenido Tab 1: Infografías Oficiales Yamiki -->
+      <div id="guide-tab-content-infografias" class="space-y-4">
+        
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          
+          <div class="p-3 bg-[#fdf2f7] rounded-2xl border border-rose-200/80 space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-[11px] font-bold text-rose-700 flex items-center gap-1">
+                <span>♡</span> ¿Cómo medir tu anillo?
+              </span>
+              <button 
+                onclick="openLightbox('img/guide/como-medir-tu-anillo.jpg', '¿Cómo medir tu anillo? - Infografía Oficial Yamiki')"
+                class="text-[10px] font-bold text-rose-600 bg-white px-2 py-0.5 rounded-full border border-rose-200 shadow-xs hover:bg-rose-50"
+              >
+                🔍 Ampliar
+              </button>
+            </div>
+            <div 
+              onclick="openLightbox('img/guide/como-medir-tu-anillo.jpg', '¿Cómo medir tu anillo? - Infografía Oficial Yamiki')"
+              class="rounded-xl overflow-hidden cursor-pointer border border-gray-100 relative group aspect-[4/3] bg-white flex items-center justify-center"
+            >
+              <img src="img/guide/como-medir-tu-anillo.jpg" alt="¿Cómo medir tu anillo? Yamiki" class="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-300" />
+            </div>
+          </div>
+
+          <div class="p-3 bg-[#f6f6f6] rounded-2xl border border-sage-200/80 space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-[11px] font-bold text-sage-800 flex items-center gap-1">
+                <span>♡</span> Tabla de Tallas (MX/EU)
+              </span>
+              <button 
+                onclick="openLightbox('img/guide/tabla-tallas-anillos.jpg', 'Guía de tallas de anillos - Tabla Oficial Yamiki')"
+                class="text-[10px] font-bold text-sage-800 bg-white px-2 py-0.5 rounded-full border border-sage-200 shadow-xs hover:bg-sage-50"
+              >
+                🔍 Ampliar
+              </button>
+            </div>
+            <div 
+              onclick="openLightbox('img/guide/tabla-tallas-anillos.jpg', 'Guía de tallas de anillos - Tabla Oficial Yamiki')"
+              class="rounded-xl overflow-hidden cursor-pointer border border-gray-100 relative group aspect-[4/3] bg-white flex items-center justify-center"
+            >
+              <img src="img/guide/tabla-tallas-anillos.jpg" alt="Tabla de Tallas Yamiki" class="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-300" />
+            </div>
+          </div>
+
+        </div>
+
+        <p class="text-[11px] text-gray-500 text-center italic">
+          💡 Toca cualquiera de las imágenes para verla en pantalla completa con máxima nitidez.
+        </p>
+
+      </div>
+
+      <!-- Contenido Tab 2: Tabla Completa -->
+      <div id="guide-tab-content-tabla" class="hidden space-y-3">
+        
+        <div class="relative">
+          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+            <i data-lucide="search" class="w-3.5 h-3.5"></i>
+          </div>
+          <input 
+            type="text" 
+            oninput="filterSizeTable(this.value, 'size-table-body-modal')"
+            placeholder="Filtrar por medida en mm o cm (ej. 17.3, 54, 7)..." 
+            class="w-full pl-8 pr-3 py-1.5 text-xs rounded-xl border border-gray-200 bg-gray-50/60 focus:bg-white focus:outline-none focus:ring-1 focus:ring-rose-400 transition"
+          />
+        </div>
+
+        <div class="overflow-x-auto rounded-xl border border-gray-200 max-h-[45vh] overflow-y-auto">
+          <table class="w-full text-xs text-left">
+            <thead class="sticky top-0 z-10">
+              <tr class="font-bold border-b border-gray-200 text-[10px]">
+                <th class="py-2 px-2.5 text-center bg-[#fdf2f7] text-rose-700 border-r border-rose-100">Talla MX</th>
+                <th class="py-2 px-2.5 text-center bg-[#f6f6f6] text-sage-800 border-r border-sage-100">Talla EU</th>
+                <th class="py-2 px-2.5 text-center bg-[#fdf2f7] text-rose-700 border-r border-rose-100">Circunferencia</th>
+                <th class="py-2 px-2.5 text-center bg-[#f6f6f6] text-sage-800">Diámetro Interno</th>
+              </tr>
+            </thead>
+            <tbody id="size-table-body-modal" class="divide-y divide-gray-100 text-[11px] text-center">
+              <tr>
+                <td class="py-1.5 px-2 font-bold text-rose-700 bg-rose-50/30 border-r border-rose-100">5</td>
+                <td class="py-1.5 px-2 font-semibold text-sage-800 bg-sage-50/20 border-r border-sage-100">49</td>
+                <td class="py-1.5 px-2 text-gray-700 border-r border-rose-100">4.93 cm (49.3 mm)</td>
+                <td class="py-1.5 px-2 text-gray-700">1.57 cm (15.7 mm)</td>
+              </tr>
+              <tr>
+                <td class="py-1.5 px-2 font-bold text-rose-700 bg-rose-50/30 border-r border-rose-100">6</td>
+                <td class="py-1.5 px-2 font-semibold text-sage-800 bg-sage-50/20 border-r border-sage-100">52</td>
+                <td class="py-1.5 px-2 text-gray-700 border-r border-rose-100">5.19 cm (51.9 mm)</td>
+                <td class="py-1.5 px-2 text-gray-700">1.65 cm (16.5 mm)</td>
+              </tr>
+              <tr>
+                <td class="py-1.5 px-2 font-bold text-rose-700 bg-rose-50/30 border-r border-rose-100">7</td>
+                <td class="py-1.5 px-2 font-semibold text-sage-800 bg-sage-50/20 border-r border-sage-100">54</td>
+                <td class="py-1.5 px-2 text-gray-700 border-r border-rose-100">5.44 cm (54.4 mm)</td>
+                <td class="py-1.5 px-2 text-gray-700">1.73 cm (17.3 mm)</td>
+              </tr>
+              <tr>
+                <td class="py-1.5 px-2 font-bold text-rose-700 bg-rose-50/30 border-r border-rose-100">8</td>
+                <td class="py-1.5 px-2 font-semibold text-sage-800 bg-sage-50/20 border-r border-sage-100">57</td>
+                <td class="py-1.5 px-2 text-gray-700 border-r border-rose-100">5.70 cm (57.0 mm)</td>
+                <td class="py-1.5 px-2 text-gray-700">1.81 cm (18.1 mm)</td>
+              </tr>
+              <tr>
+                <td class="py-1.5 px-2 font-bold text-rose-700 bg-rose-50/30 border-r border-rose-100">9</td>
+                <td class="py-1.5 px-2 font-semibold text-sage-800 bg-sage-50/20 border-r border-sage-100">59</td>
+                <td class="py-1.5 px-2 text-gray-700 border-r border-rose-100">5.95 cm (59.5 mm)</td>
+                <td class="py-1.5 px-2 text-gray-700">1.89 cm (18.9 mm)</td>
+              </tr>
+              <tr>
+                <td class="py-1.5 px-2 font-bold text-rose-700 bg-rose-50/30 border-r border-rose-100">10</td>
+                <td class="py-1.5 px-2 font-semibold text-sage-800 bg-sage-50/20 border-r border-sage-100">62</td>
+                <td class="py-1.5 px-2 text-gray-700 border-r border-rose-100">6.21 cm (62.1 mm)</td>
+                <td class="py-1.5 px-2 text-gray-700">1.98 cm (19.8 mm)</td>
+              </tr>
+              <tr>
+                <td class="py-1.5 px-2 font-bold text-rose-700 bg-rose-50/30 border-r border-rose-100">11</td>
+                <td class="py-1.5 px-2 font-semibold text-sage-800 bg-sage-50/20 border-r border-sage-100">65</td>
+                <td class="py-1.5 px-2 text-gray-700 border-r border-rose-100">6.46 cm (64.6 mm)</td>
+                <td class="py-1.5 px-2 text-gray-700">2.06 cm (20.6 mm)</td>
+              </tr>
+              <tr>
+                <td class="py-1.5 px-2 font-bold text-rose-700 bg-rose-50/30 border-r border-rose-100">12</td>
+                <td class="py-1.5 px-2 font-semibold text-sage-800 bg-sage-50/20 border-r border-sage-100">67</td>
+                <td class="py-1.5 px-2 text-gray-700 border-r border-rose-100">6.72 cm (67.2 mm)</td>
+                <td class="py-1.5 px-2 text-gray-700">2.14 cm (21.4 mm)</td>
+              </tr>
+              <tr>
+                <td class="py-1.5 px-2 font-bold text-rose-700 bg-rose-50/30 border-r border-rose-100">13</td>
+                <td class="py-1.5 px-2 font-semibold text-sage-800 bg-sage-50/20 border-r border-sage-100">70</td>
+                <td class="py-1.5 px-2 text-gray-700 border-r border-rose-100">6.97 cm (69.7 mm)</td>
+                <td class="py-1.5 px-2 text-gray-700">2.22 cm (22.2 mm)</td>
+              </tr>
+              <tr class="bg-rose-50/80 font-bold text-rose-700">
+                <td class="py-2 px-2 text-center border-r border-rose-200">Ajustable</td>
+                <td colspan="3" class="py-2 px-2 text-center text-xs">
+                  ♡ Talla Ajustable: ¡Se amolda a cualquier medida! ♡
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+
+      <!-- Contenido Tab 3: Paso a Paso -->
+      <div id="guide-tab-content-pasos" class="hidden space-y-3 text-xs">
+        
+        <div class="p-3 bg-[#fdf2f7] rounded-2xl border border-rose-200 space-y-1.5">
+          <p class="font-bold text-rose-700 flex items-center gap-1 text-xs">
+            <span>♡</span> Método 1: Con una tira de papel o hilo
+          </p>
+          <ol class="list-decimal list-inside space-y-1 text-gray-600 pl-1 text-[11px] leading-relaxed">
+            <li>Recorta una tira de papel de 1 cm de ancho o usa un trozo de hilo.</li>
+            <li>Rodea tu dedo en la parte más gruesa y marca donde se complete la vuelta.</li>
+            <li>Mide la longitud de la tira con una regla plana desde el inicio hasta la marca.</li>
+          </ol>
+        </div>
+
+        <div class="p-3 bg-[#f6f6f6] rounded-2xl border border-sage-200 space-y-1.5">
+          <p class="font-bold text-sage-800 flex items-center gap-1 text-xs">
+            <span>♡</span> Método 2: Con un anillo que ya tengas
+          </p>
+          <ol class="list-decimal list-inside space-y-1 text-gray-600 pl-1 text-[11px] leading-relaxed">
+            <li>Coloca tu anillo sobre una superficie plana. Mide el diámetro interno recto de borde interno a borde interno.</li>
+            <li>El resultado es tu diámetro en cm o mm. Busca la equivalencia en la tabla.</li>
+          </ol>
+        </div>
+
+        <div class="p-3 bg-white rounded-2xl border border-gray-200 text-gray-600 space-y-1 text-[11px]">
+          <p class="font-bold text-gray-800">♡ Tips Oficiales:</p>
+          <p>♥ Mide varias veces para mayor precisión.</p>
+          <p>♥ Si tu medida queda entre dos tallas, elige la más grande.</p>
+          <p>♥ Las medidas pueden variar ligeramente según el grosor del anillo.</p>
+        </div>
+
+      </div>
+
+      <!-- Botón de acción final -->
+      <div class="pt-4 mt-3 border-t border-gray-100 flex items-center justify-between gap-3">
+        <a 
+          href="https://wa.me/529932902704" 
+          target="_blank" 
+          rel="noopener noreferrer"
+          class="text-xs font-semibold text-rose-600 hover:text-rose-800 flex items-center gap-1"
+        >
+          <i data-lucide="message-circle" class="w-3.5 h-3.5"></i>
+          <span>Pedir asesoría</span>
+        </a>
+
+        <button 
+          type="button" 
+          onclick="closeRingSizeGuideModal()"
+          class="py-2.5 px-6 rounded-xl bg-sage-600 text-white font-semibold text-xs hover:bg-sage-700 transition btn-press shadow-xs"
+        >
+          ¡Listo, volver a mi joya!
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       MODAL LIGHTBOX PARA VER INFOGRAFÍAS EN PANTALLA COMPLETA
+       ======================================================================== -->
+  <div id="lightbox-modal" style="display: none;" class="lightbox-modal fixed inset-0 z-50 hidden flex items-center justify-center p-3 sm:p-6 bg-black/80 backdrop-blur-md">
+    <div class="relative max-w-4xl w-full flex flex-col items-center">
+      <button 
+        onclick="closeLightbox()"
+        class="absolute -top-12 right-0 sm:right-2 z-10 p-2.5 rounded-full bg-white/20 text-white hover:bg-white/40 transition btn-press"
+        aria-label="Cerrar imagen"
+      >
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+      <img 
+        id="lightbox-image" 
+        src="" 
+        alt="Infografía Yamiki" 
+        class="lightbox-img max-h-[85vh] w-auto max-w-full rounded-2xl shadow-2xl object-contain bg-white" 
+      />
+      <p id="lightbox-caption" class="text-white text-xs sm:text-sm font-semibold mt-3 text-center drop-shadow"></p>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       BOTONES FLOTANTES: REDES SOCIALES (PC) Y CARRITO DE COMPRAS
+       ======================================================================== -->
+  <div id="floating-actions-dock" class="fixed bottom-5 right-4 sm:bottom-8 sm:right-8 z-40 pointer-events-auto flex flex-col items-center gap-2.5">
+    
+    <!-- Redes Sociales Flotantes en PC (Pequeñas, Elegantes con Logos Oficiales) -->
+    <div class="hidden sm:flex flex-col items-center gap-2">
+      
+      <!-- WhatsApp Flotante -->
+      <a 
+        href="https://wa.me/529932902704" 
+        target="_blank" 
+        rel="noopener noreferrer"
+        class="floating-social-btn floating-wa w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-white shadow-md hover:shadow-lg transition-all transform hover:scale-110 active:scale-95 border border-white/20"
+        title="Chatear por WhatsApp (+52 993 290 2704)"
+        aria-label="WhatsApp Oficial"
+      >
+        <svg class="w-4.5 h-4.5 sm:w-5 sm:h-5 fill-white" viewBox="0 0 24 24">
+          <path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0 0 12.04 2zm.01 1.67c2.2 0 4.26.86 5.82 2.42a8.225 8.225 0 0 1 2.41 5.83c0 4.54-3.7 8.24-8.24 8.24-1.48 0-2.93-.4-4.2-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.196 8.196 0 0 1-1.26-4.38c0-4.54 3.7-8.24 8.24-8.24zm4.52 11.66c-.25-.13-1.47-.72-1.7-.81-.23-.08-.39-.13-.56.13-.17.25-.64.81-.79.97-.14.17-.29.19-.54.06-.25-.13-1.06-.39-2.01-1.24-.74-.66-1.25-1.48-1.39-1.73-.14-.25-.02-.39.11-.51.11-.11.25-.29.37-.43.13-.15.17-.25.25-.42.08-.17.04-.31-.02-.44-.06-.13-.56-1.34-.76-1.84-.2-.48-.4-.42-.56-.43h-.47c-.17 0-.44.06-.67.31-.23.25-.88.86-.88 2.1 0 1.24.9 2.44 1.03 2.61.13.17 1.77 2.7 4.29 3.79.6.26 1.07.41 1.44.53.6.19 1.15.16 1.58.1.48-.07 1.47-.6 1.68-1.18.21-.58.21-1.07.15-1.18-.06-.11-.23-.18-.48-.3z"/>
+        </svg>
+      </a>
+
+      <!-- Instagram Flotante -->
+      <a 
+        href="https://www.instagram.com/yamiki_oficial?exln=MW5teW12N3Fpa3cxNA%3D%3D&utm_source=qr" 
+        target="_blank" 
+        rel="noopener noreferrer"
+        class="floating-social-btn floating-ig w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-white shadow-md hover:shadow-lg transition-all transform hover:scale-110 active:scale-95 border border-white/20"
+        title="Síguenos en Instagram (@yamiki_oficial)"
+        aria-label="Instagram Oficial"
+      >
+        <svg class="w-4.5 h-4.5 sm:w-5 sm:h-5 fill-white" viewBox="0 0 24 24">
+          <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+        </svg>
+      </a>
+
+      <!-- Facebook Flotante -->
+      <a 
+        href="https://www.facebook.com/share/1FDfvHc4p3/?mibextid=wwXIfr" 
+        target="_blank" 
+        rel="noopener noreferrer"
+        class="floating-social-btn floating-fb w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-white shadow-md hover:shadow-lg transition-all transform hover:scale-110 active:scale-95 border border-white/20"
+        title="Síguenos en Facebook (Yamiki Joyería)"
+        aria-label="Facebook Oficial"
+      >
+        <svg class="w-4.5 h-4.5 sm:w-5 sm:h-5 fill-white" viewBox="0 0 24 24">
+          <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+        </svg>
+      </a>
+
+    </div>
+
+    <!-- Botón Principal del Carrito de Compras -->
+    <button 
+      type="button" 
+      onclick="toggleCartDrawer(true)"
+      class="floating-cart-btn rounded-full bg-sage-600 hover:bg-sage-700 text-white flex items-center justify-center relative btn-press cursor-pointer border border-white/20 shadow-lg hover:shadow-xl transition-all"
+      aria-label="Ver Pedido de Joyería"
+    >
+      <i data-lucide="shopping-bag" class="w-6 h-6"></i>
+      <span class="cart-counter-badge hidden" aria-label="Cantidad de piezas en el pedido">
+        0
+      </span>
+    </button>
+  </div>
+
+  <div id="toast-container" class="fixed bottom-5 left-4 right-4 sm:left-auto sm:right-6 sm:w-80 z-50 flex flex-col gap-2.5 pointer-events-none safe-bottom-padding"></div>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="products.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,1409 @@
+/* ==============================================================================
+   YAMIKI JOYERÍA DE PLATA S925 - DESIGN SYSTEM & MOTION
+   Inspirado en la filosofía de Design Engineering de Emil Kowalski & Apple Design
+   Tipografía Unificada de Alta Gama: Plus Jakarta Sans
+   ============================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+
+/* Prevención estricta de FOUC y desfase de viewport en móviles antes de carga de Tailwind */
+[hidden] {
+  display: none !important;
+}
+
+/* Navegación de Escritorio Garantizada (PC >= 768px) */
+@media (min-width: 768px) {
+  .desktop-nav {
+    display: flex !important;
+    align-items: center !important;
+  }
+}
+@media (max-width: 767px) {
+  .desktop-nav {
+    display: none !important;
+  }
+}
+
+:root {
+  --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-serif: var(--font-sans); /* Sistema tipográfico 100% unificado en toda la plataforma */
+  
+  /* Curvas de aceleración personalizadas de Emil Kowalski (eliminan curvas CSS estándar débiles) */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+  --ease-spring: cubic-bezier(0.175, 0.885, 0.32, 1.15);
+
+  /* Paleta Nueva: #f6f6f6, #000000, #e72380, #b8dcc3, #f5b1d0 */
+  --sage-50: #f6f6f6;
+  --sage-100: #e2f0e6;
+  --sage-200: #b8dcc3;
+  --sage-300: #9ac9a8;
+  --sage-400: #7db68e;
+  --sage-500: #5ea373;
+  --sage-600: #477d59;
+  --sage-700: #355f43;
+  --sage-800: #23412e;
+  --sage-900: #000000;
+
+  --rose-50: #fdf2f7;
+  --rose-100: #fae4ef;
+  --rose-200: #f5b1d0;
+  --rose-300: #f085b7;
+  --rose-400: #eb599d;
+  --rose-500: #e72380;
+  --rose-600: #e72380;
+
+  /* Sombras multicapa ambientales (evitan sombras duras y artificiales) */
+  --shadow-subtle: 0 1px 2px rgba(29, 39, 34, 0.04), 0 2px 8px rgba(29, 39, 34, 0.02);
+  --shadow-card: 0 1px 3px rgba(29, 39, 34, 0.04), 0 8px 24px -4px rgba(29, 39, 34, 0.06);
+  --shadow-card-hover: 0 12px 32px -8px rgba(91, 122, 106, 0.16), 0 6px 16px -4px rgba(232, 180, 184, 0.14);
+  --shadow-modal: 0 24px 60px -12px rgba(29, 39, 34, 0.25), 0 12px 24px -8px rgba(29, 39, 34, 0.12);
+}
+
+/* ==============================================================================
+   REGLAS GLOBALES Y MOBILE-NATIVE (Cero scroll horizontal y viewport 100% exacto)
+   ============================================================================== */
+html {
+  -webkit-tap-highlight-color: transparent;
+  scroll-behavior: smooth;
+  scroll-padding-top: 4.5rem; /* Margen superior para que el salto a pestañas nunca quede oculto bajo la cabecera */
+  overflow-x: clip; /* clip previene el scroll horizontal sin romper position: sticky */
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: #f6f6f6;
+  color: #262e2b;
+  overflow-x: clip; /* Eliminado overflow-x: hidden que cancelaba el sticky del navbar */
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
+  position: relative;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Evita que Safari en iOS haga zoom forzado al tocar inputs (regla mobile-native: font-size >= 16px en pantallas táctiles) */
+@media (max-width: 768px) {
+  input, select, textarea {
+    font-size: 16px !important;
+  }
+}
+
+/* Soporte para notch y barra de inicio de iPhone */
+.safe-bottom-padding {
+  padding-bottom: max(1.25rem, env(safe-area-inset-bottom));
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-sans);
+  letter-spacing: -0.025em;
+}
+
+.font-serif {
+  font-family: var(--font-sans) !important;
+}
+
+/* Contención estricta para modales y drawer para no afectar el ancho en móviles */
+#cart-drawer,
+#product-modal,
+#ring-size-guide-modal {
+  contain: strict;
+  max-width: 100vw;
+  overflow: hidden;
+}
+
+/* Botón flotante móvil de la bolsa de compras (ver definición al final) */
+
+/* Scrollbar refinado */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #b8dcc3;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #a5b9ad;
+}
+
+/* ==============================================================================
+   MICRO-INTERACCIONES Y FEEDBACK TÁCTIL (Emil Kowalski: scale 0.96-0.97 on active)
+   ============================================================================== */
+.btn-press {
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+  transition: transform 140ms var(--ease-out), background-color 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
+}
+
+.btn-press:active {
+  transform: scale(0.96);
+}
+
+/* ==============================================================================
+   HOVER ESTRICTO CON MEDIA QUERY (mobile-native: nunca deja pegado el hover en touch)
+   ============================================================================== */
+@media (hover: hover) and (pointer: fine) {
+  .product-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-card-hover);
+    border-color: rgba(91, 122, 106, 0.25);
+  }
+
+  .product-card:hover .product-image {
+    transform: scale(1.06);
+  }
+
+  .hover-elevate:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px -4px rgba(29, 39, 34, 0.08);
+  }
+}
+
+/* ==============================================================================
+   CARRUSEL 3D HERO YAMIKI (FONDOS OFICIALES PARA MÓVIL Y PC EN MODO DÍA Y NOCHE)
+   ============================================================================== */
+.hero-section-bg,
+#inicio {
+  background-color: #FFFFFF !important;
+  transition: background-color 400ms ease;
+}
+
+html.dark .hero-section-bg,
+html.dark #inicio {
+  background-color: #000000 !important;
+}
+
+/* 1. MÓVIL / CELULAR (Pantallas < 640px) */
+.hero-3d-bg,
+#yamiki-hero-root {
+  background-image: url('img/hero-bg-mobile-light.png') !important;
+  background-size: cover !important;
+  background-position: center top !important;
+  background-repeat: no-repeat !important;
+  transition: background-image 400ms ease, background-color 400ms ease;
+}
+
+html.dark .hero-3d-bg,
+html.dark #yamiki-hero-root {
+  background-image: url('img/hero-bg-mobile-dark.png') !important;
+}
+
+/* 2. PC / ESCRITORIO Y TABLETS (Pantallas >= 640px) */
+@media (min-width: 640px) {
+  .hero-3d-bg,
+  #yamiki-hero-root {
+    background-image: url('img/hero-bg-pc-light.png') !important;
+    background-size: cover !important;
+    background-position: center center !important;
+  }
+
+  html.dark .hero-3d-bg,
+  html.dark #yamiki-hero-root {
+    background-image: url('img/hero-bg-pc-dark.png') !important;
+  }
+}
+
+/* Ocultar logo superpuesto duplicado ya que los nuevos fondos incluyen el diseño de marca */
+.hero-big-logo {
+  display: none !important;
+}
+
+.bg-crossfade {
+  transition: background-color 650ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.grain-overlay {
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 0.08 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 200px 200px;
+}
+
+.hero-3d-item {
+  transition: transform 650ms cubic-bezier(0.4, 0, 0.2, 1),
+              filter 650ms cubic-bezier(0.4, 0, 0.2, 1),
+              opacity 650ms cubic-bezier(0.4, 0, 0.2, 1),
+              left 650ms cubic-bezier(0.4, 0, 0.2, 1),
+              height 650ms cubic-bezier(0.4, 0, 0.2, 1),
+              bottom 650ms cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform, filter, opacity, left, height, bottom;
+}
+
+/* Tarjetas de Producto */
+.product-card {
+  box-shadow: var(--shadow-card);
+  transition: transform 260ms var(--ease-out), box-shadow 260ms var(--ease-out), border-color 260ms ease;
+  contain: paint;
+}
+
+.product-image {
+  /* GPU isolated transform: no layouts triggers */
+  will-change: transform;
+  transition: transform 450ms var(--ease-out);
+}
+
+/* Barra de navegación de cristal y navegación de escritorio (Siempre fija, compacta y elegante) */
+header.glass-nav {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 50 !important;
+  width: 100% !important;
+  background: rgba(255, 255, 255, 0.98) !important;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.07) !important;
+  box-shadow: 0 2px 12px -2px rgba(29, 39, 34, 0.05);
+  transition: padding 200ms ease, box-shadow 200ms ease, background-color 200ms ease;
+}
+
+header.glass-nav.is-scrolled {
+  box-shadow: 0 4px 18px -2px rgba(29, 39, 34, 0.09);
+  border-bottom-color: rgba(0, 0, 0, 0.09) !important;
+}
+
+/* Enlaces de Navegación de Escritorio */
+.desktop-nav a {
+  color: #000000 !important;
+  font-weight: 600;
+  transition: color 180ms ease, border-color 180ms ease;
+}
+
+.desktop-nav a:hover {
+  color: #e72380 !important;
+}
+
+.desktop-nav a.active-nav-tab {
+  color: #e72380 !important;
+  border-bottom-color: #e72380 !important;
+}
+
+/* Brillo de plata ley sutil */
+.silver-shimmer {
+  background: linear-gradient(
+    120deg,
+    rgba(255, 255, 255, 0) 25%,
+    rgba(255, 255, 255, 0.55) 50%,
+    rgba(255, 255, 255, 0) 75%
+  );
+  background-size: 200% 100%;
+  animation: silverShine 4s infinite linear;
+}
+
+@keyframes silverShine {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* ==============================================================================
+   TRANSICIONES DE MODAL Y DRAWER (Emil: nunca scale(0), siempre scale(0.95) -> 1)
+   ============================================================================== */
+.modal-overlay {
+  opacity: 0;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition: opacity 220ms var(--ease-out);
+}
+
+.modal-container.modal-active .modal-overlay {
+  opacity: 1;
+}
+
+.modal-dialog {
+  transform: scale(0.95);
+  opacity: 0;
+  transition: transform 240ms var(--ease-out), opacity 200ms var(--ease-out);
+}
+
+.modal-container.modal-active .modal-dialog {
+  transform: scale(1);
+  opacity: 1;
+}
+
+/* Drawer del Carrito (Animación iOS Sheet con --ease-drawer) */
+#cart-drawer {
+  overscroll-behavior-y: none;
+}
+
+#cart-panel {
+  transition: transform 280ms var(--ease-drawer);
+}
+
+/* ==============================================================================
+   CARRUSEL DE NOVEDADES (LOOP INFINITO)
+   ============================================================================== */
+.carousel-track {
+  display: flex;
+  touch-action: pan-y; /* Permite scroll vertical mientras desliza horizontalmente */
+  transition: transform 380ms var(--ease-out);
+  will-change: transform;
+}
+
+.carousel-card {
+  flex: 0 0 50%;
+  min-width: 50%;
+}
+@media (min-width: 768px) {
+  .carousel-card {
+    flex: 0 0 33.333333%;
+    min-width: 33.333333%;
+  }
+}
+@media (min-width: 1024px) {
+  .carousel-card {
+    flex: 0 0 25%;
+    min-width: 25%;
+  }
+}
+
+/* ==============================================================================
+   DESPLEGABLES DE FILTROS MODERNOS ("QUE SE ABREN" - EMIL KOWALSKI MICROINTERACCIONES)
+   ============================================================================== */
+.filter-dropdown-menu {
+  transition: opacity 160ms var(--ease-out), transform 160ms var(--ease-out);
+  transform-origin: top;
+}
+
+.filter-dropdown-menu.hidden {
+  display: none !important;
+  opacity: 0;
+  transform: translateY(-6px) scale(0.98);
+  pointer-events: none;
+}
+
+.filter-dropdown-menu:not(.hidden) {
+  display: block !important;
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
+
+.dropdown-filter-btn[aria-expanded="true"] {
+  border-color: #5B7A6A !important;
+  background-color: #ffffff !important;
+  box-shadow: 0 6px 18px -3px rgba(45, 60, 53, 0.12) !important;
+}
+
+.dropdown-filter-btn[aria-expanded="true"] .dropdown-arrow {
+  transform: rotate(180deg);
+  color: #5B7A6A !important;
+}
+
+/* Indicador visual activo para botones de filtro */
+.dropdown-filter-btn.filter-active {
+  border-color: #5B7A6A !important;
+  background-color: #F0F5F2 !important;
+}
+
+/* ==============================================================================
+   NOTIFICACIONES TOAST ESTILO "SONNER" (De Emil Kowalski - ALTO CONTRASTE)
+   ============================================================================== */
+#toast-container {
+  pointer-events: none;
+  z-index: 100;
+}
+
+.toast-item {
+  pointer-events: auto;
+  animation: sonnerSlideIn 240ms var(--ease-out) forwards;
+  background-color: #141C18 !important;
+  color: #FFFFFF !important;
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+  box-shadow: 0 16px 40px -4px rgba(0, 0, 0, 0.55), 0 4px 14px rgba(0, 0, 0, 0.25) !important;
+  transform-origin: center bottom;
+  border-radius: 1rem;
+}
+
+.toast-item p {
+  color: #FFFFFF !important;
+}
+
+.toast-item.toast-exit {
+  animation: sonnerSlideOut 180ms var(--ease-out) forwards;
+}
+
+@keyframes sonnerSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes sonnerSlideOut {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(10px) scale(0.95);
+  }
+}
+
+/* ==============================================================================
+   MODO NOCHE (DARK MODE) - JOYERÍA DE PLATA S925
+   Paleta nocturna: Obsidiana, Plata Ley Pulida y Salvia Profundo
+   ============================================================================== */
+html.dark {
+  color-scheme: dark;
+}
+
+html.dark body {
+  background-color: #000000;
+  color: #E2E8E5;
+}
+
+/* Navbar de cristal nocturno (Siempre fija y compacta) */
+html.dark header.glass-nav {
+  background: rgba(12, 16, 14, 0.96) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 0 4px 24px -2px rgba(0, 0, 0, 0.6);
+}
+
+html.dark header.glass-nav.is-scrolled {
+  box-shadow: 0 6px 28px -2px rgba(0, 0, 0, 0.8);
+  border-bottom-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+html.dark .desktop-nav a {
+  color: #E2E8E5 !important;
+}
+
+html.dark .desktop-nav a:hover {
+  color: #DB8C94 !important;
+}
+
+html.dark .desktop-nav a.active-nav-tab {
+  color: #DB8C94 !important;
+  border-bottom-color: #DB8C94 !important;
+}
+
+/* Menú móvil nocturno */
+html.dark #mobile-menu {
+  background: rgba(16, 22, 19, 0.98) !important;
+  border-bottom-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Secciones y contenedores principales */
+html.dark #catalogo {
+  background-color: #0A0D0C !important;
+}
+
+html.dark #novedades-carousel,
+html.dark #guia-medidas,
+html.dark #pedidos-encargo {
+  background-color: #000000 !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Tarjetas y superficies blancas */
+html.dark .bg-white {
+  background-color: #000000 !important;
+}
+
+html.dark .bg-\[\#f6f6f6\],
+html.dark .bg-\[\#f6f6f6\] {
+  background-color: #0A0E0C !important;
+}
+
+/* Grises suaves a tonos oscuros elegantes */
+html.dark .bg-gray-50,
+html.dark .bg-gray-50\/50,
+html.dark .bg-gray-50\/60,
+html.dark .bg-gray-50\/70 {
+  background-color: #17201C !important;
+}
+
+html.dark .bg-sage-50 {
+  background-color: #17201C !important;
+  color: #b8dcc3 !important;
+}
+
+/* Bordes en modo noche */
+html.dark .border-gray-100,
+html.dark .border-gray-200,
+html.dark .border-gray-200\/60,
+html.dark .border-gray-200\/80,
+html.dark .border-gray-200\/90,
+html.dark .border-sage-100,
+html.dark .border-sage-200,
+html.dark .border-sage-200\/60,
+html.dark .border-sage-200\/80 {
+  border-color: rgba(255, 255, 255, 0.09) !important;
+}
+
+/* Tipografía de alto contraste */
+html.dark .text-gray-900,
+html.dark .text-sage-900,
+html.dark .text-gray-800,
+html.dark .text-sage-800 {
+  color: #F0F4F2 !important;
+}
+
+html.dark .text-gray-700,
+html.dark .text-sage-700 {
+  color: #C6D2CC !important;
+}
+
+html.dark .text-gray-600 {
+  color: #9AA8A1 !important;
+}
+
+html.dark .text-gray-500 {
+  color: #82928A !important;
+}
+
+/* Tarjetas de Producto en Modo Noche */
+html.dark .product-card {
+  background-color: #000000 !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.35) !important;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  html.dark .product-card:hover {
+    border-color: rgba(125, 154, 138, 0.38) !important;
+    box-shadow: 0 14px 34px -4px rgba(0, 0, 0, 0.55), 0 0 20px rgba(125, 154, 138, 0.12) !important;
+  }
+}
+
+html.dark .carousel-card > div {
+  background-color: #000000 !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Botones de Filtro Desplegables en Modo Noche */
+html.dark .dropdown-filter-btn {
+  background-color: #17201C !important;
+  color: #E2E8E5 !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+html.dark .dropdown-filter-btn[aria-expanded="true"] {
+  border-color: #7D9A8A !important;
+  background-color: #1B2621 !important;
+  box-shadow: 0 6px 20px -3px rgba(0, 0, 0, 0.5) !important;
+}
+
+html.dark .dropdown-filter-btn.filter-active {
+  border-color: #7D9A8A !important;
+  background-color: #1E2924 !important;
+}
+
+html.dark .filter-dropdown-menu {
+  background-color: #121212 !important;
+  border-color: rgba(255, 255, 255, 0.14) !important;
+  color: #E2E8E5 !important;
+  box-shadow: 0 20px 48px -6px rgba(0, 0, 0, 0.75) !important;
+}
+
+html.dark .filter-dropdown-menu button:hover {
+  background-color: #1D2A24 !important;
+}
+
+/* Buscador en Modo Noche */
+html.dark #search-input {
+  background-color: #17201C !important;
+  color: #FFFFFF !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+html.dark #search-input::placeholder {
+  color: #6F8078 !important;
+}
+
+/* Píldoras activas y badges */
+html.dark #active-filters-badges .bg-sage-100 {
+  background-color: #1F2D26 !important;
+  color: #E2E8E5 !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+html.dark #active-filters-badges .bg-rose-100 {
+  background-color: rgba(219, 140, 148, 0.18) !important;
+  color: #F5DDE0 !important;
+  border-color: rgba(219, 140, 148, 0.3) !important;
+}
+
+html.dark #active-filters-badges .bg-amber-100 {
+  background-color: rgba(245, 158, 11, 0.18) !important;
+  color: #FDE68A !important;
+  border-color: rgba(245, 158, 11, 0.3) !important;
+}
+
+html.dark #active-filters-badges .bg-gray-100 {
+  background-color: #1F2A24 !important;
+  color: #E2E8E5 !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+/* Drawer del Carrito en Modo Noche */
+html.dark #cart-panel {
+  background-color: #000000 !important;
+  color: #E2E8E5 !important;
+  border-left-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+html.dark #cart-panel .bg-gray-50,
+html.dark #cart-panel .bg-sage-50 {
+  background-color: #181818 !important;
+}
+
+/* Modales en Modo Noche */
+html.dark .modal-dialog {
+  background-color: #000000 !important;
+  color: #E2E8E5 !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  box-shadow: 0 28px 70px -10px rgba(0, 0, 0, 0.8) !important;
+}
+
+html.dark .modal-dialog .bg-gray-50,
+html.dark .modal-dialog .bg-sage-50 {
+  background-color: #181818 !important;
+}
+
+/* Tabla de Medidas de Anillos en Modo Noche */
+html.dark #ring-size-guide-modal tr:nth-child(even),
+html.dark #guia-medidas tr:nth-child(even) {
+  background-color: rgba(255, 255, 255, 0.02) !important;
+}
+
+html.dark #ring-size-guide-modal tr:hover,
+html.dark #guia-medidas tr:hover {
+  background-color: rgba(125, 154, 138, 0.1) !important;
+}
+
+html.dark #ring-size-guide-modal th,
+html.dark #guia-medidas th {
+  background-color: #181818 !important;
+  color: #F0F4F2 !important;
+  border-bottom-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+html.dark #ring-size-guide-modal td,
+html.dark #guia-medidas td {
+  border-bottom-color: rgba(255, 255, 255, 0.06) !important;
+}
+
+
+/* Lightbox para infografías y guías de medidas */
+.lightbox-modal {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 240ms var(--ease-out);
+}
+.lightbox-modal.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+.lightbox-img {
+  transform: scale(0.94);
+  transition: transform 260ms var(--ease-out);
+}
+.lightbox-modal.active .lightbox-img {
+  transform: scale(1);
+}
+
+/* ==============================================================================
+   ANIMACIÓN EN CASCADA / STAGGER PARA PRODUCTOS AL CARGAR
+   ============================================================================== */
+.stagger-card {
+  opacity: 0;
+  animation: cardFadeIn 280ms var(--ease-out) forwards;
+}
+
+@keyframes cardFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+
+/* ==============================================================================
+   BADGES, BOTONES Y ETIQUETAS DE JOYERÍA (ALTO CONTRASTE EN MODO DÍA Y MODO NOCHE)
+   ============================================================================== */
+.product-badge {
+  background-color: #FFFFFF !important;
+  color: #000000 !important;
+  border: 1px solid rgba(203, 215, 207, 0.9) !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08) !important;
+}
+
+html.dark .product-badge {
+  background-color: #1a1a1a !important;
+  color: #F0F4F2 !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.45) !important;
+}
+
+.silver-tag {
+  background-color: rgba(29, 39, 34, 0.92) !important;
+  color: #FFFFFF !important;
+  border: 1px solid rgba(255, 255, 255, 0.25) !important;
+  letter-spacing: 0.05em;
+  font-weight: 800 !important;
+}
+
+html.dark .silver-tag {
+  background-color: #000000 !important;
+  color: #b8dcc3 !important;
+  border: 1px solid rgba(255, 255, 255, 0.16) !important;
+}
+
+.size-pill-tag {
+  background-color: #f6f6f6 !important;
+  color: #2D3C35 !important;
+  border: 1px solid #b8dcc3 !important;
+}
+
+html.dark .size-pill-tag {
+  background-color: #1C2722 !important;
+  color: #E2E8E5 !important;
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+}
+
+.adjustable-tag {
+  background-color: #FDF2F4 !important;
+  color: #e72380 !important;
+  border: 1px solid #F5DDE0 !important;
+}
+
+html.dark .adjustable-tag {
+  background-color: rgba(219, 140, 148, 0.18) !important;
+  color: #F5DDE0 !important;
+  border: 1px solid rgba(219, 140, 148, 0.35) !important;
+}
+
+/* Botón Agregar al Carrito en Tarjetas y Modal (Modo Día y Noche) */
+.add-to-cart-btn {
+  background-color: #2D3C35 !important;
+  color: #FFFFFF !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+.add-to-cart-btn:hover {
+  background-color: #000000 !important;
+}
+
+html.dark .add-to-cart-btn {
+  background-color: #3A4E44 !important;
+  color: #FFFFFF !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+}
+
+html.dark .add-to-cart-btn:hover {
+  background-color: #476153 !important;
+}
+
+/* Botón flotante de la bolsa de compras (100% Opaco y Visible en PC y Móvil) */
+.floating-cart-btn {
+  width: 58px !important;
+  height: 58px !important;
+  min-width: 58px !important;
+  min-height: 58px !important;
+  background: #2D3C35 !important;
+  color: #FFFFFF !important;
+  border: 2px solid rgba(255, 255, 255, 0.45) !important;
+  box-shadow: 0 10px 28px -2px rgba(29, 39, 34, 0.45), 0 4px 10px rgba(0, 0, 0, 0.25) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border-radius: 9999px !important;
+  opacity: 1 !important;
+  position: relative !important;
+  cursor: pointer !important;
+}
+
+@media (min-width: 640px) {
+  .floating-cart-btn {
+    width: 64px !important;
+    height: 64px !important;
+    min-width: 64px !important;
+    min-height: 64px !important;
+  }
+}
+
+.floating-cart-btn:hover {
+  background: #000000 !important;
+  transform: translateY(-2px) scale(1.04);
+}
+
+html.dark .floating-cart-btn {
+  background: #18241F !important;
+  border-color: rgba(255, 255, 255, 0.4) !important;
+  box-shadow: 0 12px 32px -2px rgba(0, 0, 0, 0.75), 0 0 20px rgba(125, 154, 138, 0.35) !important;
+}
+
+html.dark .floating-cart-btn:hover {
+  background: #23312A !important;
+}
+
+.floating-cart-btn .cart-counter-badge {
+  background-color: #E11D48 !important;
+  color: #FFFFFF !important;
+  border: 2px solid #FFFFFF !important;
+  font-weight: 800 !important;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.4) !important;
+}
+
+
+/* ==============================================================================
+   PREFERS-REDUCED-MOTION (Accesibilidad: respeta la preferencia del usuario)
+   ============================================================================== */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+
+/* ==============================================================================
+   UTILIDADES DE COLOR SAGE Y ROSE (Garantía de Alto Contraste en Modo Día y Noche)
+   ============================================================================== */
+.bg-sage-50 { background-color: #f6f6f6 !important; }
+.bg-sage-100 { background-color: #E4EBE6 !important; }
+.bg-sage-200 { background-color: #b8dcc3 !important; }
+.bg-sage-600 { background-color: #476153 !important; }
+.bg-sage-700 { background-color: #3A4E44 !important; }
+.bg-sage-800 { background-color: #2D3C35 !important; }
+.bg-sage-900 { background-color: #000000 !important; }
+
+.text-sage-600 { color: #476153 !important; }
+.text-sage-700 { color: #3A4E44 !important; }
+.text-sage-800 { color: #2D3C35 !important; }
+.text-sage-900 { color: #000000 !important; }
+
+.border-sage-100 { border-color: #E4EBE6 !important; }
+.border-sage-200 { border-color: #b8dcc3 !important; }
+.border-sage-300 { border-color: #A5B9AD !important; }
+
+html.dark .bg-sage-50 { background-color: #101613 !important; }
+html.dark .bg-sage-100 { background-color: #121212 !important; }
+html.dark .bg-sage-200 { background-color: #1F2B24 !important; }
+html.dark .bg-sage-600 { background-color: #2D3C35 !important; }
+html.dark .bg-sage-700 { background-color: #3A4E44 !important; }
+html.dark .bg-sage-800 { background-color: #1A241F !important; }
+html.dark .bg-sage-900 { background-color: #0F1612 !important; }
+
+html.dark .text-sage-600 { color: #A5B9AD !important; }
+html.dark .text-sage-700 { color: #b8dcc3 !important; }
+html.dark .text-sage-800 { color: #E4EBE6 !important; }
+html.dark .text-sage-900 { color: #F0F4F2 !important; }
+
+html.dark .border-sage-100,
+html.dark .border-sage-200,
+html.dark .border-sage-300 { border-color: rgba(255, 255, 255, 0.08) !important; }
+
+
+/* ==============================================================================
+   TARJETAS DE CATEGORÍA DE ESTILO DE VIDA (HOVER CON ZOOM SUAVE Y OVERLAY)
+   ============================================================================== */
+.category-card {
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+  transition: transform 320ms var(--ease-out), box-shadow 320ms var(--ease-out), border-color 320ms ease;
+}
+
+.category-card:active {
+  transform: scale(0.98);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .category-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 40px -10px rgba(29, 39, 34, 0.28);
+    border-color: rgba(231, 35, 128, 0.4);
+  }
+
+  .category-card:hover .category-card-img {
+    transform: scale(1.08);
+  }
+}
+
+.category-card-img {
+  will-change: transform;
+  transition: transform 650ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.category-card-overlay {
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0.08) 0%,
+    rgba(0, 0, 0, 0.25) 40%,
+    rgba(12, 16, 14, 0.90) 100%
+  );
+  transition: background 300ms ease;
+}
+
+.category-card:hover .category-card-overlay {
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0.12) 0%,
+    rgba(0, 0, 0, 0.35) 40%,
+    rgba(12, 16, 14, 0.95) 100%
+  );
+}
+
+/* ==============================================================================
+   VISTAS Y SUBPÁGINAS LIMPIAS (ROUTER DE HOME Y CATÁLOGO)
+   ============================================================================== */
+.page-view {
+  animation: viewFadeIn 240ms var(--ease-out) forwards;
+}
+
+@keyframes viewFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+
+/* ==============================================================================
+   LOGO Y MARCA CENTRADO EN MÓVIL EN LA BARRA DE NAVEGACIÓN
+   ============================================================================== */
+@media (max-width: 767.98px) {
+  .navbar-brand-logo {
+    position: absolute !important;
+    left: 50% !important;
+    top: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    z-index: 5 !important;
+    max-width: calc(100% - 140px);
+    justify-content: center;
+  }
+}
+
+@media (min-width: 768px) {
+  .navbar-brand-logo {
+    position: static !important;
+    transform: none !important;
+  }
+}
+
+
+/* ==============================================================================
+   ESTILOS DE TALLAS, CARRITO Y FORMULARIO (MODO DÍA Y MODO NOCHE)
+   ============================================================================== */
+
+/* Z-Index Jerárquico: Cart Drawer (50) < Product Modal (60) < Ring Size Guide (70) < Toast (80) */
+#product-modal {
+  z-index: 60 !important;
+}
+
+#ring-size-guide-modal {
+  z-index: 70 !important;
+}
+
+/* Selector de Medida/Talla en los items del Carrito */
+.cart-size-select {
+  background-color: #f6f6f6;
+  color: #000000;
+  border: 1px solid #E8B4B8;
+  cursor: pointer;
+}
+
+html.dark .cart-size-select {
+  background-color: #181818 !important;
+  color: #FFFFFF !important;
+  border-color: rgba(219, 140, 148, 0.45) !important;
+}
+
+html.dark .cart-size-select option {
+  background-color: #181818 !important;
+  color: #FFFFFF !important;
+}
+
+/* Botones de Selección de Talla (Modal de Producto) */
+.size-pill-btn {
+  background-color: #f6f6f6;
+  color: #2D3C35;
+  border: 1px solid #b8dcc3;
+  cursor: pointer;
+  transition: all 180ms ease;
+  user-select: none;
+}
+
+.size-pill-btn:hover {
+  background-color: #E4EBE6;
+  border-color: #A5B9AD;
+}
+
+.size-pill-btn.is-selected {
+  background-color: #e72380 !important;
+  color: #FFFFFF !important;
+  border-color: #e72380 !important;
+  box-shadow: 0 2px 8px rgba(231, 35, 128, 0.35) !important;
+}
+
+html.dark .size-pill-btn {
+  background-color: #181818 !important;
+  color: #D1DDD6 !important;
+  border-color: rgba(255, 255, 255, 0.16) !important;
+}
+
+html.dark .size-pill-btn:hover {
+  background-color: #202D26 !important;
+  border-color: rgba(255, 255, 255, 0.3) !important;
+  color: #FFFFFF !important;
+}
+
+html.dark .size-pill-btn.is-selected {
+  background-color: #e72380 !important;
+  color: #FFFFFF !important;
+  border-color: #e72380 !important;
+  box-shadow: 0 2px 12px rgba(231, 35, 128, 0.45) !important;
+}
+
+/* Campos de Datos de Cliente en el Carrito */
+html.dark #cart-customer-fields {
+  background-color: #121212 !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+html.dark #cart-customer-fields label {
+  color: #b8dcc3 !important;
+}
+
+html.dark #cart-customer-fields input {
+  background-color: #000000 !important;
+  color: #FFFFFF !important;
+  border-color: rgba(255, 255, 255, 0.16) !important;
+}
+
+html.dark #cart-customer-fields input::placeholder {
+  color: #6F8078 !important;
+}
+
+html.dark #cart-customer-fields input:focus {
+  border-color: #DB8C94 !important;
+  box-shadow: 0 0 0 2px rgba(219, 140, 148, 0.25) !important;
+}
+
+/* Carrito Items y Paneles en Modo Noche */
+html.dark .cart-item-card {
+  background-color: #121212 !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+html.dark .cart-item-card:hover {
+  border-color: rgba(219, 140, 148, 0.3) !important;
+}
+
+html.dark #cart-ring-size-alert {
+  background-color: rgba(231, 35, 128, 0.15) !important;
+  border-color: rgba(219, 140, 148, 0.25) !important;
+}
+
+html.dark #cart-footer {
+  background-color: #0F1612 !important;
+  border-top-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+
+/* ==============================================================================
+   INSIGNIA / CONTADOR FLOTANTE DEL CARRITO (PIXEL PERFECT & SIN CORTES)
+   ============================================================================== */
+.cart-counter-badge {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-width: 20px !important;
+  height: 20px !important;
+  padding: 0 4px !important;
+  box-sizing: border-box !important;
+  border-radius: 9999px !important;
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif !important;
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  line-height: 1 !important;
+  text-align: center !important;
+  color: #FFFFFF !important;
+  background: linear-gradient(135deg, #F43F5E, #E11D48) !important;
+  border: 2px solid #FFFFFF !important;
+  box-shadow: 0 2px 6px rgba(225, 29, 72, 0.45) !important;
+  position: absolute !important;
+  top: -4px !important;
+  right: -5px !important;
+  z-index: 10 !important;
+  pointer-events: none !important;
+  transform-origin: center center !important;
+  overflow: visible !important;
+}
+
+.cart-counter-badge.hidden {
+  display: none !important;
+}
+
+html.dark .cart-counter-badge {
+  border-color: #121212 !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.6) !important;
+}
+
+.floating-cart-btn .cart-counter-badge {
+  top: -3px !important;
+  right: -3px !important;
+  min-width: 22px !important;
+  height: 22px !important;
+  font-size: 11px !important;
+}
+
+@keyframes badgePop {
+  0% { transform: scale(0.65); }
+  60% { transform: scale(1.25); }
+  100% { transform: scale(1); }
+}
+
+.badge-pop {
+  animation: badgePop 250ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards !important;
+}
+
+
+/* ==============================================================================
+   BOTONES FLOTANTES DE REDES SOCIALES (PC) - PEQUEÑOS Y ELEGANTES
+   ============================================================================== */
+.floating-social-btn {
+  user-select: none;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: transform 200ms cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 200ms ease;
+}
+
+.floating-wa {
+  background: linear-gradient(135deg, #25D366, #128C7E) !important;
+  box-shadow: 0 4px 14px rgba(37, 211, 102, 0.4) !important;
+}
+
+.floating-wa:hover {
+  box-shadow: 0 6px 20px rgba(37, 211, 102, 0.55) !important;
+}
+
+.floating-ig {
+  background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285AEB 90%) !important;
+  box-shadow: 0 4px 14px rgba(214, 36, 159, 0.4) !important;
+}
+
+.floating-ig:hover {
+  box-shadow: 0 6px 20px rgba(214, 36, 159, 0.55) !important;
+}
+
+.floating-fb {
+  background: linear-gradient(135deg, #1877F2, #0d65d9) !important;
+  box-shadow: 0 4px 14px rgba(24, 119, 242, 0.4) !important;
+}
+
+.floating-fb:hover {
+  box-shadow: 0 6px 20px rgba(24, 119, 242, 0.55) !important;
+}
+
+/* ==============================================================================
+   ESTILOS PREMIUM DE PRODUCTOS Y MODALES EN MODO NOCHE
+   ============================================================================== */
+html.dark #product-modal .modal-dialog {
+  background-color: #000000 !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  color: #FFFFFF !important;
+}
+
+html.dark #modal-product-name {
+  color: #FFFFFF !important;
+}
+
+html.dark #modal-product-price {
+  color: #e72380 !important; /* Rose-400 elegante y de alto contraste */
+}
+
+html.dark #modal-product-description {
+  color: #b8dcc3 !important;
+}
+
+html.dark #modal-product-material {
+  color: #E2E8F0 !important;
+}
+
+html.dark #modal-qty-input {
+  color: #FFFFFF !important;
+}
+
+/* Tarjetas de Producto y Carruseles en Modo Noche */
+html.dark .product-card {
+  background-color: #000000 !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+html.dark .product-card h3 {
+  color: #FFFFFF !important;
+}
+
+html.dark .product-card .text-sage-900,
+html.dark .product-card .text-gray-900 {
+  color: #FFFFFF !important;
+}
+
+html.dark .product-card .border-gray-100 {
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+html.dark .carousel-card h3 {
+  color: #FFFFFF !important;
+}
+
+html.dark .carousel-card .text-sage-900 {
+  color: #FFFFFF !important;
+}
+
+/* Guía Oficial de Tallas y Medidas en Modo Noche */
+html.dark #ring-size-guide-modal .modal-dialog {
+  background-color: #000000 !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  color: #FFFFFF !important;
+}
+
+html.dark #ring-size-guide-modal h3 {
+  color: #FFFFFF !important;
+}
+
+html.dark #ring-size-guide-modal .bg-\[\#fdf2f7\] {
+  background-color: rgba(231, 35, 128, 0.15) !important;
+  border-color: rgba(231, 35, 128, 0.3) !important;
+}
+
+html.dark #ring-size-guide-modal .bg-\[\#f6f6f6\] {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+html.dark #ring-size-guide-modal .text-rose-700 {
+  color: #e72380 !important;
+}
+
+html.dark #ring-size-guide-modal .text-sage-800 {
+  color: #E2E8F0 !important;
+}
+
+html.dark #ring-size-guide-modal .text-gray-600,
+html.dark #ring-size-guide-modal .text-gray-700 {
+  color: #b8dcc3 !important;
+}
+
+html.dark #ring-size-guide-modal .text-gray-800 {
+  color: #FFFFFF !important;
+}
+
+html.dark #ring-size-guide-modal table {
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+html.dark #ring-size-guide-modal th {
+  background-color: #1A2420 !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  color: #FFFFFF !important;
+}
+
+html.dark #ring-size-guide-modal td {
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+html.dark #ring-size-guide-modal tr:hover td {
+  background-color: rgba(255, 255, 255, 0.06) !important;
+}
+
+html.dark #ring-size-guide-modal input {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+  color: #FFFFFF !important;
+}
+
+html.dark #ring-size-guide-modal input::placeholder {
+  color: #6F8078 !important;
+}
+
+/* ==============================================================================
+   INSIGNIA / BOTÓN DE HOVER EN IMÁGENES (MODO DÍA Y MODO NOCHE)
+   ============================================================================== */
+.product-hover-badge {
+  background-color: rgba(255, 255, 255, 0.95) !important;
+  color: #000000 !important;
+  border: 1px solid rgba(0, 0, 0, 0.1) !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15) !important;
+  backdrop-filter: blur(6px) !important;
+  -webkit-backdrop-filter: blur(6px) !important;
+  cursor: pointer;
+  transition: all 200ms cubic-bezier(0.16, 1, 0.3, 1) !important;
+  user-select: none;
+}
+
+.product-hover-badge i,
+.product-hover-badge svg {
+  color: #4A6356 !important;
+  transition: color 180ms ease !important;
+}
+
+.product-hover-badge:hover {
+  background-color: #e72380 !important;
+  color: #FFFFFF !important;
+  border-color: #e72380 !important;
+  box-shadow: 0 6px 18px rgba(231, 35, 128, 0.35) !important;
+}
+
+.product-hover-badge:hover i,
+.product-hover-badge:hover svg {
+  color: #FFFFFF !important;
+}
+
+/* Modo Noche: Fondo oscuro satinado de lujo, texto blanco nítido e icono rosa platino */
+html.dark .product-hover-badge {
+  background-color: rgba(19, 26, 23, 0.92) !important;
+  color: #FFFFFF !important;
+  border: 1px solid rgba(255, 255, 255, 0.22) !important;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6) !important;
+}
+
+html.dark .product-hover-badge i,
+html.dark .product-hover-badge svg {
+  color: #e72380 !important; /* Rose-400 de alta visibilidad */
+}
+
+html.dark .product-hover-badge:hover {
+  background-color: #e72380 !important;
+  color: #FFFFFF !important;
+  border-color: #e72380 !important;
+  box-shadow: 0 8px 24px rgba(231, 35, 128, 0.45) !important;
+}
+
+html.dark .product-hover-badge:hover i,
+html.dark .product-hover-badge:hover svg {
+  color: #FFFFFF !important;
+}

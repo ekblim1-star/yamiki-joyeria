@@ -1,0 +1,15 @@
+# Backups & Temporary files
+*.bak
+scratch/
+.tmp/
+
+# OS generated files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+.DS_Store
+
+# Agent cache & internal
+.agent/
+.agents/

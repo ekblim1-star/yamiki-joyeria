@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Yamiki Joyería S925 | Panel de Administración</title>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Supabase JS Client v2 -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <!-- SheetJS / XLSX para parsear Excel del Scraper en el navegador -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+  <!-- Estilos Custom -->
+  <link rel="stylesheet" href="admin.css" />
+</head>
+<body class="min-h-screen bg-[#0C100E] text-[#F0F4F2] flex flex-col antialiased select-none">
+
+  <!-- ========================================================================
+       PANTALLA DE BLOQUEO / PIN DE SEGURIDAD (ADMIN LOCK SCREEN)
+       ======================================================================== -->
+  <div id="admin-lock-screen" class="fixed inset-0 z-50 bg-[#0C100E] flex items-center justify-center p-4">
+    <div class="max-w-sm w-full bg-[#141C18] border border-white/10 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6 text-center relative overflow-hidden">
+      <!-- Glow ambiental decorativo -->
+      <div class="absolute -top-12 -left-12 w-32 h-32 bg-[#e72380]/20 rounded-full blur-2xl pointer-events-none"></div>
+      <div class="absolute -bottom-12 -right-12 w-32 h-32 bg-amber-500/10 rounded-full blur-2xl pointer-events-none"></div>
+
+      <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#1b2520] to-[#25101c] border border-white/15 flex items-center justify-center mx-auto text-[#e72380] shadow-xl">
+        <i data-lucide="lock" class="w-7 h-7"></i>
+      </div>
+
+      <div class="space-y-1.5">
+        <h2 class="text-xl font-extrabold text-white tracking-tight">Acceso Administrativo</h2>
+        <p class="text-xs text-gray-400">Ingresa tu PIN de seguridad para gestionar Yamiki Joyería.</p>
+      </div>
+
+      <form id="admin-pin-form" onsubmit="handlePinSubmit(event)" class="space-y-4">
+        <div class="relative">
+          <input
+            type="password"
+            id="admin-pin-input"
+            maxlength="20"
+            required
+            autocomplete="current-password"
+            placeholder="PIN de Acceso (ej: 9250)"
+            class="w-full px-4 py-3 bg-black/50 border border-white/15 rounded-2xl text-center text-lg font-bold tracking-widest text-white focus:outline-none focus:border-[#e72380] transition placeholder:text-xs placeholder:font-normal placeholder:tracking-normal"
+          />
+          <button
+            type="button"
+            onclick="togglePinVisibility()"
+            class="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white p-1"
+            title="Ver / Ocultar PIN"
+          >
+            <i id="pin-eye-icon" data-lucide="eye" class="w-4 h-4"></i>
+          </button>
+        </div>
+
+        <p id="pin-error-msg" class="text-xs text-rose-400 font-bold hidden"></p>
+
+        <button
+          type="submit"
+          id="pin-submit-btn"
+          class="w-full py-3 rounded-2xl bg-[#e72380] hover:bg-[#d41c73] text-white text-xs font-bold transition shadow-lg shadow-[#e72380]/25 flex items-center justify-center gap-2"
+        >
+          <i data-lucide="key-round" class="w-4 h-4"></i>
+          <span>Desbloquear Panel</span>
+        </button>
+      </form>
+
+      <div class="pt-2 border-t border-white/5">
+        <a href="../index.html" class="text-[11px] text-gray-400 hover:text-gray-200 transition inline-flex items-center gap-1">
+          <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
+          <span>Volver a la tienda pública</span>
+        </a>
+      </div>
+    </div>
+  </div>
+
+
+
+  <!-- ========================================================================
+       BARRA SUPERIOR (HEADER DEL PANEL)
+       ======================================================================== -->
+  <header class="sticky top-0 z-40 bg-[#121815]/95 backdrop-blur-md border-b border-white/10 px-4 sm:px-8 py-3.5 flex items-center justify-between">
+    
+    <!-- Logo Yamiki + Badge Admin -->
+    <div class="flex items-center gap-3">
+      <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-[#121815] via-[#202C26] to-[#e72380] flex items-center justify-center text-white shadow-md border border-white/15">
+        <i data-lucide="gem" class="w-4.5 h-4.5 text-white"></i>
+      </div>
+      <div>
+        <div class="flex items-center gap-2">
+          <h1 class="text-base sm:text-lg font-extrabold tracking-tight text-white leading-none">
+            YAMIKI
+          </h1>
+          <span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-[#e72380] text-white uppercase tracking-wider">
+            Admin
+          </span>
+        </div>
+        <p class="text-[11px] text-gray-400 mt-0.5">Control de Catálogo, Precios y Novedades</p>
+      </div>
+    </div>
+
+    <!-- Acciones Derecha: Estado Supabase + Botón Ver Tienda -->
+    <div class="flex items-center gap-3">
+      <div class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-950/40 border border-emerald-800/40 text-emerald-400 text-xs font-semibold">
+        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+        <span>Supabase Conectado</span>
+      </div>
+
+      <button 
+        type="button" 
+        onclick="openManualModal()"
+        class="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-white/10 hover:bg-white/15 text-white text-xs font-bold transition border border-white/15"
+      >
+        <i data-lucide="plus" class="w-4 h-4 text-[#e72380]"></i>
+        <span>Nueva Joya</span>
+      </button>
+
+      <a 
+        href="../index.html" 
+        target="_blank"
+        class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-[#e72380] hover:bg-[#d41c73] text-white text-xs font-bold transition shadow-md shadow-[#e72380]/20"
+        title="Abrir la tienda en una pestaña nueva"
+      >
+        <i data-lucide="store" class="w-4 h-4"></i>
+        <span>Ver Tienda</span>
+      </a>
+    </div>
+
+  </header>
+
+  <!-- ========================================================================
+       CONTENEDOR PRINCIPAL
+       ======================================================================== -->
+  <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-8 py-6 space-y-6">
+
+    <!-- 1. TARJETAS DE MÉTRICAS RÁPIDAS -->
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+      
+      <div class="p-4 rounded-2xl bg-[#141C18] border border-white/5 flex items-center gap-3.5 shadow-sm">
+        <div class="w-10 h-10 rounded-xl bg-white/5 text-gray-300 flex items-center justify-center shrink-0">
+          <i data-lucide="package" class="w-5 h-5"></i>
+        </div>
+        <div>
+          <span class="text-[11px] text-gray-400 font-bold uppercase tracking-wider block">Total Joyas</span>
+          <span id="stat-total" class="text-xl sm:text-2xl font-extrabold text-white font-mono leading-none">0</span>
+        </div>
+      </div>
+
+      <div class="p-4 rounded-2xl bg-[#141C18] border border-amber-500/20 flex items-center gap-3.5 shadow-sm">
+        <div class="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center shrink-0">
+          <i data-lucide="star" class="w-5 h-5"></i>
+        </div>
+        <div>
+          <span class="text-[11px] text-amber-300 font-bold uppercase tracking-wider block">En Portada</span>
+          <span id="stat-novedades" class="text-xl sm:text-2xl font-extrabold text-amber-400 font-mono leading-none">0</span>
+        </div>
+      </div>
+
+      <div class="p-4 rounded-2xl bg-[#141C18] border border-white/5 flex items-center gap-3.5 shadow-sm">
+        <div class="w-10 h-10 rounded-xl bg-purple-500/10 text-purple-400 flex items-center justify-center shrink-0">
+          <i data-lucide="sparkles" class="w-5 h-5"></i>
+        </div>
+        <div>
+          <span class="text-[11px] text-gray-400 font-bold uppercase tracking-wider block">Anillos</span>
+          <span id="stat-anillos" class="text-xl sm:text-2xl font-extrabold text-white font-mono leading-none">0</span>
+        </div>
+      </div>
+
+      <div class="p-4 rounded-2xl bg-[#141C18] border border-white/5 flex items-center gap-3.5 shadow-sm">
+        <div class="w-10 h-10 rounded-xl bg-red-500/10 text-red-400 flex items-center justify-center shrink-0">
+          <i data-lucide="alert-circle" class="w-5 h-5"></i>
+        </div>
+        <div>
+          <span class="text-[11px] text-gray-400 font-bold uppercase tracking-wider block">Agotadas/Pausadas</span>
+          <span id="stat-agotadas" class="text-xl sm:text-2xl font-extrabold text-white font-mono leading-none">0</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- 2. PESTAÑAS DE NAVEGACIÓN PRINCIPALES -->
+    <div class="flex items-center justify-between border-b border-white/10 pb-2">
+      <div class="flex items-center gap-2">
+        <button 
+          id="tab-btn-catalogo"
+          type="button" 
+          onclick="switchTab('catalogo')"
+          class="tab-btn active px-4 py-2 rounded-xl text-xs font-bold text-white bg-white/10 flex items-center gap-2"
+        >
+          <i data-lucide="list" class="w-4 h-4 text-[#e72380]"></i>
+          <span>Catálogo General</span>
+        </button>
+
+        <button 
+          id="tab-btn-portada"
+          type="button" 
+          onclick="switchTab('portada')"
+          class="tab-btn px-4 py-2 rounded-xl text-xs font-semibold text-gray-400 hover:text-white hover:bg-white/5 transition flex items-center gap-2"
+        >
+          <i data-lucide="star" class="w-4 h-4 text-amber-400"></i>
+          <span>⭐ Novedades de Portada</span>
+          <span id="tab-novedades-count" class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-500/20 text-amber-400 border border-amber-500/30">
+            0/10
+          </span>
+        </button>
+
+        <button 
+          id="tab-btn-importar"
+          type="button" 
+          onclick="switchTab('importar')"
+          class="tab-btn px-4 py-2 rounded-xl text-xs font-semibold text-gray-400 hover:text-white hover:bg-white/5 transition flex items-center gap-2"
+        >
+          <i data-lucide="file-spreadsheet" class="w-4 h-4 text-emerald-400"></i>
+          <span>Subir Excel (Scraper)</span>
+        </button>
+      </div>
+
+      <div id="loading-indicator" class="hidden flex items-center gap-2 text-xs text-gray-400">
+        <i data-lucide="loader" class="w-3.5 h-3.5 animate-spin text-[#e72380]"></i>
+        <span>Sincronizando...</span>
+      </div>
+    </div>
+
+    <!-- ========================================================================
+         VISTA 1: CATÁLOGO DE JOYAS Y EDICIÓN DE PRECIOS
+         ======================================================================== -->
+    <div id="view-catalogo" class="space-y-4">
+      
+      <!-- Barra de Filtros y Buscador -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#141C18] p-3 rounded-2xl border border-white/5">
+        
+        <!-- Buscador -->
+        <div class="relative flex-grow max-w-md">
+          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-500">
+            <i data-lucide="search" class="w-4 h-4"></i>
+          </div>
+          <input 
+            type="text" 
+            id="search-input"
+            placeholder="Buscar por código (ej. RHR1550, MSR015), título, piedra..." 
+            class="w-full pl-9 pr-3 py-2 bg-black/40 border border-white/10 rounded-xl text-xs font-medium text-white focus:outline-none focus:border-[#e72380] transition"
+          />
+        </div>
+
+        <!-- Filtros Rápidos -->
+        <div class="flex items-center gap-1.5 flex-wrap">
+          <button 
+            type="button" 
+            onclick="setFilter('todas')" 
+            data-filter="todas"
+            class="filter-btn px-3.5 py-1.5 rounded-xl text-xs font-bold transition bg-[#e72380] text-white shadow-sm flex items-center gap-1.5"
+          >
+            Todas
+          </button>
+
+          <button 
+            type="button" 
+            onclick="setFilter('novedades')" 
+            data-filter="novedades"
+            class="filter-btn px-3.5 py-1.5 rounded-xl text-xs font-semibold transition bg-white/5 text-gray-300 hover:bg-white/10 hover:text-white flex items-center gap-1.5"
+          >
+            <span>⭐ Novedades (Inicio)</span>
+          </button>
+
+          <button 
+            type="button" 
+            onclick="setFilter('anillos')" 
+            data-filter="anillos"
+            class="filter-btn px-3.5 py-1.5 rounded-xl text-xs font-semibold transition bg-white/5 text-gray-300 hover:bg-white/10 hover:text-white"
+          >
+            Anillos
+          </button>
+
+          <button 
+            type="button" 
+            onclick="setFilter('aretes')" 
+            data-filter="aretes"
+            class="filter-btn px-3.5 py-1.5 rounded-xl text-xs font-semibold transition bg-white/5 text-gray-300 hover:bg-white/10 hover:text-white"
+          >
+            Aretes
+          </button>
+
+          <button 
+            type="button" 
+            onclick="setFilter('collares')" 
+            data-filter="collares"
+            class="filter-btn px-3.5 py-1.5 rounded-xl text-xs font-semibold transition bg-white/5 text-gray-300 hover:bg-white/10 hover:text-white"
+          >
+            Collares
+          </button>
+
+          <button 
+            type="button" 
+            onclick="setFilter('pulseras')" 
+            data-filter="pulseras"
+            class="filter-btn px-3.5 py-1.5 rounded-xl text-xs font-semibold transition bg-white/5 text-gray-300 hover:bg-white/10 hover:text-white"
+          >
+            Pulseras
+          </button>
+
+          <button 
+            type="button" 
+            onclick="setFilter('dijes')" 
+            data-filter="dijes"
+            class="filter-btn px-3.5 py-1.5 rounded-xl text-xs font-semibold transition bg-white/5 text-gray-300 hover:bg-white/10 hover:text-white"
+          >
+            Dijes
+          </button>
+
+          <button 
+            type="button" 
+            onclick="setFilter('agotadas')" 
+            data-filter="agotadas"
+            class="filter-btn px-3.5 py-1.5 rounded-xl text-xs font-semibold transition bg-white/5 text-gray-300 hover:bg-white/10 hover:text-white"
+          >
+            Agotadas
+          </button>
+        </div>
+
+      </div>
+
+      <!-- Contador de Joyas Mostradas -->
+      <div class="flex items-center justify-between text-xs text-gray-400 px-1">
+        <span id="filtered-count-label">Cargando catálogo...</span>
+        <span class="text-[11px] text-gray-500 italic">💡 Haz clic en cualquier precio para editarlo directamente</span>
+      </div>
+
+      <!-- Tabla de Productos -->
+      <div class="overflow-x-auto rounded-2xl border border-white/5 bg-[#141C18] shadow-md">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="border-b border-white/10 text-[11px] font-extrabold uppercase tracking-wider text-gray-400 bg-white/[0.02]">
+              <th class="py-3 px-4">Foto & Código</th>
+              <th class="py-3 px-4">Joya & Tallas</th>
+              <th class="py-3 px-4">Precio Venta (MXN)</th>
+              <th class="py-3 px-4 text-center">⭐ Novedades</th>
+              <th class="py-3 px-4 text-center">Estado Tienda</th>
+              <th class="py-3 px-4 text-center">Compra Proveedor</th>
+              <th class="py-3 px-4 text-right">Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="products-table-body" class="divide-y divide-white/5 text-xs">
+            <!-- Inyectado dinámicamente por admin.js -->
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+
+        <!-- ========================================================================
+         VISTA DEDICADA: GESTIÓN DE JOYAS EN PORTADA (NOVEDADES DE INICIO)
+         ======================================================================== -->
+    <div id="view-portada" class="hidden space-y-5">
+      
+      <!-- Banner Informativo con Contador y Límite Máximo -->
+      <div class="p-5 sm:p-6 rounded-3xl bg-gradient-to-r from-amber-950/40 via-[#141C18] to-[#141C18] border border-amber-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-lg">
+        <div class="flex items-start gap-3.5">
+          <div class="w-12 h-12 rounded-2xl bg-amber-500/20 text-amber-400 flex items-center justify-center shrink-0 shadow-md">
+            <i data-lucide="star" class="w-6 h-6 fill-amber-400"></i>
+          </div>
+          <div>
+            <h3 class="text-base sm:text-lg font-extrabold text-white leading-tight">
+              Vitrina Principal: Novedades del Inicio
+            </h3>
+            <p class="text-xs text-gray-300 mt-1 max-w-xl">
+              Estas son las piezas exactas que tus clientes ven al entrar a la tienda en el carrusel de inicio. 
+              <span class="text-amber-300 font-bold">Límite recomendado: máximo 10 joyas</span> para que la página cargue rápido y no se sature.
+            </p>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-3 shrink-0">
+          <div class="text-right">
+            <span class="text-[10px] text-gray-400 uppercase tracking-wider font-bold block">Cupo de Portada</span>
+            <span id="portada-limit-label" class="text-xl font-extrabold text-amber-400 font-mono">0 / 10</span>
+          </div>
+          <button 
+            type="button" 
+            onclick="switchTab('catalogo')" 
+            class="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/15 text-white text-xs font-bold transition border border-white/10 flex items-center gap-1.5"
+          >
+            <i data-lucide="plus" class="w-4 h-4 text-[#e72380]"></i>
+            <span>Elegir más del Catálogo</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Grid de Joyas en Portada -->
+      <div id="portada-products-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        <!-- Inyectado dinámicamente por admin.js -->
+      </div>
+
+    </div>
+
+    <!-- ========================================================================
+         VISTA 2: IMPORTADOR DE EXCEL DEL SCRAPER Y CARPETA DE FOTOS
+         ======================================================================== -->
+    <div id="view-importar" class="hidden space-y-6">
+      
+      <!-- Zona de Arrastrar y Soltar (Dropzone Ultra Intuitiva) -->
+      <div 
+        id="dropzone"
+        class="border-2 border-dashed border-white/15 rounded-3xl p-8 sm:p-12 text-center bg-[#141C18] hover:border-[#e72380]/60 transition-all cursor-pointer space-y-4"
+      >
+        <div class="w-16 h-16 rounded-2xl bg-[#e72380]/15 text-[#e72380] flex items-center justify-center mx-auto shadow-md">
+          <i data-lucide="cloud-upload" class="w-8 h-8"></i>
+        </div>
+        
+        <div class="space-y-1">
+          <h3 class="text-base sm:text-lg font-bold text-white">
+            Arrastra aquí el archivo Excel del Scraper
+          </h3>
+          <p class="text-xs text-gray-400 max-w-md mx-auto">
+            Sube el archivo <span class="font-mono text-emerald-400">.xlsx</span> o <span class="font-mono text-emerald-400">.csv</span> generado automáticamente por tu programa de AliExpress.
+          </p>
+        </div>
+
+        <!-- Botones de selección manual -->
+        <div class="flex items-center justify-center gap-3 pt-2">
+          <label class="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/15 text-white text-xs font-bold transition cursor-pointer flex items-center gap-2 border border-white/10">
+            <i data-lucide="file-spreadsheet" class="w-4 h-4 text-emerald-400"></i>
+            <span>Elegir Archivo Excel</span>
+            <input type="file" id="file-input" accept=".xlsx, .xls, .csv" class="hidden" />
+          </label>
+
+          <label class="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/15 text-white text-xs font-bold transition cursor-pointer flex items-center gap-2 border border-white/10">
+            <i data-lucide="folder-images" class="w-4 h-4 text-purple-400"></i>
+            <span>Cargar Carpeta de Fotos</span>
+            <input type="file" id="folder-input" webkitdirectory directory multiple class="hidden" />
+          </label>
+        </div>
+
+        <div id="photos-loaded-badge" class="hidden inline-block px-3 py-1 rounded-full bg-purple-950/60 border border-purple-800 text-purple-300 text-xs font-bold">
+          📷 0 fotos cargadas en memoria
+        </div>
+      </div>
+
+      <!-- Sección de Vista Previa de lo detectado -->
+      <div id="import-preview-section" class="hidden space-y-4 bg-[#141C18] p-5 rounded-3xl border border-white/10">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2.5">
+            <div class="w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center">
+              <i data-lucide="check" class="w-4 h-4"></i>
+            </div>
+            <div>
+              <h4 class="text-sm font-bold text-white">Vista Previa de Importación</h4>
+              <p class="text-xs text-gray-400" id="import-count-badge">0 joyas detectadas</p>
+            </div>
+          </div>
+
+          <button 
+            type="button" 
+            id="btn-confirm-import"
+            onclick="commitImportToSupabase()"
+            class="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-extrabold flex items-center gap-2 transition shadow-lg shadow-emerald-600/30"
+          >
+            <i data-lucide="cloud-upload" class="w-4 h-4"></i>
+            <span>Confirmar y Publicar en Tienda</span>
+          </button>
+        </div>
+
+        <!-- Tabla Preview -->
+        <div class="overflow-x-auto rounded-xl border border-white/5">
+          <table class="w-full text-left border-collapse text-xs">
+            <thead>
+              <tr class="border-b border-white/10 text-[10px] font-extrabold uppercase tracking-wider text-gray-400 bg-black/40">
+                <th class="py-2.5 px-3">SKU</th>
+                <th class="py-2.5 px-3">Título</th>
+                <th class="py-2.5 px-3">Categoría</th>
+                <th class="py-2.5 px-3">Tallas</th>
+                <th class="py-2.5 px-3 text-right">Precio Venta</th>
+                <th class="py-2.5 px-3 text-right">Costo Real</th>
+                <th class="py-2.5 px-3 text-center">Foto</th>
+              </tr>
+            </thead>
+            <tbody id="import-preview-body" class="divide-y divide-white/5">
+              <!-- Inyectado por admin.js -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+    <!-- ========================================================================
+       MODAL DE PROGRESO DE SUBIDA EN TIEMPO REAL CON BARRA ANIMADA
+       ======================================================================== -->
+  <div id="upload-progress-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4">
+    <div class="modal-overlay fixed inset-0 bg-black/80 backdrop-blur-sm"></div>
+    <div class="modal-dialog bg-[#141C18] border border-white/15 rounded-3xl max-w-md w-full p-6 sm:p-7 shadow-2xl relative z-10 space-y-4 text-center">
+      
+      <div id="progress-icon-box" class="w-16 h-16 rounded-2xl bg-[#e72380]/20 text-[#e72380] flex items-center justify-center mx-auto shadow-lg shadow-[#e72380]/20 animate-pulse">
+        <i data-lucide="cloud-upload" class="w-8 h-8"></i>
+      </div>
+
+      <div class="space-y-1">
+        <h3 id="progress-title" class="text-base sm:text-lg font-extrabold text-white">
+          Subiendo joyas a Supabase...
+        </h3>
+        <p id="progress-subtitle" class="text-xs text-gray-400">
+          Por favor espera unos segundos mientras guardamos todo en la nube.
+        </p>
+      </div>
+
+      <!-- Barra de progreso animada -->
+      <div id="progress-bar-container" class="space-y-1.5 pt-2">
+        <div class="w-full h-3 rounded-full bg-white/10 overflow-hidden p-0.5 border border-white/10">
+          <div id="progress-bar-fill" class="h-full rounded-full bg-gradient-to-r from-[#e72380] to-emerald-400 transition-all duration-300 w-0"></div>
+        </div>
+        <div class="flex items-center justify-between text-[11px] font-mono text-gray-400 font-bold px-0.5">
+          <span id="progress-status-text">Iniciando...</span>
+          <span id="progress-percentage-text">0%</span>
+        </div>
+      </div>
+
+      <div id="progress-error-box" class="hidden p-3 rounded-xl bg-red-950/60 border border-red-800 text-red-200 text-xs text-left">
+        <p class="font-bold flex items-center gap-1.5 text-red-300">
+          <i data-lucide="alert-triangle" class="w-4 h-4 text-red-400"></i> Error al subir
+        </p>
+        <p id="progress-error-msg" class="text-[11px] mt-1 text-red-200 leading-relaxed font-mono"></p>
+        <button type="button" onclick="closeProgressModal()" class="mt-3 px-4 py-1.5 bg-red-800 hover:bg-red-700 rounded-xl text-xs font-bold text-white transition">Cerrar</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       MODAL: CREAR JOYA MANUAL (PARA PIEZAS EXCLUSIVAS)
+       ======================================================================== -->
+  <div id="manual-product-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4">
+    <div class="modal-overlay fixed inset-0 bg-black/70 backdrop-blur-xs" onclick="closeManualModal()"></div>
+    <div class="modal-dialog bg-[#141C18] border border-white/10 rounded-3xl max-w-lg w-full p-6 shadow-2xl relative z-10 space-y-4">
+      
+      <div class="flex items-center justify-between pb-3 border-b border-white/10">
+        <h3 class="text-base font-extrabold text-white flex items-center gap-2">
+          <i data-lucide="sparkles" class="w-4 h-4 text-[#e72380]"></i>
+          <span>Crear Nueva Joya Manual</span>
+        </h3>
+        <button type="button" onclick="closeManualModal()" class="text-gray-400 hover:text-white">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <form id="manual-product-form" class="space-y-3.5 text-xs">
+        
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold text-gray-300 mb-1">Código / SKU *</label>
+            <input type="text" name="sku" required placeholder="Ej. A-12, COL-05" class="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-xl text-white focus:outline-none focus:border-[#e72380]" />
+          </div>
+          <div>
+            <label class="block font-bold text-gray-300 mb-1">Categoría *</label>
+            <select name="categoria" class="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-xl text-white focus:outline-none focus:border-[#e72380]">
+              <option value="anillos">Anillos</option>
+              <option value="aretes">Aretes</option>
+              <option value="collares">Collares</option>
+              <option value="pulseras">Pulseras</option>
+              <option value="dijes">Dijes & Charms</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-bold text-gray-300 mb-1">Nombre de la Joya *</label>
+          <input type="text" name="titulo" required placeholder="Ej. Anillo Corazón Zirconia Rosa Plata S925" class="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-xl text-white focus:outline-none focus:border-[#e72380]" />
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold text-gray-300 mb-1">Precio Venta (MXN) *</label>
+            <input type="number" step="1" name="precio" required placeholder="Ej. 450" class="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-xl text-white focus:outline-none focus:border-[#e72380]" />
+          </div>
+          <div>
+            <label class="block font-bold text-gray-400 mb-1">Costo Proveedor (Opcional)</label>
+            <input type="number" step="0.01" name="costo" placeholder="Ej. 180" class="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-xl text-white focus:outline-none focus:border-[#e72380]" />
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-bold text-gray-300 mb-1">Tallas Disponibles</label>
+          <input type="text" name="tallas" placeholder="Ej. 5, 6, 7, 8 o Ajustable" class="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-xl text-white focus:outline-none focus:border-[#e72380]" />
+        </div>
+
+        <div>
+          <label class="block font-bold text-gray-400 mb-1">Link de Compra / Proveedor (Privado)</label>
+          <input type="url" name="enlace" placeholder="https://es.aliexpress.com/item/..." class="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-xl text-white focus:outline-none focus:border-[#e72380]" />
+        </div>
+
+        <div>
+          <label class="block font-bold text-gray-300 mb-1">Subir Foto de la Joya</label>
+          <input type="file" name="foto_file" accept="image/*" class="w-full text-xs text-gray-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-[#e72380]/20 file:text-[#e72380] hover:file:bg-[#e72380]/30 cursor-pointer" />
+        </div>
+
+        <div class="flex items-center gap-2 pt-1">
+          <input type="checkbox" id="check-es-novedad" name="es_novedad" class="rounded text-[#e72380] focus:ring-0" />
+          <label for="check-es-novedad" class="text-xs text-amber-300 font-bold">⭐ Mostrar en Novedades de la Portada</label>
+        </div>
+
+        <div class="pt-3 border-t border-white/10 flex justify-end gap-2">
+          <button type="button" onclick="closeManualModal()" class="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-gray-300 font-bold">Cancelar</button>
+          <button type="submit" class="px-5 py-2 rounded-xl bg-[#e72380] hover:bg-[#d41c73] text-white font-bold shadow-md shadow-[#e72380]/20">Guardar y Publicar</button>
+        </div>
+
+      </form>
+
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       MODAL: EDITAR DETALLES DE JOYA (DESCRIPCIÓN, TALLAS, PRECIO, FOTO)
+       ======================================================================== -->
+  <div id="edit-product-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4">
+    <div class="modal-overlay fixed inset-0 bg-black/75 backdrop-blur-xs" onclick="closeEditProductModal()"></div>
+    <div class="modal-dialog bg-[#141C18] border border-white/10 rounded-3xl max-w-xl w-full p-6 shadow-2xl relative z-10 space-y-4 max-h-[90vh] overflow-y-auto">
+
+      <div class="flex items-center justify-between pb-3 border-b border-white/10">
+        <div class="flex items-center gap-2.5">
+          <div class="w-9 h-9 rounded-xl bg-[#e72380]/20 text-[#e72380] flex items-center justify-center">
+            <i data-lucide="edit-3" class="w-4 h-4"></i>
+          </div>
+          <div>
+            <h3 class="text-base font-extrabold text-white">Editar Joya</h3>
+            <span id="edit-sku-badge" class="px-2 py-0.5 rounded bg-white/10 text-rose-300 font-mono text-[10px] font-bold"></span>
+          </div>
+        </div>
+        <button type="button" onclick="closeEditProductModal()" class="text-gray-400 hover:text-white p-1 rounded-lg">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <form id="edit-product-form" onsubmit="handleEditProductSubmit(event)" class="space-y-4 text-xs">
+        <input type="hidden" id="edit-product-id" />
+
+        <!-- Foto Preview + Cambio -->
+        <div class="flex items-center gap-4 bg-black/30 p-3 rounded-2xl border border-white/5">
+          <img id="edit-foto-preview" src="" alt="Foto joya" class="w-16 h-16 rounded-xl object-cover bg-black/40 border border-white/10 shrink-0" onerror="this.src='https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=400&q=80'" />
+          <div class="flex-1 space-y-1.5">
+            <label class="block font-bold text-gray-300">Foto de la Joya</label>
+            <input type="file" id="edit-foto-file" accept="image/*" class="w-full text-xs text-gray-400 file:mr-2 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-[11px] file:font-bold file:bg-[#e72380]/20 file:text-[#e72380] hover:file:bg-[#e72380]/30 cursor-pointer" />
+            <input type="url" id="edit-foto-url" placeholder="O escribe/pega la URL de la imagen..." class="w-full px-2.5 py-1.5 bg-black/40 border border-white/10 rounded-lg text-white text-[11px] focus:outline-none focus:border-[#e72380]" />
+          </div>
+        </div>
+
+        <!-- Nombre / Título -->
+        <div>
+          <label class="block font-bold text-gray-300 mb-1">Nombre / Título de la Joya *</label>
+          <input type="text" id="edit-titulo" required class="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-xl text-white text-xs focus:outline-none focus:border-[#e72380]" />
+        </div>
+
+        <!-- Descripción Completa -->
+        <div>
+          <label class="block font-bold text-gray-300 mb-1">Descripción del Producto (Visible en tienda)</label>
+          <textarea id="edit-descripcion" rows="3" class="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-xl text-white text-xs focus:outline-none focus:border-[#e72380] resize-y" placeholder="Detalles de diseño, pureza de plata, etc..."></textarea>
+        </div>
+
+        <!-- Categoría y Tallas Disponibles -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold text-gray-300 mb-1">Categoría</label>
+            <select id="edit-categoria" class="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-xl text-white text-xs focus:outline-none focus:border-[#e72380]">
+              <option value="anillos">Anillos</option>
+              <option value="aretes">Aretes</option>
+              <option value="collares">Collares</option>
+              <option value="pulseras">Pulseras</option>
+              <option value="dijes">Dijes & Charms</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-bold text-gray-300 mb-1">Tallas Disponibles (Solo las que hay en stock)</label>
+            <input type="text" id="edit-tallas" placeholder="Ej: 5, 6, 7, 8 o Ajustable" class="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-xl text-white text-xs focus:outline-none focus:border-[#e72380]" />
+            <span class="text-[10px] text-gray-500 mt-0.5 block">Escribe solo las disponibles (ej. 5, 6, 7)</span>
+          </div>
+        </div>
+
+        <!-- Precios y Stock -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div>
+            <label class="block font-bold text-gray-300 mb-1">Precio Venta (MXN) *</label>
+            <input type="number" step="1" id="edit-precio" required class="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-xl text-white text-xs font-bold focus:outline-none focus:border-[#e72380]" />
+          </div>
+          <div>
+            <label class="block font-bold text-gray-400 mb-1">Costo Real (Privado)</label>
+            <input type="number" step="0.01" id="edit-costo" class="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-xl text-gray-300 text-xs focus:outline-none focus:border-[#e72380]" />
+          </div>
+          <div>
+            <label class="block font-bold text-gray-300 mb-1">Estado de Stock</label>
+            <select id="edit-stock" class="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-xl text-white text-xs focus:outline-none focus:border-[#e72380]">
+              <option value="Disponible">Disponible</option>
+              <option value="Agotada">Agotada</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Enlace Proveedor (AliExpress) -->
+        <div>
+          <label class="block font-bold text-gray-400 mb-1">Enlace Proveedor AliExpress (Privado)</label>
+          <input type="url" id="edit-enlace" class="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-xl text-gray-300 text-xs focus:outline-none focus:border-[#e72380]" placeholder="https://es.aliexpress.com/..." />
+        </div>
+
+        <!-- Interruptores: Portada y Activo -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3 rounded-2xl bg-white/[0.03] border border-white/5">
+          <label class="flex items-center gap-2 cursor-pointer">
+            <input type="checkbox" id="edit-es-novedad" class="rounded text-amber-500 focus:ring-0" />
+            <span class="font-bold text-amber-400">⭐ Mostrar en Portada (Novedades)</span>
+          </label>
+          <label class="flex items-center gap-2 cursor-pointer">
+            <input type="checkbox" id="edit-activo" class="rounded text-emerald-500 focus:ring-0" />
+            <span class="font-bold text-emerald-400">Visible en Tienda</span>
+          </label>
+        </div>
+
+        <div class="pt-3 border-t border-white/10 flex justify-end gap-2.5">
+          <button type="button" onclick="closeEditProductModal()" class="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-gray-300 font-bold transition">Cancelar</button>
+          <button type="submit" id="edit-save-btn" class="px-5 py-2 rounded-xl bg-[#e72380] hover:bg-[#d41c73] text-white font-bold transition shadow-lg shadow-[#e72380]/20 flex items-center gap-1.5">
+            <i data-lucide="check" class="w-4 h-4"></i>
+            <span>Guardar Cambios</span>
+          </button>
+        </div>
+
+      </form>
+
+    </div>
+  </div>
+
+  <!-- Contenedor de Notificaciones Toast -->
+  <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2.5 pointer-events-none"></div>
+
+  <!-- Scripts -->
+  <script src="admin.js"></script>
+</body>
+</html>
