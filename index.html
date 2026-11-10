@@ -1535,12 +1535,12 @@
             PLATA S925 SOBRE PEDIDO
           </div>
 
-          <!-- Flechas Anterior / Siguiente (Visibles y Elegantes en PC y Móvil) -->
+          <!-- Flechas Anterior / Siguiente (Ocultas en Móvil ya que es táctil, Visibles en PC) -->
           <button
             type="button"
             onclick="event.stopPropagation(); prevModalPhoto();"
             id="modal-prev-photo-btn"
-            class="absolute left-2.5 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/90 hover:bg-white dark:bg-black/75 dark:hover:bg-black text-gray-800 dark:text-white flex items-center justify-center transition-all duration-200 btn-press shadow-lg border border-black/10 dark:border-white/20 z-20 cursor-pointer"
+            class="hidden md:flex absolute left-2.5 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/90 hover:bg-white dark:bg-black/75 dark:hover:bg-black text-gray-800 dark:text-white items-center justify-center transition-all duration-200 btn-press shadow-lg border border-black/10 dark:border-white/20 z-20 cursor-pointer"
             title="Foto anterior (o flecha izquierda en teclado)"
             aria-label="Foto anterior"
           >
@@ -1550,7 +1550,7 @@
             type="button"
             onclick="event.stopPropagation(); nextModalPhoto();"
             id="modal-next-photo-btn"
-            class="absolute right-2.5 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/90 hover:bg-white dark:bg-black/75 dark:hover:bg-black text-gray-800 dark:text-white flex items-center justify-center transition-all duration-200 btn-press shadow-lg border border-black/10 dark:border-white/20 z-20 cursor-pointer"
+            class="hidden md:flex absolute right-2.5 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/90 hover:bg-white dark:bg-black/75 dark:hover:bg-black text-gray-800 dark:text-white items-center justify-center transition-all duration-200 btn-press shadow-lg border border-black/10 dark:border-white/20 z-20 cursor-pointer"
             title="Siguiente foto (o flecha derecha en teclado)"
             aria-label="Siguiente foto"
           >

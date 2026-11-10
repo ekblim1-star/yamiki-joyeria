@@ -139,12 +139,12 @@
   <!-- ========================================================================
        CONTENEDOR PRINCIPAL
        ======================================================================== -->
-  <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-8 py-6 space-y-6">
+  <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-8 py-6 space-y-6 overflow-x-hidden">
 
     <!-- 1. TARJETAS DE MÉTRICAS RÁPIDAS -->
     <div class="grid grid-cols-2 sm:grid-cols-5 gap-3 sm:gap-4">
       
-      <div class="p-4 rounded-2xl bg-[#141C18] border border-white/5 flex items-center gap-3.5 shadow-sm">
+      <div class="p-3.5 sm:p-4 rounded-2xl bg-[#141C18] border border-white/5 flex items-center gap-3.5 shadow-sm">
         <div class="w-10 h-10 rounded-xl bg-white/5 text-gray-300 flex items-center justify-center shrink-0">
           <i data-lucide="package" class="w-5 h-5"></i>
         </div>
@@ -154,7 +154,7 @@
         </div>
       </div>
 
-      <div class="p-4 rounded-2xl bg-[#141C18] border border-amber-500/20 flex items-center gap-3.5 shadow-sm">
+      <div class="p-3.5 sm:p-4 rounded-2xl bg-[#141C18] border border-amber-500/20 flex items-center gap-3.5 shadow-sm">
         <div class="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center shrink-0">
           <i data-lucide="star" class="w-5 h-5"></i>
         </div>
@@ -164,7 +164,7 @@
         </div>
       </div>
 
-      <div class="p-4 rounded-2xl bg-[#141C18] border border-rose-500/20 flex items-center gap-3.5 shadow-sm">
+      <div class="p-3.5 sm:p-4 rounded-2xl bg-[#141C18] border border-rose-500/20 flex items-center gap-3.5 shadow-sm">
         <div class="w-10 h-10 rounded-xl bg-[#e72380]/15 text-[#e72380] flex items-center justify-center shrink-0">
           <i data-lucide="badge-percent" class="w-5 h-5"></i>
         </div>
@@ -174,8 +174,7 @@
         </div>
       </div>
 
-
-      <div class="p-4 rounded-2xl bg-[#141C18] border border-white/5 flex items-center gap-3.5 shadow-sm">
+      <div class="p-3.5 sm:p-4 rounded-2xl bg-[#141C18] border border-white/5 flex items-center gap-3.5 shadow-sm">
         <div class="w-10 h-10 rounded-xl bg-purple-500/10 text-purple-400 flex items-center justify-center shrink-0">
           <i data-lucide="sparkles" class="w-5 h-5"></i>
         </div>
@@ -185,7 +184,7 @@
         </div>
       </div>
 
-      <div class="p-4 rounded-2xl bg-[#141C18] border border-white/5 flex items-center gap-3.5 shadow-sm">
+      <div class="col-span-2 sm:col-span-1 p-3.5 sm:p-4 rounded-2xl bg-[#141C18] border border-white/5 flex items-center gap-3.5 shadow-sm">
         <div class="w-10 h-10 rounded-xl bg-red-500/10 text-red-400 flex items-center justify-center shrink-0">
           <i data-lucide="alert-circle" class="w-5 h-5"></i>
         </div>
@@ -197,14 +196,14 @@
 
     </div>
 
-    <!-- 2. PESTAÑAS DE NAVEGACIÓN PRINCIPALES -->
-    <div class="flex items-center justify-between border-b border-white/10 pb-2">
-      <div class="flex items-center gap-2">
+    <!-- 2. PESTAÑAS DE NAVEGACIÓN PRINCIPALES (SCROLL HORIZONTAL TÁCTIL EN MÓVILES) -->
+    <div class="flex items-center justify-between border-b border-white/10 pb-2 overflow-x-auto scrollbar-none -mx-4 px-4 sm:mx-0 sm:px-0">
+      <div class="flex items-center gap-2 min-w-max">
         <button 
           id="tab-btn-catalogo"
           type="button" 
           onclick="switchTab('catalogo')"
-          class="tab-btn active px-4 py-2 rounded-xl text-xs font-bold text-white bg-white/10 flex items-center gap-2"
+          class="tab-btn active px-4 py-2 rounded-xl text-xs font-bold text-white bg-white/10 flex items-center gap-2 cursor-pointer"
         >
           <i data-lucide="list" class="w-4 h-4 text-[#e72380]"></i>
           <span>Catálogo General</span>
@@ -214,7 +213,7 @@
           id="tab-btn-portada"
           type="button" 
           onclick="switchTab('portada')"
-          class="tab-btn px-4 py-2 rounded-xl text-xs font-semibold text-gray-400 hover:text-white hover:bg-white/5 transition flex items-center gap-2"
+          class="tab-btn px-4 py-2 rounded-xl text-xs font-semibold text-gray-400 hover:text-white hover:bg-white/5 transition flex items-center gap-2 cursor-pointer"
         >
           <i data-lucide="star" class="w-4 h-4 text-amber-400"></i>
           <span>⭐ Novedades de Portada</span>
@@ -227,7 +226,7 @@
           id="tab-btn-ofertas"
           type="button" 
           onclick="switchTab('ofertas')"
-          class="tab-btn px-4 py-2 rounded-xl text-xs font-semibold text-gray-400 hover:text-white hover:bg-white/5 transition flex items-center gap-2"
+          class="tab-btn px-4 py-2 rounded-xl text-xs font-semibold text-gray-400 hover:text-white hover:bg-white/5 transition flex items-center gap-2 cursor-pointer"
         >
           <i data-lucide="badge-percent" class="w-4 h-4 text-[#e72380]"></i>
           <span>🔥 Ofertas & Descuentos</span>
@@ -240,14 +239,14 @@
           id="tab-btn-importar"
           type="button" 
           onclick="switchTab('importar')"
-          class="tab-btn px-4 py-2 rounded-xl text-xs font-semibold text-gray-400 hover:text-white hover:bg-white/5 transition flex items-center gap-2"
+          class="tab-btn px-4 py-2 rounded-xl text-xs font-semibold text-gray-400 hover:text-white hover:bg-white/5 transition flex items-center gap-2 cursor-pointer"
         >
           <i data-lucide="file-spreadsheet" class="w-4 h-4 text-emerald-400"></i>
           <span>Subir Excel (Scraper)</span>
         </button>
       </div>
 
-      <div id="loading-indicator" class="hidden flex items-center gap-2 text-xs text-gray-400">
+      <div id="loading-indicator" class="hidden flex items-center gap-2 text-xs text-gray-400 shrink-0 ml-3">
         <i data-lucide="loader" class="w-3.5 h-3.5 animate-spin text-[#e72380]"></i>
         <span>Sincronizando...</span>
       </div>
@@ -262,7 +261,7 @@
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#141C18] p-3 rounded-2xl border border-white/5">
         
         <!-- Buscador -->
-        <div class="relative flex-grow max-w-md">
+        <div class="relative flex-grow w-full sm:max-w-md">
           <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-500">
             <i data-lucide="search" class="w-4 h-4"></i>
           </div>

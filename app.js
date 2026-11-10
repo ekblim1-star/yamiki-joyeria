@@ -2097,15 +2097,27 @@ function openProductModal(productId, defaultSize = null, defaultVariantId = null
   const counter = document.getElementById("modal-photo-counter");
 
   if (photoList.length > 1) {
-    if (prevBtn) prevBtn.classList.remove("hidden");
-    if (nextBtn) nextBtn.classList.remove("hidden");
+    if (prevBtn) {
+      prevBtn.classList.add("hidden", "md:flex");
+      prevBtn.classList.remove("flex");
+    }
+    if (nextBtn) {
+      nextBtn.classList.add("hidden", "md:flex");
+      nextBtn.classList.remove("flex");
+    }
     if (counter) {
       counter.classList.remove("hidden");
       counter.textContent = `${state.currentModalPhotoIdx + 1} / ${photoList.length}`;
     }
   } else {
-    if (prevBtn) prevBtn.classList.add("hidden");
-    if (nextBtn) nextBtn.classList.add("hidden");
+    if (prevBtn) {
+      prevBtn.classList.add("hidden");
+      prevBtn.classList.remove("md:flex", "flex");
+    }
+    if (nextBtn) {
+      nextBtn.classList.add("hidden");
+      nextBtn.classList.remove("md:flex", "flex");
+    }
     if (counter) counter.classList.add("hidden");
   }
 
