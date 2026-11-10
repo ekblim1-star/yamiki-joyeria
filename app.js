@@ -236,23 +236,38 @@ const state = {
 const STORAGE_KEY = "yamiki_cart_s925_v3";
 
 // ==============================================================================
-// INICIALIZACIÓN
+// GESTIÓN DE MENÚ MÓVIL DIRECTO Y SEGURO
+// ==============================================================================
+function toggleMobileMenu(forceState) {
+  const menu = document.getElementById("mobile-menu");
+  if (!menu) return;
+  if (typeof forceState === "boolean") {
+    if (forceState) menu.classList.remove("hidden");
+    else menu.classList.add("hidden");
+  } else {
+    menu.classList.toggle("hidden");
+  }
+}
+window.toggleMobileMenu = toggleMobileMenu;
+
+// ==============================================================================
+// INICIALIZACIÓN CON BLINDAJE CONTRA ERRORES
 // ==============================================================================
 document.addEventListener("DOMContentLoaded", async () => {
-  initTheme();
-  loadCartFromStorage();
-  injectBusinessInfo();
-  await syncProductsFromSupabase();
-  initHero3DCarousel();
-  initCarousel();
-  renderCategories();
-  renderSizeFilters();
-  renderStyleFilters();
-  renderProducts();
-  updateCartUI();
-  setupEventListeners();
-  lucide.createIcons();
-  handleUrlRouting();
+  try { initTheme(); } catch (e) { console.error("Theme init error:", e); }
+  try { loadCartFromStorage(); } catch (e) { console.error("Cart storage error:", e); }
+  try { injectBusinessInfo(); } catch (e) { console.error("Business info error:", e); }
+  try { await syncProductsFromSupabase(); } catch (e) { console.error("Supabase sync error:", e); }
+  try { initHero3DCarousel(); } catch (e) { console.error("Hero init error:", e); }
+  try { initCarousel(); } catch (e) { console.error("Carousel init error:", e); }
+  try { renderCategories(); } catch (e) { console.error("Categories render error:", e); }
+  try { renderSizeFilters(); } catch (e) { console.error("Size filters render error:", e); }
+  try { renderStyleFilters(); } catch (e) { console.error("Style filters render error:", e); }
+  try { renderProducts(); } catch (e) { console.error("Products render error:", e); }
+  try { updateCartUI(); } catch (e) { console.error("Cart UI error:", e); }
+  try { setupEventListeners(); } catch (e) { console.error("Event listeners error:", e); }
+  try { if (window.lucide && typeof lucide.createIcons === "function") lucide.createIcons(); } catch (e) { console.error("Lucide error:", e); }
+  try { handleUrlRouting(); } catch (e) { console.error("URL routing error:", e); }
 });
 
 // Inyecta datos de configuración del negocio
@@ -326,6 +341,94 @@ const CAROUSEL_CLONES = 4;
 function getFeaturedProducts() {
   const featured = PRODUCTS.filter(p => p.isFeatured);
   return featured.length > 0 ? featured : PRODUCTS.slice(0, 10);
+}
+
+// ==============================================================================
+// GESTOR TÁCTIL Y DESLIZAMIENTO CON EL DEDO (SWIPE FLUIDO EN MÓVILES)
+// ==============================================================================
+function enableSwipeGesture(element, onSwipeLeft, onSwipeRight) {
+  if (!element) return;
+
+  let startX = 0;
+  let startY = 0;
+  let currentX = 0;
+  let currentY = 0;
+  let isSwiping = false;
+  let startTime = 0;
+
+  // Touch Events (Móvil)
+  element.addEventListener("touchstart", (e) => {
+    if (!e.touches || e.touches.length === 0) return;
+    startX = e.touches[0].clientX;
+    startY = e.touches[0].clientY;
+    currentX = startX;
+    currentY = startY;
+    isSwiping = true;
+    startTime = Date.now();
+    stopCarouselAutoPlay();
+  }, { passive: true });
+
+  element.addEventListener("touchmove", (e) => {
+    if (!isSwiping || !e.touches || e.touches.length === 0) return;
+    currentX = e.touches[0].clientX;
+    currentY = e.touches[0].clientY;
+  }, { passive: true });
+
+  element.addEventListener("touchend", () => {
+    if (!isSwiping) return;
+    isSwiping = false;
+
+    const diffX = currentX - startX;
+    const diffY = currentY - startY;
+    const absX = Math.abs(diffX);
+    const absY = Math.abs(diffY);
+
+    // Si el deslizamiento horizontal es mayor al vertical y supera el umbral de 35px
+    if (absX > 35 && absX > absY) {
+      if (diffX < 0 && typeof onSwipeLeft === "function") {
+        onSwipeLeft();
+      } else if (diffX > 0 && typeof onSwipeRight === "function") {
+        onSwipeRight();
+      }
+    } else {
+      startCarouselAutoPlay();
+    }
+  }, { passive: true });
+
+  element.addEventListener("touchcancel", () => {
+    isSwiping = false;
+    startCarouselAutoPlay();
+  }, { passive: true });
+
+  // Mouse Drag Events (Prueba en PC con ratón)
+  let isMouseDown = false;
+  let mouseStartX = 0;
+
+  element.addEventListener("mousedown", (e) => {
+    if (e.button !== 0) return;
+    isMouseDown = true;
+    mouseStartX = e.clientX;
+    stopCarouselAutoPlay();
+  });
+
+  window.addEventListener("mouseup", (e) => {
+    if (!isMouseDown) return;
+    isMouseDown = false;
+    const diffX = e.clientX - mouseStartX;
+    if (Math.abs(diffX) > 40) {
+      if (diffX < 0 && typeof onSwipeLeft === "function") {
+        onSwipeLeft();
+      } else if (diffX > 0 && typeof onSwipeRight === "function") {
+        onSwipeRight();
+      }
+    } else {
+      startCarouselAutoPlay();
+    }
+  });
+
+  // Pausar auto-play al posar cursor
+  element.addEventListener("mouseenter", () => stopCarouselAutoPlay());
+  element.addEventListener("mouseleave", () => startCarouselAutoPlay());
 }
 
 function initCarousel() {
@@ -1954,18 +2057,26 @@ function openProductModal(productId, defaultSize = null, defaultVariantId = null
   // 2. Fotos de variantes
   if (product.variants && product.variants.length > 0) {
     product.variants.forEach((v, idx) => {
-      if (v.photo && !seenUrls.has(v.photo)) {
-        seenUrls.add(v.photo);
-        photoList.push({
-          url: v.photo,
-          label: v.color && v.color !== "Única" ? v.color : `Modelo ${idx + 1}`,
-          variantId: v.id
-        });
+      if (v.photo) {
+        if (!seenUrls.has(v.photo)) {
+          seenUrls.add(v.photo);
+          photoList.push({
+            url: v.photo,
+            label: v.color && v.color !== "Única" ? v.color : `Modelo ${idx + 1}`,
+            variantId: String(v.id)
+          });
+        } else {
+          // Si la URL ya estaba en la galería, vincular variantId para interactividad bidireccional
+          const existing = photoList.find(p => p.url === v.photo);
+          if (existing && !existing.variantId) {
+            existing.variantId = String(v.id);
+          }
+        }
       }
     });
   } else if (product.image && !seenUrls.has(product.image)) {
     seenUrls.add(product.image);
-    photoList.push({ url: product.image, label: "Foto 1", variantId: product.id });
+    photoList.push({ url: product.image, label: "Foto 1", variantId: String(product.id) });
   }
 
   state.modalPhotos = photoList;
@@ -2069,8 +2180,8 @@ function selectModalPhoto(idx) {
   });
 
   if (photo.variantId && state.selectedProductForModal && state.selectedProductForModal.variants) {
-    const v = state.selectedProductForModal.variants.find(item => item.id === photo.variantId);
-    if (v && (!state.selectedModalVariant || state.selectedModalVariant.id !== v.id)) {
+    const v = state.selectedProductForModal.variants.find(item => String(item.id) === String(photo.variantId));
+    if (v && (!state.selectedModalVariant || String(state.selectedModalVariant.id) !== String(v.id))) {
       selectModalVariant(v.id, false);
     }
   }
@@ -2094,7 +2205,7 @@ function selectModalVariant(variantId, changePhoto = true) {
   const product = state.selectedProductForModal;
   if (!product || !product.variants) return;
 
-  const variant = product.variants.find(v => v.id === variantId);
+  const variant = product.variants.find(v => String(v.id) === String(variantId));
   if (!variant) return;
 
   state.selectedModalVariant = variant;
@@ -2106,7 +2217,7 @@ function selectModalVariant(variantId, changePhoto = true) {
 
   const pills = document.querySelectorAll("#modal-variants-list .variant-pill-btn");
   pills.forEach(p => {
-    if (p.getAttribute("data-variant-id") === variantId) {
+    if (String(p.getAttribute("data-variant-id")) === String(variantId)) {
       p.classList.add("is-selected");
     } else {
       p.classList.remove("is-selected");
@@ -2143,7 +2254,7 @@ function selectModalVariant(variantId, changePhoto = true) {
   }
 
   if (changePhoto && variant.photo) {
-    const photoIdx = state.modalPhotos.findIndex(p => p.url === variant.photo);
+    const photoIdx = state.modalPhotos ? state.modalPhotos.findIndex(p => p.url === variant.photo) : -1;
     if (photoIdx !== -1) {
       selectModalPhoto(photoIdx);
     } else {
@@ -2482,11 +2593,21 @@ function setupEventListeners() {
 
   const mobileMenuBtn = document.getElementById("mobile-menu-btn");
   const mobileMenu = document.getElementById("mobile-menu");
-  if (mobileMenuBtn && mobileMenu) {
-    mobileMenuBtn.addEventListener("click", () => {
-      mobileMenu.classList.toggle("hidden");
-    });
+  if (mobileMenuBtn) {
+    mobileMenuBtn.onclick = (e) => {
+      e.stopPropagation();
+      toggleMobileMenu();
+    };
   }
+
+  // Cerrar menú móvil al hacer clic fuera
+  document.addEventListener("click", (e) => {
+    if (mobileMenu && !mobileMenu.classList.contains("hidden")) {
+      if (!mobileMenu.contains(e.target) && mobileMenuBtn && !mobileMenuBtn.contains(e.target)) {
+        toggleMobileMenu(false);
+      }
+    }
+  });
 
   const productModal = document.getElementById("product-modal");
   if (productModal) {

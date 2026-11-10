@@ -11,6 +11,20 @@
   display: none !important;
 }
 
+/* ==============================================================================
+   ICONOS SOCIALES SVG (CONTROL ESTRICTO DE DIMENSIÓN EN MÓVILES Y ESCRITORIO)
+   ============================================================================== */
+.social-svg-icon {
+  width: 20px !important;
+  height: 20px !important;
+  max-width: 20px !important;
+  max-height: 20px !important;
+  min-width: 20px !important;
+  min-height: 20px !important;
+  display: inline-block !important;
+  flex-shrink: 0 !important;
+}
+
 /* Navegación de Escritorio Garantizada (PC >= 768px) */
 @media (min-width: 768px) {
   .desktop-nav {
