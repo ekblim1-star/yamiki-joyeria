@@ -2222,7 +2222,7 @@ function openProductModal(productId, defaultSize = null, defaultVariantId = null
     });
   }
 
-  // 3. Fotos de variantes
+  // 3. Fotos de variantes con interactividad bidireccional
   if (product.variants && product.variants.length > 0) {
     product.variants.forEach((v, idx) => {
       if (v.photo) {
@@ -2230,15 +2230,30 @@ function openProductModal(productId, defaultSize = null, defaultVariantId = null
           seenUrls.add(v.photo);
           photoList.push({
             url: v.photo,
-            label: v.color && v.color !== "Única" ? v.color : `Modelo ${idx + 1}`,
+            label: v.color && v.color !== "Única" ? v.color : (v.sku || `Modelo ${idx + 1}`),
             variantId: String(v.id)
           });
         } else {
-          // Si la URL ya estaba en la galería, vincular variantId para interactividad bidireccional (excepto si es Foto 1 / Portada)
-          const existing = photoList.find((p, pIdx) => pIdx > 0 && p.url === v.photo);
+          // Si la URL ya estaba en la galería, vincular variantId para interactividad bidireccional
+          const existing = photoList.find(p => p.url === v.photo);
           if (existing && !existing.variantId) {
             existing.variantId = String(v.id);
           }
+        }
+      }
+    });
+
+    // Vincular variantes con cualquier foto de galería cuyo nombre contenga el código SKU o nombre de modelo
+    photoList.forEach(p => {
+      if (!p.variantId && p.url) {
+        const pUrlLower = p.url.toLowerCase();
+        const matchedVariant = product.variants.find(v => {
+          const skuClean = (v.sku || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+          const colorClean = (v.color || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+          return (skuClean && pUrlLower.includes(skuClean)) || (colorClean && pUrlLower.includes(colorClean));
+        });
+        if (matchedVariant) {
+          p.variantId = String(matchedVariant.id);
         }
       }
     });
@@ -2489,7 +2504,10 @@ function selectModalVariant(variantId, changePhoto = true) {
   }
 
   if (changePhoto && variant.photo) {
-    const photoIdx = state.modalPhotos ? state.modalPhotos.findIndex(p => p.url === variant.photo) : -1;
+    let photoIdx = state.modalPhotos ? state.modalPhotos.findIndex(p => p.url === variant.photo) : -1;
+    if (photoIdx === -1 && state.modalPhotos) {
+      photoIdx = state.modalPhotos.findIndex(p => String(p.variantId) === String(variant.id));
+    }
     if (photoIdx !== -1) {
       selectModalPhoto(photoIdx, false);
     } else {
