@@ -183,8 +183,7 @@ async function loadProductsFromSupabase() {
     calculateStats();
     applyFilters();
   } catch (err) {
-    console.error("Error al cargar productos:", err);
-    showToast("Error de conexión", "No se pudieron obtener las joyas de Supabase.", "error");
+    logAndShowError("ERR_DB_LOAD_PRODUCTS", "No se pudieron obtener las joyas de Supabase.", err);
   } finally {
     setLoading(false);
   }
@@ -717,8 +716,7 @@ async function toggleDescuento(productId, newValue) {
 
     showToast("Oferta Actualizada", `"${prod.titulo.slice(0, 25)}..." ${newValue ? 'puesta en Oferta (-20%) 🔥' : 'precio regular restaurado'}.`, "success");
   } catch (err) {
-    console.error("Error al cambiar estado de oferta:", err);
-    showToast("Error", err.message || "No se pudo actualizar el descuento.", "error");
+    logAndShowError("ERR_DB_UPDATE_OFERTA", "No se pudo actualizar el descuento.", err);
   }
 }
 
@@ -838,8 +836,7 @@ async function updateProductPrice(productId, newPrice) {
 
     showToast("Precio actualizado", `Nuevo precio: $${price} MXN`, "success");
   } catch (err) {
-    console.error("Error al actualizar precio:", err);
-    showToast("Error", "No se pudo actualizar el precio en Supabase.", "error");
+    logAndShowError("ERR_DB_UPDATE_PRECIO", "No se pudo actualizar el precio en Supabase.", err);
   }
 }
 
@@ -880,9 +877,8 @@ async function toggleNovedad(productId, isNovedad, checkboxEl) {
       "success"
     );
   } catch (err) {
-    console.error("Error al cambiar novedad:", err);
     if (checkboxEl) checkboxEl.checked = !isNovedad;
-    showToast("Error", "No se pudo actualizar el estado de portada.", "error");
+    logAndShowError("ERR_DB_UPDATE_NOVEDAD", "No se pudo actualizar el estado de portada.", err);
   }
 }
 
@@ -905,8 +901,7 @@ async function toggleActivo(productId, isActivo) {
       "success"
     );
   } catch (err) {
-    console.error("Error al cambiar visibilidad:", err);
-    showToast("Error", "No se pudo actualizar la visibilidad.", "error");
+    logAndShowError("ERR_DB_UPDATE_VISIBILIDAD", "No se pudo actualizar la visibilidad.", err);
   }
 }
 
@@ -931,8 +926,7 @@ async function confirmDeleteProduct(productId, sku) {
     applyFilters();
     showToast("Joya eliminada", `Se eliminó "${sku}" correctamente.`, "success");
   } catch (err) {
-    console.error("Error al eliminar joya:", err);
-    showToast("Error", "No se pudo eliminar la pieza.", "error");
+    logAndShowError("ERR_DB_DELETE_PRODUCT", "No se pudo eliminar la pieza.", err);
   }
 }
 
@@ -1555,8 +1549,7 @@ async function handleManualProductSubmit(e) {
   loadProductsFromSupabase();
 
   } catch (err) {
-    console.error("Error al crear joya:", err);
-    showToast("Error al guardar", err.message || "No se pudo guardar la joya.", "error");
+    logAndShowError("ERR_DB_CREATE_PRODUCTO", "No se pudo guardar la nueva joya.", err);
   } finally {
     btn.disabled = false;
     btn.textContent = "Guardar y Publicar";
@@ -1734,29 +1727,107 @@ function setLoading(isLoading) {
 }
 
 // ==============================================================================
-// TOAST NOTIFICATIONS
+// SISTEMA DE DIAGNÓSTICO, CÓDIGOS DE ERROR Y NOTIFICACIONES
 // ==============================================================================
-function showToast(title, message, type = "success") {
+state.errorLogs = [];
+
+function updateErrorLogBadge() {
+  const btn = document.getElementById("admin-error-log-btn");
+  const badge = document.getElementById("admin-error-count-badge");
+  const modalBadge = document.getElementById("error-modal-count-badge");
+  const count = state.errorLogs.length;
+
+  if (modalBadge) modalBadge.textContent = String(count);
+
+  if (btn && badge) {
+    if (count > 0) {
+      btn.classList.remove("hidden");
+      btn.classList.add("inline-flex");
+      badge.textContent = `${count} ${count === 1 ? 'error' : 'errores'}`;
+    } else {
+      btn.classList.add("hidden");
+      btn.classList.remove("inline-flex");
+    }
+  }
+}
+
+function logAndShowError(code, userMsg, rawError = null, context = {}) {
+  const errorId = `err_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
+  const techMsg = rawError ? (rawError.message || rawError.error_description || String(rawError)) : "";
+  const techDetails = rawError ? (rawError.details || rawError.hint || "") : "";
+  const statusCode = rawError ? (rawError.status || rawError.statusCode || rawError.code || "") : "";
+
+  const errorObj = {
+    id: errorId,
+    code: code || "ERR_GENERIC",
+    message: userMsg,
+    technicalMessage: techMsg,
+    details: techDetails,
+    status: statusCode,
+    context: context,
+    timestamp: new Date().toISOString(),
+    displayTime: new Date().toLocaleTimeString(),
+    userAgent: typeof navigator !== "undefined" ? navigator.userAgent : ""
+  };
+
+  state.errorLogs.unshift(errorObj);
+  if (state.errorLogs.length > 50) state.errorLogs.pop();
+
+  updateErrorLogBadge();
+  console.error(`[${errorObj.code}]`, userMsg, rawError || "", context);
+
+  showToast(
+    userMsg,
+    techMsg ? techMsg : "Ocurrió un problema en la operación.",
+    "error",
+    errorObj
+  );
+
+  return errorObj;
+}
+
+function showToast(title, message, type = "success", errorObj = null) {
   const container = document.getElementById("toast-container");
   if (!container) return;
 
   const toast = document.createElement("div");
   const isError = type === "error";
 
-  toast.className = `p-4 rounded-2xl border shadow-xl flex items-start gap-3 transition-all duration-300 transform translate-y-2 pointer-events-auto max-w-sm ${
+  toast.className = `p-4 rounded-2xl border shadow-xl flex items-start gap-3 transition-all duration-300 transform translate-y-2 pointer-events-auto max-w-sm sm:max-w-md ${
     isError 
-      ? 'bg-red-950/90 border-red-800 text-red-200' 
-      : 'bg-[#141C18]/95 border-[#e72380]/40 text-white'
+      ? 'bg-rose-950/95 border-rose-500/50 text-rose-100 shadow-rose-950/50' 
+      : 'bg-[#141C18]/95 border-[#e72380]/40 text-white shadow-black/50'
   }`;
 
+  const errorCodeHtml = errorObj && errorObj.code ? `
+    <div class="flex items-center gap-1.5 mt-2 pt-1.5 border-t border-rose-800/40">
+      <span class="font-mono text-[10px] px-2 py-0.5 rounded-md bg-black/60 border border-rose-500/40 text-rose-300 font-bold tracking-wider">
+        ${errorObj.code}
+      </span>
+      <button 
+        type="button" 
+        onclick="copySingleErrorToClipboard('${errorObj.id}', this)"
+        class="text-[10px] font-bold text-rose-300 hover:text-white underline inline-flex items-center gap-1 ml-auto cursor-pointer"
+        title="Copiar código y reporte de este error al portapapeles"
+      >
+        <i data-lucide="copy" class="w-3 h-3"></i>
+        <span>Copiar código</span>
+      </button>
+    </div>
+  ` : '';
+
   toast.innerHTML = `
-    <div class="p-1 rounded-lg ${isError ? 'bg-red-900/50 text-red-400' : 'bg-[#e72380]/20 text-[#e72380]'} shrink-0">
+    <div class="p-1 rounded-lg ${isError ? 'bg-rose-900/60 text-rose-400' : 'bg-[#e72380]/20 text-[#e72380]'} shrink-0 mt-0.5">
       <i data-lucide="${isError ? 'alert-triangle' : 'check-circle'}" class="w-4 h-4"></i>
     </div>
-    <div class="flex-grow">
-      <h4 class="text-xs font-bold ${isError ? 'text-red-100' : 'text-white'}">${title}</h4>
-      <p class="text-[11px] ${isError ? 'text-red-300' : 'text-gray-300'} mt-0.5 leading-tight">${message}</p>
+    <div class="flex-grow min-w-0">
+      <h4 class="text-xs font-bold text-white truncate">${title}</h4>
+      <p class="text-[11px] ${isError ? 'text-rose-200/90' : 'text-gray-300'} mt-0.5 leading-snug break-words">${message}</p>
+      ${errorCodeHtml}
     </div>
+    <button type="button" onclick="this.parentElement.remove()" class="text-gray-400 hover:text-white shrink-0 p-0.5">
+      <i data-lucide="x" class="w-3.5 h-3.5"></i>
+    </button>
   `;
 
   container.appendChild(toast);
@@ -1766,10 +1837,154 @@ function showToast(title, message, type = "success") {
     toast.classList.remove("translate-y-2");
   });
 
+  const duration = isError ? 7000 : 3500;
   setTimeout(() => {
     toast.classList.add("opacity-0", "translate-y-2");
     setTimeout(() => toast.remove(), 300);
-  }, 3500);
+  }, duration);
+}
+
+function openErrorLogModal() {
+  const modal = document.getElementById("admin-error-log-modal");
+  if (!modal) return;
+  renderErrorLogList();
+  modal.classList.remove("hidden");
+  requestAnimationFrame(() => modal.classList.add("modal-active"));
+  safeCreateIcons();
+}
+
+function closeErrorLogModal() {
+  const modal = document.getElementById("admin-error-log-modal");
+  if (modal) {
+    modal.classList.remove("modal-active");
+    setTimeout(() => modal.classList.add("hidden"), 200);
+  }
+}
+
+function renderErrorLogList() {
+  const list = document.getElementById("error-log-list");
+  if (!list) return;
+
+  if (state.errorLogs.length === 0) {
+    list.innerHTML = `
+      <div class="py-12 text-center text-gray-400 space-y-2">
+        <div class="w-12 h-12 rounded-2xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center mx-auto">
+          <i data-lucide="check-circle-2" class="w-6 h-6"></i>
+        </div>
+        <p class="text-xs font-bold text-gray-200">¡Todo limpio y funcionando al 100%!</p>
+        <p class="text-[11px] text-gray-500">No hay errores registrados en esta sesión de trabajo.</p>
+      </div>
+    `;
+    safeCreateIcons();
+    return;
+  }
+
+  list.innerHTML = state.errorLogs.map(err => {
+    return `
+      <div class="p-3 rounded-2xl bg-black/40 border border-rose-500/20 space-y-2">
+        <div class="flex items-center justify-between gap-2">
+          <div class="flex items-center gap-2">
+            <span class="px-2 py-0.5 rounded-md font-mono text-[10px] font-extrabold bg-rose-950 text-rose-300 border border-rose-500/30">
+              ${err.code}
+            </span>
+            ${err.status ? `<span class="text-[10px] font-mono text-gray-400">HTTP ${err.status}</span>` : ''}
+          </div>
+          <span class="text-[10px] font-mono text-gray-400">${err.displayTime}</span>
+        </div>
+
+        <div>
+          <p class="text-xs font-bold text-white">${err.message}</p>
+          ${err.technicalMessage ? `<p class="text-[11px] font-mono text-rose-300/90 mt-0.5 break-words">${err.technicalMessage}</p>` : ''}
+          ${err.details ? `<p class="text-[10px] text-gray-400 mt-0.5">${err.details}</p>` : ''}
+        </div>
+
+        <div class="pt-1 flex items-center justify-between text-[10px]">
+          <span class="text-gray-500 truncate max-w-[200px]">${Object.keys(err.context || {}).length ? JSON.stringify(err.context) : ''}</span>
+          <button 
+            type="button" 
+            onclick="copySingleErrorToClipboard('${err.id}', this)"
+            class="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-rose-500/20 text-rose-300 hover:text-white font-bold transition flex items-center gap-1 cursor-pointer"
+          >
+            <i data-lucide="copy" class="w-3 h-3"></i>
+            <span>Copiar reporte</span>
+          </button>
+        </div>
+      </div>
+    `;
+  }).join("");
+
+  safeCreateIcons();
+}
+
+function copySingleErrorToClipboard(errorId, btnEl) {
+  const err = state.errorLogs.find(e => e.id === errorId);
+  if (!err) return;
+  const payload = JSON.stringify(err, null, 2);
+
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(payload).then(() => {
+      if (btnEl) {
+        const orig = btnEl.innerHTML;
+        btnEl.innerHTML = `<span>¡Copiado! ✓</span>`;
+        setTimeout(() => { btnEl.innerHTML = orig; safeCreateIcons(); }, 2000);
+      }
+    });
+  } else {
+    prompt("Copia este reporte de error:", payload);
+  }
+}
+
+function copyAllErrorsToClipboard() {
+  if (state.errorLogs.length === 0) {
+    showToast("Sin errores", "No hay errores registrados en esta sesión.", "info");
+    return;
+  }
+  const payload = JSON.stringify(state.errorLogs, null, 2);
+  const btn = document.getElementById("btn-copy-all-errors");
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(payload).then(() => {
+      if (btn) {
+        btn.innerHTML = `<i data-lucide="check" class="w-4 h-4"></i><span>¡Todo Copiado!</span>`;
+        safeCreateIcons();
+        setTimeout(() => {
+          btn.innerHTML = `<i data-lucide="copy" class="w-4 h-4"></i><span>Copiar Todo el Reporte</span>`;
+          safeCreateIcons();
+        }, 2000);
+      }
+    });
+  } else {
+    prompt("Copia todos los reportes de error:", payload);
+  }
+}
+
+function clearErrorLogs() {
+  state.errorLogs = [];
+  updateErrorLogBadge();
+  renderErrorLogList();
+  showToast("Historial Limpio", "Se borraron los registros de errores.", "info");
+}
+
+window.openErrorLogModal = openErrorLogModal;
+window.closeErrorLogModal = closeErrorLogModal;
+window.copySingleErrorToClipboard = copySingleErrorToClipboard;
+window.copyAllErrorsToClipboard = copyAllErrorsToClipboard;
+window.clearErrorLogs = clearErrorLogs;
+window.logAndShowError = logAndShowError;
+
+// Captura global de excepciones no controladas en el panel
+if (typeof window !== "undefined") {
+  window.addEventListener("error", (event) => {
+    if (event.filename && event.filename.includes("chrome-extension")) return;
+    logAndShowError("ERR_UNCAUGHT_EXCEPTION", "Error interno de script en el panel.", event.error || event.message, {
+      filename: event.filename,
+      lineno: event.lineno,
+      colno: event.colno
+    });
+  });
+
+  window.addEventListener("unhandledrejection", (event) => {
+    logAndShowError("ERR_UNHANDLED_PROMISE", "Promesa asíncrona rechazada no controlada.", event.reason);
+  });
 }
 
 // ==============================================================================
@@ -2067,6 +2282,7 @@ async function handleEditAddFiles(files) {
 
   const totalFiles = files.length;
   let successCount = 0;
+  let lastError = null;
   const folder = (prod && prod.id_aliexpress) ? prod.id_aliexpress : (prod && prod.codigo_sku ? prod.codigo_sku : (prodId || "galeria"));
 
   for (let i = 0; i < totalFiles; i++) {
@@ -2112,6 +2328,7 @@ async function handleEditAddFiles(files) {
         });
         publicUrl = res.url;
       } catch (flatErr) {
+        lastError = flatErr;
         console.error("Error definitivo subiendo foto:", flatErr);
       }
     }
@@ -2163,11 +2380,34 @@ async function handleEditAddFiles(files) {
     }, 3500);
 
   } else {
-    if (progressTitle) progressTitle.textContent = "No se pudo subir la foto";
-    if (progressDetail) progressDetail.textContent = "Verifica tu conexión a internet o intenta con otra foto (JPG/PNG).";
+    const errObj = logAndShowError("ERR_UPLOAD_STORAGE_FAILED", "No se pudo subir la foto a Supabase Storage.", lastError, {
+      totalFiles,
+      folder,
+      prodId
+    });
+
+    if (progressBar) {
+      progressBar.classList.remove("from-[#e72380]", "via-rose-400", "to-amber-400");
+      progressBar.classList.add("bg-rose-600");
+      progressBar.style.width = "100%";
+    }
+    if (progressPct) progressPct.textContent = "Error";
+    if (progressTitle) progressTitle.innerHTML = `<span class="text-rose-400 font-bold">Error [${errObj.code}]</span>`;
+    if (progressDetail) progressDetail.innerHTML = `
+      <div class="space-y-1.5 mt-1">
+        <p class="text-rose-300 font-mono text-[10px] break-words">${errObj.technicalMessage || 'Error de red o permisos al conectar con Supabase Storage.'}</p>
+        <button 
+          type="button" 
+          onclick="copySingleErrorToClipboard('${errObj.id}', this)"
+          class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-rose-600/40 hover:bg-rose-600 text-white text-[10px] font-bold transition shadow-xs cursor-pointer"
+        >
+          <i data-lucide="copy" class="w-3 h-3"></i>
+          <span>Copiar reporte de error</span>
+        </button>
+      </div>
+    `;
     if (progressIcon) progressIcon.innerHTML = `<i data-lucide="alert-circle" class="w-4 h-4 text-rose-400"></i>`;
     safeCreateIcons();
-    showToast("Error de subida", "No se pudo subir la imagen. Verifica tu conexión o formato.", "error");
   }
 
   const fileInp = document.getElementById("edit-add-photos-file");
@@ -2791,8 +3031,7 @@ async function handleEditProductSubmit(e) {
     closeEditProductModal();
 
   } catch (err) {
-    console.error("Error al guardar cambios:", err);
-    showToast("Error al guardar", err.message || "No se pudo actualizar la joya.", "error");
+    logAndShowError("ERR_DB_UPDATE_PRODUCTO", "No se pudo actualizar la joya.", err);
   } finally {
     saveBtn.disabled = false;
     saveBtn.innerHTML = origBtnContent;

@@ -34,6 +34,18 @@
         <span>Supabase Conectado</span>
       </div>
 
+      <!-- Botón de Registro de Errores Técnicos (Visible cuando hay errores) -->
+      <button 
+        type="button" 
+        id="admin-error-log-btn"
+        onclick="openErrorLogModal()" 
+        class="hidden items-center gap-1.5 px-3 py-1.5 rounded-full bg-rose-950/60 border border-rose-500/50 text-rose-300 hover:text-white hover:bg-rose-900/60 text-xs font-mono font-bold transition cursor-pointer"
+        title="Ver registro de errores del sistema"
+      >
+        <i data-lucide="alert-triangle" class="w-3.5 h-3.5 text-rose-400"></i>
+        <span id="admin-error-count-badge">0 errores</span>
+      </button>
+
       <button 
         type="button" 
         onclick="openManualModal()"
@@ -880,3 +892,59 @@
     </div>
   </div>
 
+
+  <!-- ========================================================================
+       MODAL: REGISTRO DE ERRORES Y DIAGNÓSTICO TÉCNICO (ERROR CODES)
+       ======================================================================== -->
+  <div id="admin-error-log-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-3 sm:p-5">
+    <div class="modal-overlay fixed inset-0 bg-black/80 backdrop-blur-sm" onclick="closeErrorLogModal()"></div>
+    <div class="modal-dialog bg-[#141C18] border border-rose-500/30 rounded-3xl max-w-xl sm:max-w-2xl w-full p-5 sm:p-6 shadow-2xl relative z-10 space-y-4 max-h-[90vh] flex flex-col">
+      
+      <!-- Cabecera del Modal de Errores -->
+      <div class="flex items-center justify-between pb-3 border-b border-white/10 shrink-0">
+        <div class="flex items-center gap-2.5">
+          <div class="w-9 h-9 rounded-xl bg-rose-500/20 text-rose-400 flex items-center justify-center">
+            <i data-lucide="bug" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h3 class="text-sm sm:text-base font-extrabold text-white flex items-center gap-2">
+              <span>Registro de Errores y Diagnóstico</span>
+              <span id="error-modal-count-badge" class="px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-300 text-[10px] font-mono font-bold">0</span>
+            </h3>
+            <p class="text-[11px] text-gray-400">Códigos de error para soporte y depuración rápida.</p>
+          </div>
+        </div>
+
+        <button type="button" onclick="closeErrorLogModal()" class="text-gray-400 hover:text-white p-1 rounded-lg">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- Lista de Errores -->
+      <div id="error-log-list" class="space-y-2.5 overflow-y-auto flex-grow pr-1 max-h-[50vh]">
+        <!-- Inyectado dinámicamente -->
+      </div>
+
+      <!-- Acciones Inferiores -->
+      <div class="pt-3 border-t border-white/10 flex items-center justify-between gap-3 shrink-0">
+        <button 
+          type="button" 
+          onclick="clearErrorLogs()" 
+          class="px-3.5 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white text-xs font-bold transition"
+        >
+          Limpiar historial
+        </button>
+
+        <button 
+          type="button" 
+          id="btn-copy-all-errors"
+          onclick="copyAllErrorsToClipboard()" 
+          class="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold transition flex items-center gap-1.5 shadow-md shadow-rose-600/20"
+        >
+          <i data-lucide="copy" class="w-4 h-4"></i>
+          <span>Copiar Todo el Reporte</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
