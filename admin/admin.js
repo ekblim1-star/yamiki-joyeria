@@ -2580,7 +2580,11 @@ function toggleVariantsPreview(productId) {
 // ==============================================================================
 // SISTEMA DE SEGURIDAD Y PIN DE ACCESO
 // ==============================================================================
-const DEFAULT_PINS = ["9250", "yamiki925"];
+const DEFAULT_PINS = [
+  "Yamitaeslamasbonitamymonkeynovia",
+  "9250",
+  "yamiki925"
+];
 const STORAGE_AUTH_KEY = "yamiki_admin_authenticated";
 const STORAGE_CUSTOM_PIN_KEY = "yamiki_admin_custom_pin";
 
@@ -2613,7 +2617,8 @@ function handlePinSubmit(e) {
   const val = input.value.trim();
 
   const validPins = getActivePins();
-  if (validPins.includes(val)) {
+  const isValid = validPins.some(p => p === val || p.toLowerCase() === val.toLowerCase());
+  if (isValid) {
     sessionStorage.setItem(STORAGE_AUTH_KEY, "true");
     if (errorMsg) errorMsg.classList.add("hidden");
     lockScreen.classList.add("hidden");
