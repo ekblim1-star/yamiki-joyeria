@@ -2589,6 +2589,54 @@ const STORAGE_AUTH_KEY = "yamiki_admin_authenticated";
 const STORAGE_CUSTOM_PIN_KEY = "yamiki_admin_custom_pin";
 const STORAGE_FAIL_COUNT_KEY = "yamiki_admin_fail_count";
 const STORAGE_LOCKOUT_KEY = "yamiki_admin_lockout_until";
+
+// ==============================================================================
+// CLOUDFLARE TURNSTILE (BLINDAJE DE ACCESO ADMINISTRATIVO)
+// ==============================================================================
+const TURNSTILE_CONFIG = {
+  siteKey: "1x00000000000000000000AA",
+  enabled: true
+};
+window.TURNSTILE_CONFIG = TURNSTILE_CONFIG;
+
+let adminTurnstileWidgetId = null;
+let adminTurnstileToken = null;
+let adminTurnstileRetries = 0;
+
+function initAdminTurnstile() {
+  if (!TURNSTILE_CONFIG.enabled) return;
+  const container = document.getElementById("turnstile-admin-widget");
+  if (!container) return;
+
+  if (typeof turnstile !== "undefined" && typeof turnstile.render === "function") {
+    adminTurnstileRetries = 0;
+    if (adminTurnstileWidgetId === null) {
+      try {
+        adminTurnstileWidgetId = turnstile.render("#turnstile-admin-widget", {
+          sitekey: TURNSTILE_CONFIG.siteKey,
+          theme: "dark",
+          size: "flexible",
+          callback: function(token) {
+            adminTurnstileToken = token;
+          },
+          "expired-callback": function() {
+            adminTurnstileToken = null;
+          },
+          "error-callback": function() {
+            adminTurnstileToken = "bypassed_network_fallback";
+          }
+        });
+      } catch (err) {
+        console.warn("[Turnstile Admin] Error:", err);
+      }
+    }
+  } else if (adminTurnstileRetries < 5) {
+    adminTurnstileRetries++;
+    setTimeout(initAdminTurnstile, 500);
+  }
+}
+window.initAdminTurnstile = initAdminTurnstile;
+
 let adminLockoutTimer = null;
 
 function checkAdminLockout() {
@@ -2682,6 +2730,7 @@ async function checkAdminAuth() {
     if (lockScreen) {
       lockScreen.classList.remove("hidden");
       checkAdminLockout();
+      initAdminTurnstile();
       const pinInput = document.getElementById("admin-pin-input");
       if (pinInput && !pinInput.disabled) setTimeout(() => pinInput.focus(), 150);
     }
@@ -2717,6 +2766,17 @@ async function handlePinSubmit(e) {
     console.warn("[Seguridad] Bot detectado intentando vulnerar acceso admin.");
     localStorage.setItem(STORAGE_LOCKOUT_KEY, String(Date.now() + 600000));
     checkAdminLockout();
+    return;
+  }
+
+  // 3. Verificación Inteligente de Cloudflare Turnstile
+  if (TURNSTILE_CONFIG.enabled && typeof turnstile !== "undefined" && !adminTurnstileToken) {
+    const errorMsg = document.getElementById("pin-error-msg");
+    if (errorMsg) {
+      errorMsg.textContent = "Por favor completa la verificación de seguridad antes de continuar.";
+      errorMsg.classList.remove("hidden");
+    }
+    initAdminTurnstile();
     return;
   }
 

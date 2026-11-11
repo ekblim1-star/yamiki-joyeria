@@ -14,6 +14,8 @@
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
 
+  <!-- Cloudflare Turnstile API (Verificación Inteligente Anti-Bots) -->
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" async defer></script>
   <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
 
@@ -1741,6 +1743,9 @@
               <span id="cart-total" class="text-sage-800 font-sans font-extrabold text-xl">$0</span>
             </div>
           </div>
+
+          <!-- Verificación Inteligente Cloudflare Turnstile -->
+          <div id="turnstile-checkout-widget" class="flex justify-center my-2 min-h-[42px]"></div>
 
           <!-- Botón de WhatsApp con el número +52 993 290 2704 -->
           <button 

@@ -8,6 +8,8 @@
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
 
+  <!-- Cloudflare Turnstile API (Verificación Inteligente Anti-Bots) -->
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" async defer></script>
   <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
 
@@ -69,6 +71,9 @@
         </div>
 
         <p id="pin-error-msg" class="text-xs text-rose-400 font-bold hidden"></p>
+
+        <!-- Verificación Inteligente Cloudflare Turnstile -->
+        <div id="turnstile-admin-widget" class="flex justify-center my-2 min-h-[42px]"></div>
 
         <button
           type="submit"

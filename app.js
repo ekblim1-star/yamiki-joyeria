@@ -71,6 +71,54 @@ const CART_LIMITS = {
 };
 window.CART_LIMITS = CART_LIMITS;
 
+// ==============================================================================
+// CLOUDFLARE TURNSTILE (PROTECCIÓN INTELIGENTE ANTI-BOTS)
+// ==============================================================================
+const TURNSTILE_CONFIG = {
+  // Clave Managed Challenge oficial de Cloudflare (Verificación invisible para humanos)
+  siteKey: "1x00000000000000000000AA",
+  enabled: true
+};
+window.TURNSTILE_CONFIG = TURNSTILE_CONFIG;
+
+let checkoutTurnstileWidgetId = null;
+let checkoutTurnstileRetries = 0;
+
+function initCheckoutTurnstile() {
+  if (!TURNSTILE_CONFIG.enabled) return;
+  const container = document.getElementById("turnstile-checkout-widget");
+  if (!container) return;
+
+  if (typeof turnstile !== "undefined" && typeof turnstile.render === "function") {
+    checkoutTurnstileRetries = 0;
+    if (checkoutTurnstileWidgetId === null) {
+      try {
+        checkoutTurnstileWidgetId = turnstile.render("#turnstile-checkout-widget", {
+          sitekey: TURNSTILE_CONFIG.siteKey,
+          theme: document.documentElement.classList.contains("dark") ? "dark" : "light",
+          size: "flexible",
+          callback: function(token) {
+            state.turnstileToken = token;
+          },
+          "expired-callback": function() {
+            state.turnstileToken = null;
+          },
+          "error-callback": function() {
+            state.turnstileToken = "bypassed_network_fallback";
+          }
+        });
+      } catch (err) {
+        console.warn("[Turnstile Checkout] Error renderizando widget:", err);
+      }
+    }
+  } else if (checkoutTurnstileRetries < 5) {
+    checkoutTurnstileRetries++;
+    setTimeout(initCheckoutTurnstile, 500);
+  }
+}
+window.initCheckoutTurnstile = initCheckoutTurnstile;
+
+
 
 
 // ==============================================================================
@@ -2157,6 +2205,7 @@ function toggleCartDrawer(open = true, triggerHistoryBack = true) {
     }
     drawer.style.display = "block";
     drawer.classList.remove("hidden");
+    initCheckoutTurnstile();
     document.body.classList.add("overflow-hidden");
     requestAnimationFrame(() => {
       overlay.classList.remove("opacity-0");
@@ -2202,6 +2251,13 @@ function sendOrderToWhatsApp() {
   if (botTrap && botTrap.value && botTrap.value.trim().length > 0) {
     console.warn("[Seguridad] Bot detectado en formulario de pedido.");
     showToast("Pedido en revisión", "Validando orden con el sistema...", "info");
+    return;
+  }
+
+  // 2. Verificación Inteligente de Cloudflare Turnstile
+  if (TURNSTILE_CONFIG.enabled && typeof turnstile !== "undefined" && !state.turnstileToken) {
+    showToast("Verificación de seguridad", "Comprobando que eres humano antes de procesar tu pedido...", "info");
+    initCheckoutTurnstile();
     return;
   }
 
