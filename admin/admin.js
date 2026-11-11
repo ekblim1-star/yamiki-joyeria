@@ -57,14 +57,12 @@ const state = {
 // ==============================================================================
 // INICIALIZACIÓN
 // ==============================================================================
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
   if (!supabaseClient) {
     showToast("Error", "No se pudo cargar la librería de Supabase.", "error");
     return;
   }
-  setupEventListeners();
-  checkAdminAuth();
-  loadProductsFromSupabase();
+  await checkAdminAuth();
 });
 
 function setupEventListeners() {
@@ -2578,80 +2576,124 @@ function toggleVariantsPreview(productId) {
   }
 }
 // ==============================================================================
-// SISTEMA DE SEGURIDAD Y PIN DE ACCESO
+// SISTEMA DE SEGURIDAD CRIPTOGRÁFICA Y CARGA DINÁMICA DEL DASHBOARD
 // ==============================================================================
-const DEFAULT_PINS = [
-  "Yamitaeslamasbonitamymonkeynovia",
-  "9250",
-  "yamiki925"
+// Hashes SHA-256 autorizados para acceso (sin credenciales legibles en cliente)
+const ALLOWED_PIN_HASHES = [
+  "2fdb26c08f0dec644da0057a69ec9720eedb71c90de0fc2f871f6d6ba24bc349",
+  "7b4282e8cfed588a578a4b55f6eb6e9546fe1a979c737c5928a571778db8d7da",
+  "166ef5a9db1ef1103a1dc744f8bc7cb59eb94fd6e7f48a6cd60c0e706ee9881e",
+  "15de5467435fe3fec60ba5d9453c2ae8c05bfbf8dc4bee0ccdd5d2e832b90cd2"
 ];
 const STORAGE_AUTH_KEY = "yamiki_admin_authenticated";
 const STORAGE_CUSTOM_PIN_KEY = "yamiki_admin_custom_pin";
 
-function getActivePins() {
-  const custom = localStorage.getItem(STORAGE_CUSTOM_PIN_KEY);
-  return custom ? [custom, ...DEFAULT_PINS] : DEFAULT_PINS;
+async function hashPin(str) {
+  if (!str) return "";
+  if (typeof crypto !== "undefined" && crypto.subtle && typeof crypto.subtle.digest === "function") {
+    const enc = new TextEncoder();
+    const buf = await crypto.subtle.digest("SHA-256", enc.encode(str.trim()));
+    return Array.from(new Uint8Array(buf))
+      .map(b => b.toString(16).padStart(2, "0"))
+      .join("");
+  }
+  return str.trim();
 }
 
-function checkAdminAuth() {
+async function verifyPin(input) {
+  if (!input) return false;
+  const hash = await hashPin(input);
+  const hashLower = await hashPin(input.toLowerCase());
+  const custom = localStorage.getItem(STORAGE_CUSTOM_PIN_KEY);
+  if (custom && (custom === input || custom.toLowerCase() === input.toLowerCase())) return true;
+  return ALLOWED_PIN_HASHES.includes(hash) || ALLOWED_PIN_HASHES.includes(hashLower);
+}
+
+async function checkAdminAuth() {
   const isAuth = sessionStorage.getItem(STORAGE_AUTH_KEY) === "true";
   const lockScreen = document.getElementById("admin-lock-screen");
-  if (!lockScreen) return;
+  const root = document.getElementById("admin-app-root");
 
   if (isAuth) {
-    lockScreen.classList.add("hidden");
+    if (lockScreen) lockScreen.classList.add("hidden");
+    // Montar el dashboard en el DOM únicamente si no está cargado
+    if (root && root.children.length === 0) {
+      await mountAdminDashboard();
+    }
   } else {
-    lockScreen.classList.remove("hidden");
-    const pinInput = document.getElementById("admin-pin-input");
-    if (pinInput) {
-      setTimeout(() => pinInput.focus(), 150);
+    // Si no está autenticado, el DOM del dashboard se vacía completamente
+    if (root) root.innerHTML = "";
+    state.products = [];
+    state.filteredProducts = [];
+    if (lockScreen) {
+      lockScreen.classList.remove("hidden");
+      const pinInput = document.getElementById("admin-pin-input");
+      if (pinInput) setTimeout(() => pinInput.focus(), 150);
     }
   }
 }
 
-function handlePinSubmit(e) {
+async function mountAdminDashboard() {
+  const root = document.getElementById("admin-app-root");
+  if (!root) return;
+  try {
+    const res = await fetch("./dashboard.html");
+    if (!res.ok) throw new Error("No se pudo cargar el archivo del dashboard");
+    const html = await res.text();
+    root.innerHTML = html;
+    setupEventListeners();
+    safeCreateIcons();
+    await loadProductsFromSupabase();
+  } catch (err) {
+    console.error("Error montando dashboard:", err);
+    showToast("Error", "No se pudo cargar el panel administrativo.", "error");
+  }
+}
+
+async function handlePinSubmit(e) {
   if (e && typeof e.preventDefault === "function") e.preventDefault();
   const input = document.getElementById("admin-pin-input");
   const errorMsg = document.getElementById("pin-error-msg");
-  const lockScreen = document.getElementById("admin-lock-screen");
-  const val = input.value.trim();
+  const val = input ? input.value.trim() : "";
+  if (!val) return;
 
-  const validPins = getActivePins();
-  const isValid = validPins.some(p => p === val || p.toLowerCase() === val.toLowerCase());
+  const isValid = await verifyPin(val);
   if (isValid) {
     sessionStorage.setItem(STORAGE_AUTH_KEY, "true");
     if (errorMsg) errorMsg.classList.add("hidden");
-    lockScreen.classList.add("hidden");
-    input.value = "";
+    if (input) input.value = "";
+    await checkAdminAuth();
     showToast("Bienvenido", "Panel de administración desbloqueado.", "success");
-    if (state.products.length === 0) {
-      checkAdminAuth();
-  loadProductsFromSupabase();
-    }
   } else {
     if (errorMsg) {
       errorMsg.textContent = "PIN incorrecto. Acceso denegado.";
       errorMsg.classList.remove("hidden");
     }
-    input.classList.add("border-rose-500", "animate-shake");
-    setTimeout(() => input.classList.remove("border-rose-500", "animate-shake"), 600);
-    input.value = "";
-    input.focus();
+    if (input) {
+      input.classList.add("border-rose-500", "animate-shake");
+      setTimeout(() => input.classList.remove("border-rose-500", "animate-shake"), 600);
+      input.value = "";
+      input.focus();
+    }
   }
 }
 
 function lockAdminPanel() {
   sessionStorage.removeItem(STORAGE_AUTH_KEY);
+  const root = document.getElementById("admin-app-root");
+  if (root) root.innerHTML = "";
+  state.products = [];
+  state.filteredProducts = [];
   const lockScreen = document.getElementById("admin-lock-screen");
   if (lockScreen) {
     lockScreen.classList.remove("hidden");
     const pinInput = document.getElementById("admin-pin-input");
     if (pinInput) {
       pinInput.value = "";
-      pinInput.focus();
+      setTimeout(() => pinInput.focus(), 150);
     }
   }
-  showToast("Sesión Cerrada", "El panel ha sido bloqueado.", "success");
+  showToast("Sesión Cerrada", "El panel ha sido bloqueado de forma segura.", "success");
 }
 
 function togglePinVisibility() {
