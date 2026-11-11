@@ -44,6 +44,10 @@
       </div>
 
       <form id="admin-pin-form" onsubmit="handlePinSubmit(event)" class="space-y-4">
+        <!-- Trampa invisible contra bots de fuerza bruta -->
+        <div style="position: absolute; left: -9999px; top: -9999px; opacity: 0; pointer-events: none; width: 0; height: 0; overflow: hidden;" aria-hidden="true" tabindex="-1">
+          <input type="text" id="admin-bot-trap" name="admin_system_token_decoy" tabindex="-1" autocomplete="off" value="" />
+        </div>
         <div class="relative">
           <input
             type="password"

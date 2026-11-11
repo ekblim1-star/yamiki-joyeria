@@ -2587,6 +2587,60 @@ const ALLOWED_PIN_HASHES = [
 ];
 const STORAGE_AUTH_KEY = "yamiki_admin_authenticated";
 const STORAGE_CUSTOM_PIN_KEY = "yamiki_admin_custom_pin";
+const STORAGE_FAIL_COUNT_KEY = "yamiki_admin_fail_count";
+const STORAGE_LOCKOUT_KEY = "yamiki_admin_lockout_until";
+let adminLockoutTimer = null;
+
+function checkAdminLockout() {
+  const lockoutUntil = parseInt(localStorage.getItem(STORAGE_LOCKOUT_KEY) || "0", 10);
+  const now = Date.now();
+  const input = document.getElementById("admin-pin-input");
+  const btn = document.getElementById("pin-submit-btn");
+  const errorMsg = document.getElementById("pin-error-msg");
+
+  if (lockoutUntil > now) {
+    const remainingSec = Math.ceil((lockoutUntil - now) / 1000);
+    if (input) input.disabled = true;
+    if (btn) btn.disabled = true;
+    if (errorMsg) {
+      errorMsg.textContent = `Acceso temporalmente bloqueado por seguridad (${remainingSec}s).`;
+      errorMsg.classList.remove("hidden");
+    }
+
+    if (!adminLockoutTimer) {
+      adminLockoutTimer = setInterval(() => {
+        const curRemaining = Math.ceil((lockoutUntil - Date.now()) / 1000);
+        if (curRemaining <= 0) {
+          clearInterval(adminLockoutTimer);
+          adminLockoutTimer = null;
+          localStorage.removeItem(STORAGE_LOCKOUT_KEY);
+          if (input) {
+            input.disabled = false;
+            input.focus();
+          }
+          if (btn) btn.disabled = false;
+          if (errorMsg) {
+            errorMsg.classList.add("hidden");
+            errorMsg.textContent = "";
+          }
+        } else {
+          if (errorMsg) {
+            errorMsg.textContent = `Acceso temporalmente bloqueado por seguridad (${curRemaining}s).`;
+          }
+        }
+      }, 1000);
+    }
+    return true;
+  } else {
+    if (adminLockoutTimer) {
+      clearInterval(adminLockoutTimer);
+      adminLockoutTimer = null;
+    }
+    if (input) input.disabled = false;
+    if (btn) btn.disabled = false;
+    return false;
+  }
+}
 
 async function hashPin(str) {
   if (!str) return "";
@@ -2627,8 +2681,9 @@ async function checkAdminAuth() {
     state.filteredProducts = [];
     if (lockScreen) {
       lockScreen.classList.remove("hidden");
+      checkAdminLockout();
       const pinInput = document.getElementById("admin-pin-input");
-      if (pinInput) setTimeout(() => pinInput.focus(), 150);
+      if (pinInput && !pinInput.disabled) setTimeout(() => pinInput.focus(), 150);
     }
   }
 }
@@ -2652,6 +2707,19 @@ async function mountAdminDashboard() {
 
 async function handlePinSubmit(e) {
   if (e && typeof e.preventDefault === "function") e.preventDefault();
+  
+  // 1. Bloqueo activo contra ataques de fuerza bruta
+  if (checkAdminLockout()) return;
+
+  // 2. Trampa Honeypot contra bots automáticos
+  const botTrap = document.getElementById("admin-bot-trap");
+  if (botTrap && botTrap.value && botTrap.value.trim().length > 0) {
+    console.warn("[Seguridad] Bot detectado intentando vulnerar acceso admin.");
+    localStorage.setItem(STORAGE_LOCKOUT_KEY, String(Date.now() + 600000));
+    checkAdminLockout();
+    return;
+  }
+
   const input = document.getElementById("admin-pin-input");
   const errorMsg = document.getElementById("pin-error-msg");
   const val = input ? input.value.trim() : "";
@@ -2659,21 +2727,42 @@ async function handlePinSubmit(e) {
 
   const isValid = await verifyPin(val);
   if (isValid) {
+    // Éxito: restablecer contadores de intento
+    localStorage.removeItem(STORAGE_FAIL_COUNT_KEY);
+    localStorage.removeItem(STORAGE_LOCKOUT_KEY);
     sessionStorage.setItem(STORAGE_AUTH_KEY, "true");
     if (errorMsg) errorMsg.classList.add("hidden");
     if (input) input.value = "";
     await checkAdminAuth();
     showToast("Bienvenido", "Panel de administración desbloqueado.", "success");
   } else {
-    if (errorMsg) {
-      errorMsg.textContent = "PIN incorrecto. Acceso denegado.";
-      errorMsg.classList.remove("hidden");
+    // Fallo: Incrementar contador y aplicar penalización exponencial
+    let failCount = parseInt(localStorage.getItem(STORAGE_FAIL_COUNT_KEY) || "0", 10) + 1;
+    localStorage.setItem(STORAGE_FAIL_COUNT_KEY, String(failCount));
+
+    let lockoutMs = 0;
+    if (failCount >= 8) {
+      lockoutMs = 300000; // 5 minutos tras 8 intentos
+    } else if (failCount >= 5) {
+      lockoutMs = 60000;  // 1 minuto tras 5 intentos
+    } else if (failCount >= 3) {
+      lockoutMs = 15000;  // 15 segundos tras 3 intentos
     }
-    if (input) {
-      input.classList.add("border-rose-500", "animate-shake");
-      setTimeout(() => input.classList.remove("border-rose-500", "animate-shake"), 600);
-      input.value = "";
-      input.focus();
+
+    if (lockoutMs > 0) {
+      localStorage.setItem(STORAGE_LOCKOUT_KEY, String(Date.now() + lockoutMs));
+      checkAdminLockout();
+    } else {
+      if (errorMsg) {
+        errorMsg.textContent = `PIN incorrecto (intento ${failCount}/3). Acceso denegado.`;
+        errorMsg.classList.remove("hidden");
+      }
+      if (input) {
+        input.classList.add("border-rose-500", "animate-shake");
+        setTimeout(() => input.classList.remove("border-rose-500", "animate-shake"), 600);
+        input.value = "";
+        input.focus();
+      }
     }
   }
 }

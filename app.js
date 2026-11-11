@@ -37,6 +37,41 @@ function handleProductImageError(img) {
 }
 window.handleProductImageError = handleProductImageError;
 
+// ==============================================================================
+// UTILIDADES DEFENSIVAS: XSS, SANITIZACIÓN Y LÍMITES ANTI-BOTS
+// ==============================================================================
+function escapeHtml(str) {
+  if (str === null || str === undefined) return "";
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+window.escapeHtml = escapeHtml;
+
+function sanitizeOrderText(str, maxLen = 100) {
+  if (!str) return "";
+  return String(str)
+    .replace(/<[^>]*>/g, " ")
+    .replace(/[\r\n\t]+/g, " ")
+    .replace(/[<>{}|\\]/g, "")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, maxLen);
+}
+window.sanitizeOrderText = sanitizeOrderText;
+
+const CART_LIMITS = {
+  MAX_PIECES_PER_ITEM: 10,
+  MAX_DISTINCT_ITEMS: 25,
+  MAX_TOTAL_ORDER_PIECES: 50,
+  ORDER_COOLDOWN_MS: 15000 // 15s de espera mínima entre pedidos
+};
+window.CART_LIMITS = CART_LIMITS;
+
+
 
 // ==============================================================================
 // SINCRONIZACIÓN EN VIVO CON SUPABASE (CATÁLOGO DINÁMICO PROTEGIDO)
@@ -1476,7 +1511,7 @@ function renderProducts() {
     if (state.searchQuery && state.searchQuery.trim().length > 0) {
       pills.push(`
         <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gray-100 text-gray-800 text-xs font-semibold border border-gray-200">
-          <span>Búsqueda: "${state.searchQuery.trim()}"</span>
+          <span>Búsqueda: "${escapeHtml(state.searchQuery.trim())}"</span>
           <button onclick="clearSearchInput()" class="hover:text-red-600 font-bold ml-0.5 transition" title="Borrar búsqueda">✕</button>
         </span>
       `);
@@ -1761,7 +1796,22 @@ function handleQuickAddToCart(productId, event) {
 function loadCartFromStorage() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) state.cart = JSON.parse(raw);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) {
+        state.cart = parsed.filter(item => {
+          return item && typeof item === "object" &&
+                 item.code &&
+                 typeof item.price === "number" && !isNaN(item.price) && item.price > 0 &&
+                 typeof item.quantity === "number" && !isNaN(item.quantity) && item.quantity > 0;
+        }).slice(0, CART_LIMITS.MAX_DISTINCT_ITEMS).map(item => ({
+          ...item,
+          quantity: Math.min(CART_LIMITS.MAX_PIECES_PER_ITEM, Math.max(1, Math.round(item.quantity)))
+        }));
+      } else {
+        state.cart = [];
+      }
+    }
   } catch (err) {
     state.cart = [];
   }
@@ -1832,8 +1882,22 @@ function addToCart(productId, quantity = 1, selectedSize = null, event = null, s
     item => String(item.variantId || item.id) === String(variantId) && item.selectedSize === sizeToSet
   );
 
+  // Límite de ítems distintos en el carrito
+  if (existingIndex === -1 && state.cart.length >= CART_LIMITS.MAX_DISTINCT_ITEMS) {
+    showToast("Límite de pedido alcanzado", "Tienes 25 piezas distintas en tu pedido. Para compras mayores o de mayoreo contáctanos por WhatsApp.", "info");
+    return;
+  }
+
+  const safeQty = Math.max(1, Math.min(CART_LIMITS.MAX_PIECES_PER_ITEM, parseInt(quantity, 10) || 1));
+
   if (existingIndex > -1) {
-    state.cart[existingIndex].quantity += quantity;
+    const newQty = state.cart[existingIndex].quantity + safeQty;
+    if (newQty > CART_LIMITS.MAX_PIECES_PER_ITEM) {
+      state.cart[existingIndex].quantity = CART_LIMITS.MAX_PIECES_PER_ITEM;
+      showToast("Límite por modelo", "Se ajustó al límite máximo de 10 piezas por modelo.", "info");
+    } else {
+      state.cart[existingIndex].quantity = newQty;
+    }
   } else {
     state.cart.push({
       id: product.id,
@@ -1869,12 +1933,21 @@ function updateCartItemSize(cartIndex, newSize) {
 function updateCartQuantity(cartIndex, delta) {
   if (!state.cart[cartIndex]) return;
 
-  state.cart[cartIndex].quantity += delta;
-  if (state.cart[cartIndex].quantity <= 0) {
+  const current = state.cart[cartIndex].quantity;
+  const newQty = current + delta;
+  if (newQty <= 0) {
     removeFromCart(cartIndex);
     return;
   }
+  if (newQty > CART_LIMITS.MAX_PIECES_PER_ITEM) {
+    state.cart[cartIndex].quantity = CART_LIMITS.MAX_PIECES_PER_ITEM;
+    showToast("Límite por modelo", "El límite máximo por modelo en tienda online es de 10 piezas.", "info");
+    saveCartToStorage();
+    updateCartUI();
+    return;
+  }
 
+  state.cart[cartIndex].quantity = newQty;
   saveCartToStorage();
   updateCartUI();
 }
@@ -2124,13 +2197,57 @@ function sendOrderToWhatsApp() {
     return;
   }
 
+  // 1. Detección defensiva de Trampa Honeypot contra Bots
+  const botTrap = document.getElementById("checkout-bot-trap");
+  if (botTrap && botTrap.value && botTrap.value.trim().length > 0) {
+    console.warn("[Seguridad] Bot detectado en formulario de pedido.");
+    showToast("Pedido en revisión", "Validando orden con el sistema...", "info");
+    return;
+  }
+
+  // 2. Control de Frecuencia Anti-Spam / Anti-Flood (Rate Limiting)
+  const now = Date.now();
+  const lastOrderTime = (typeof sessionStorage !== "undefined" && sessionStorage.getItem) 
+    ? parseInt(sessionStorage.getItem("yamiki_last_order_ts") || "0", 10) 
+    : (state.lastOrderTimestamp || 0);
+  if (lastOrderTime && (now - lastOrderTime < CART_LIMITS.ORDER_COOLDOWN_MS)) {
+    const remainingSec = Math.ceil((CART_LIMITS.ORDER_COOLDOWN_MS - (now - lastOrderTime)) / 1000);
+    showToast("Espera un momento", `Por favor espera ${remainingSec}s antes de enviar otro pedido para evitar pedidos duplicados.`, "info");
+    return;
+  }
+
+  // 3. Sanitización estricta y límite de caracteres en datos del cliente
   const customerNameInput = document.getElementById("checkout-customer-name");
   const customerAddressInput = document.getElementById("checkout-customer-address");
   const customerNotesInput = document.getElementById("checkout-customer-notes");
 
-  const customerName = customerNameInput ? customerNameInput.value.trim() : "";
-  const customerAddress = customerAddressInput ? customerAddressInput.value.trim() : "";
-  const customerNotes = customerNotesInput ? customerNotesInput.value.trim() : "";
+  const customerName = sanitizeOrderText(customerNameInput ? customerNameInput.value : "", 60);
+  const customerAddress = sanitizeOrderText(customerAddressInput ? customerAddressInput.value : "", 120);
+  const customerNotes = sanitizeOrderText(customerNotesInput ? customerNotesInput.value : "", 160);
+
+  // 4. Validación de cordura de total de piezas
+  const totalPiecesCheck = state.cart.reduce((sum, item) => sum + Math.min(10, item.quantity), 0);
+  if (totalPiecesCheck > CART_LIMITS.MAX_TOTAL_ORDER_PIECES) {
+    showToast("Límite de pedido", `El pedido supera el máximo permitido (${CART_LIMITS.MAX_TOTAL_ORDER_PIECES} piezas). Contáctanos para cotización de mayoreo.`, "info");
+    return;
+  }
+
+  // 5. Debounce y protección visual en el botón
+  const checkoutBtn = document.getElementById("whatsapp-checkout-btn");
+  const btnText = document.getElementById("whatsapp-btn-text");
+  if (checkoutBtn) {
+    checkoutBtn.disabled = true;
+    if (btnText) btnText.textContent = "Abriendo WhatsApp...";
+    setTimeout(() => {
+      if (checkoutBtn) checkoutBtn.disabled = false;
+      if (btnText) btnText.textContent = "Enviar Pedido a WhatsApp (+52 993 290 2704)";
+    }, 3000);
+  }
+
+  if (typeof sessionStorage !== "undefined" && sessionStorage.setItem) {
+    sessionStorage.setItem("yamiki_last_order_ts", String(now));
+  }
+  state.lastOrderTimestamp = now;
 
   const totalAmount = state.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   const totalPieces = state.cart.reduce((sum, item) => sum + item.quantity, 0);
@@ -3167,6 +3284,17 @@ function handleProductPageWhatsAppOrder() {
   const pState = state.currentProductPage;
   if (!pState) return;
   const prod = pState.product;
+
+  // Rate Limiting anti-spam
+  const now = Date.now();
+  const lastOrderTime = (typeof sessionStorage !== "undefined" && sessionStorage.getItem) 
+    ? parseInt(sessionStorage.getItem("yamiki_last_order_ts") || "0", 10) 
+    : (state.lastOrderTimestamp || 0);
+  if (lastOrderTime && (now - lastOrderTime < CART_LIMITS.ORDER_COOLDOWN_MS)) {
+    const remainingSec = Math.ceil((CART_LIMITS.ORDER_COOLDOWN_MS - (now - lastOrderTime)) / 1000);
+    showToast("Espera un momento", `Por favor espera ${remainingSec}s antes de enviar otro pedido por WhatsApp.`, "info");
+    return;
+  }
 
   // Si tiene varios modelos y el cliente no ha seleccionado uno
   if (prod.variants && prod.variants.length > 1 && !pState.selectedVariant) {
