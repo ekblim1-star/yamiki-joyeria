@@ -1184,8 +1184,9 @@
               src="" 
               alt="Joya Yamiki" 
               onclick="openProductPageLightbox()"
+              decoding="async"
               class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.02] cursor-zoom-in" 
-              onerror="this.onerror=null; this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 fill=%22%23222%22/></svg>';" 
+              onerror="handleProductImageError(this)" 
             />
 
             <!-- Botón Zoom / Pantalla Completa -->

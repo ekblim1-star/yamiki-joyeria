@@ -8,6 +8,21 @@ function safeCreateIcons() {
 }
 window.safeCreateIcons = safeCreateIcons;
 
+// Fallback universal SVG para Yamiki (Ligero, elegante, 100% offline)
+const YAMIKI_FALLBACK_SVG = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 400' width='100%25' height='100%25'%3E%3Crect width='400' height='400' fill='%23121214'/%3E%3Cg transform='translate(150, 130)' stroke='%23f472b6' stroke-width='2.5' fill='none' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolygon points='50 10 90 40 50 90 10 40'/%3E%3Cline x1='10' y1='40' x2='90' y2='40'/%3E%3Cline x1='50' y1='10' x2='50' y2='90'/%3E%3Cpolyline points='25 25 50 40 75 25'/%3E%3Cline x1='50' y1='40' x2='25' y2='65'/%3E%3Cline x1='50' y1='40' x2='75' y2='65'/%3E%3C/g%3E%3Ctext x='200' y='255' text-anchor='middle' fill='%23e4e4e7' font-family='system-ui, -apple-system, sans-serif' font-size='13' font-weight='700' letter-spacing='2'%3EYAMIKI JOYER%C3%8DA%3C/text%3E%3Ctext x='200' y='275' text-anchor='middle' fill='%23a1a1aa' font-family='system-ui, -apple-system, sans-serif' font-size='10' font-weight='500' letter-spacing='1.5'%3EPLATA LEY S925%3C/text%3E%3C/svg%3E";
+window.YAMIKI_FALLBACK_SVG = YAMIKI_FALLBACK_SVG;
+
+function handleProductImageError(img) {
+  if (!img) return;
+  if (img.src && img.src.startsWith("data:")) {
+    img.onerror = null;
+    return;
+  }
+  img.onerror = null;
+  img.src = YAMIKI_FALLBACK_SVG;
+}
+window.handleProductImageError = handleProductImageError;
+
 // ==============================================================================
 // YAMIKI JOYERÍA S925 - ADMIN PANEL CONTROLLER
 // Conexión Directa a Supabase + Importador Excel + Gestor de Portada y Precios
@@ -297,7 +312,7 @@ function renderProductsTable() {
   // 1. Renderizar filas para Tabla de Escritorio (Desktop)
   if (container) {
     container.innerHTML = state.filteredProducts.map(prod => {
-      const photoUrl = prod.foto_principal || 'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=400&q=80';
+      const photoUrl = prod.foto_principal || YAMIKI_FALLBACK_SVG;
       const isNovedad = prod.es_novedad === true;
       const isOferta = prod.es_destacado === true || (prod.badge && (prod.badge.includes("%") || prod.badge.includes("🔥")));
       const isActivo = prod.activo !== false;
@@ -313,8 +328,10 @@ function renderProductsTable() {
                 <img 
                   src="${photoUrl}" 
                   alt="${prod.codigo_sku}" 
+                  loading="lazy"
+                  decoding="async"
                   class="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-200"
-                  onerror="this.src='https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=400&q=80'"
+                  onerror="handleProductImageError(this)"
                 />
               </div>
               <div>
@@ -482,7 +499,7 @@ function renderProductsTable() {
   // 2. Renderizar Tarjetas Móviles Ultra Amigables (Smartphones)
   if (mobileContainer) {
     mobileContainer.innerHTML = state.filteredProducts.map(prod => {
-      const photoUrl = prod.foto_principal || 'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=400&q=80';
+      const photoUrl = prod.foto_principal || YAMIKI_FALLBACK_SVG;
       const isNovedad = prod.es_novedad === true;
       const isOferta = prod.es_destacado === true || (prod.badge && (prod.badge.includes("%") || prod.badge.includes("🔥")));
       const isActivo = prod.activo !== false;
@@ -496,8 +513,10 @@ function renderProductsTable() {
               <img 
                 src="${photoUrl}" 
                 alt="${prod.codigo_sku}" 
+                loading="lazy"
+                decoding="async"
                 class="w-full h-full object-cover"
-                onerror="this.src='https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=400&q=80'"
+                onerror="handleProductImageError(this)"
               />
               ${isOferta ? `
                 <span class="absolute top-0.5 right-0.5 px-1 py-0.2 rounded text-[8px] font-extrabold bg-[#e72380] text-white">
@@ -735,7 +754,7 @@ function renderOfertasView() {
   }
 
   container.innerHTML = ofertas.map(prod => {
-    const photoUrl = prod.foto_principal || 'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=400&q=80';
+    const photoUrl = prod.foto_principal || YAMIKI_FALLBACK_SVG;
     return `
       <div class="bg-[#141C18] border border-rose-500/20 rounded-2xl p-4 flex flex-col justify-between space-y-3 relative overflow-hidden group shadow-md">
         
@@ -746,7 +765,10 @@ function renderOfertasView() {
           <img 
             src="${photoUrl}" 
             alt="${prod.codigo_sku}" 
+            loading="lazy"
+            decoding="async"
             class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+            onerror="handleProductImageError(this)"
           />
         </div>
 
@@ -1305,9 +1327,10 @@ async function commitImportToSupabase() {
         updateProgressBar(pct, `Subiendo foto ${photoIdx} de ${itemsWithPhotos.length}...`);
 
         const cleanName = `${item.id_aliexpress || 'joya'}_${item.codigo_sku.replace(/[^a-zA-Z0-9_-]/g, '')}.jpg`;
+        const processedFile = await processImageForUpload(matchingFile);
         const { error: uploadErr } = await supabaseClient.storage
           .from("joyas")
-          .upload(cleanName, matchingFile, { upsert: true });
+          .upload(cleanName, processedFile, { upsert: true, contentType: "image/jpeg" });
 
         if (!uploadErr) {
           const publicUrl = `${SUPABASE_URL}/storage/v1/object/public/joyas/${cleanName}`;
@@ -1446,13 +1469,14 @@ async function handleManualProductSubmit(e) {
   try {
     let fotoUrl = null;
 
-    // Subir foto si se seleccionó archivo
+    // Subir foto si se seleccionó archivo (comprimido automáticamente para evitar timeouts)
     if (fotoInput.files && fotoInput.files[0]) {
-      const file = fotoInput.files[0];
+      const rawFile = fotoInput.files[0];
+      const file = await processImageForUpload(rawFile);
       const filename = `manual_${sku}_${Date.now()}.jpg`;
       const { data, error: uploadErr } = await supabaseClient.storage
         .from("joyas")
-        .upload(filename, file, { upsert: true });
+        .upload(filename, file, { upsert: true, contentType: "image/jpeg" });
 
       if (!uploadErr) {
         fotoUrl = `${SUPABASE_URL}/storage/v1/object/public/joyas/${filename}`;
@@ -1575,7 +1599,7 @@ function renderPortadaView() {
   }
 
   container.innerHTML = novedades.map(prod => {
-    const photoUrl = prod.foto_principal || 'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=400&q=80';
+    const photoUrl = prod.foto_principal || YAMIKI_FALLBACK_SVG;
 
     return `
       <div class="bg-[#141C18] rounded-2xl border border-white/10 overflow-hidden flex flex-col justify-between group hover:border-amber-500/40 transition-all shadow-md">
@@ -1586,8 +1610,10 @@ function renderPortadaView() {
             <img 
               src="${photoUrl}" 
               alt="${prod.codigo_sku}" 
+              loading="lazy"
+              decoding="async"
               class="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-300"
-              onerror="this.src='https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=400&q=80'"
+              onerror="handleProductImageError(this)"
             />
             
             <div class="absolute top-2 left-2 flex items-center gap-1.5">
@@ -1811,7 +1837,7 @@ async function processImageForUpload(file) {
     reader.onload = (e) => {
       const img = new Image();
       img.onload = () => {
-        const MAX_DIM = 1600;
+        const MAX_DIM = 1200;
         let width = img.width;
         let height = img.height;
 
@@ -1839,7 +1865,7 @@ async function processImageForUpload(file) {
           } else {
             resolve(file);
           }
-        }, "image/jpeg", 0.85);
+        }, "image/jpeg", 0.82);
       };
       img.onerror = () => resolve(file);
       img.src = e.target.result;

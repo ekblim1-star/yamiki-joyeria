@@ -8,6 +8,35 @@ function safeCreateIcons() {
 }
 window.safeCreateIcons = safeCreateIcons;
 
+// Fallback universal SVG para Yamiki (Ligero, elegante, 100% offline, sin dependencias externas)
+const YAMIKI_FALLBACK_SVG = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 400' width='100%25' height='100%25'%3E%3Crect width='400' height='400' fill='%23121214'/%3E%3Cg transform='translate(150, 130)' stroke='%23f472b6' stroke-width='2.5' fill='none' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolygon points='50 10 90 40 50 90 10 40'/%3E%3Cline x1='10' y1='40' x2='90' y2='40'/%3E%3Cline x1='50' y1='10' x2='50' y2='90'/%3E%3Cpolyline points='25 25 50 40 75 25'/%3E%3Cline x1='50' y1='40' x2='25' y2='65'/%3E%3Cline x1='50' y1='40' x2='75' y2='65'/%3E%3C/g%3E%3Ctext x='200' y='255' text-anchor='middle' fill='%23e4e4e7' font-family='system-ui, -apple-system, sans-serif' font-size='13' font-weight='700' letter-spacing='2'%3EYAMIKI JOYER%C3%8DA%3C/text%3E%3Ctext x='200' y='275' text-anchor='middle' fill='%23a1a1aa' font-family='system-ui, -apple-system, sans-serif' font-size='10' font-weight='500' letter-spacing='1.5'%3EPLATA LEY S925%3C/text%3E%3C/svg%3E";
+window.YAMIKI_FALLBACK_SVG = YAMIKI_FALLBACK_SVG;
+
+// Manejador inteligente de fallos de red en fotos móviles (reintento automático + fallback elegante)
+function handleProductImageError(img) {
+  if (!img) return;
+  if (img.src && img.src.startsWith("data:")) {
+    img.onerror = null;
+    return;
+  }
+  const retries = parseInt(img.getAttribute("data-img-retries") || "0", 10);
+  if (retries < 2) {
+    img.setAttribute("data-img-retries", String(retries + 1));
+    const origSrc = img.getAttribute("data-orig-src") || img.src;
+    img.setAttribute("data-orig-src", origSrc);
+    setTimeout(() => {
+      if (!img) return;
+      const cleanSrc = origSrc.replace(/[?&]_r=\d+/, "");
+      const sep = cleanSrc.includes("?") ? "&" : "?";
+      img.src = `${cleanSrc}${sep}_r=${Date.now()}`;
+    }, 1200);
+  } else {
+    img.onerror = null;
+    img.src = YAMIKI_FALLBACK_SVG;
+  }
+}
+window.handleProductImageError = handleProductImageError;
+
 
 // ==============================================================================
 // SINCRONIZACIÓN EN VIVO CON SUPABASE (CATÁLOGO DINÁMICO PROTEGIDO)
@@ -84,7 +113,7 @@ async function syncProductsFromSupabase() {
             color: vRow.color_modelo || "Modelo Principal",
             price: vPrice,
             originalPrice: vOriginalPrice,
-            photo: vRow.foto_principal || "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=600&q=80",
+            photo: vRow.foto_principal || YAMIKI_FALLBACK_SVG,
             sizes: vSizes,
             displaySizes: vDisplaySizes,
             stock: !vAgotado,
@@ -518,8 +547,9 @@ function initCarousel() {
             src="${prod.image}" 
             alt="${prod.name}" 
             loading="lazy" 
+            decoding="async"
             class="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
-            onerror="this.src='https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=400&q=80'"
+            onerror="handleProductImageError(this)"
           />
 
           <div class="hidden sm:flex absolute inset-0 bg-black/20 dark:bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 items-center justify-center">
@@ -1544,8 +1574,9 @@ function renderProducts() {
             src="${prod.image}" 
             alt="${prod.name}" 
             loading="lazy" 
+            decoding="async"
             class="product-image w-full h-full object-cover object-center"
-            onerror="this.src='https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=600&q=80'"
+            onerror="handleProductImageError(this)"
           />
 
           <div class="hidden sm:flex absolute inset-0 bg-black/25 dark:bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-200 items-center justify-center p-4">
@@ -1970,8 +2001,10 @@ function updateCartUI() {
                 <img 
                   src="${item.image}" 
                   alt="${item.name}" 
+                  loading="lazy"
+                  decoding="async"
                   class="w-full h-full object-cover group-hover/img:scale-110 transition duration-300"
-                  onerror="this.src='https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=300&q=80'"
+                  onerror="handleProductImageError(this)"
                 />
                 <div class="absolute inset-0 bg-black/35 opacity-0 group-hover/img:opacity-100 flex items-center justify-center transition text-white">
                   <i data-lucide="eye" class="w-4 h-4 drop-shadow-md"></i>
@@ -2410,7 +2443,7 @@ function showToast(message, image = null, type = "success") {
   toast.className = "toast-item flex items-center gap-3 p-3.5 rounded-2xl border backdrop-blur-md transition-all shadow-xl bg-[#000000] text-white border-white/20";
 
   let imageHtml = image 
-    ? `<img src="${image}" alt="Joya" class="w-11 h-11 rounded-xl object-cover bg-black/40 flex-shrink-0 border border-white/20 shadow-xs" onerror="this.src='https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=200&q=80'" />`
+    ? `<img src="${image}" alt="Joya" class="w-11 h-11 rounded-xl object-cover bg-black/40 flex-shrink-0 border border-white/20 shadow-xs" onerror="handleProductImageError(this)" />`
     : `<div class="w-10 h-10 rounded-xl bg-sage-800/90 text-rose-300 flex items-center justify-center flex-shrink-0 border border-white/10 shadow-xs"><i data-lucide="${type === "info" ? "sparkles" : "shopping-bag"}" class="w-5 h-5 text-emerald-400"></i></div>`;
 
   toast.innerHTML = `
@@ -2959,8 +2992,10 @@ function renderProductPageThumbnails() {
         <img 
           src="${url}" 
           alt="Miniatura ${idx + 1}" 
+          loading="lazy"
+          decoding="async"
           class="w-full h-full object-cover pointer-events-none" 
-          onerror="this.onerror=null; this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 fill=%22%23222%22/></svg>';" 
+          onerror="handleProductImageError(this)" 
         />
       </button>
     `;
@@ -3017,8 +3052,10 @@ function renderProductPageVariantPills() {
         <img 
           src="${vPhoto}" 
           alt="${vName}" 
+          loading="lazy"
+          decoding="async"
           class="w-7 h-7 rounded-lg object-cover border border-white/20 shrink-0" 
-          onerror="this.onerror=null; this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 fill=%22%23222%22/></svg>';" 
+          onerror="handleProductImageError(this)" 
         />
         <span class="truncate max-w-[130px]">${vName}</span>
         <span class="font-mono text-[11px] px-1.5 py-0.5 rounded-md ${isSelected ? 'bg-rose-500 text-white font-extrabold' : 'bg-sage-100 dark:bg-white/10 text-sage-700 dark:text-gray-300'}">$${vPrice}</span>
@@ -3222,8 +3259,10 @@ function renderProductPageRelated() {
           <img 
             src="${prod.image}" 
             alt="${prod.name}" 
+            loading="lazy"
+            decoding="async"
             class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" 
-            onerror="this.onerror=null; this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 fill=%22%23222%22/></svg>';" 
+            onerror="handleProductImageError(this)" 
           />
           <div class="absolute top-2 left-2 px-2 py-0.5 rounded-full text-[9px] font-bold bg-black/60 text-white backdrop-blur-xs">
             ${getCategoryLabel(prod.category)}
