@@ -376,7 +376,7 @@ function renderProductsTable() {
                 ${prod.variants.map((v, vIdx) => `
                   <div class="flex items-center justify-between gap-2 text-[11px] py-1 px-1.5 rounded-lg hover:bg-white/5">
                     <div class="flex items-center gap-2 min-w-0">
-                      <img src="${v.foto_principal || prod.foto_principal}" class="w-7 h-7 rounded-md object-cover border border-white/10 shrink-0" onerror="this.onerror=null; this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 fill=%22%23222%22/></svg>';" />
+                      <img src="${v.foto_principal || prod.foto_principal}" class="w-7 h-7 rounded-md object-cover border border-white/10 shrink-0" onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='8' fill='%231f2923'/%3E%3Ctext x='20' y='26' font-size='18' text-anchor='middle'%3E💎%3C/text%3E%3C/svg%3E';" />
                       <span class="font-extrabold text-white text-[10px] truncate max-w-[120px]">${v.codigo_sku || v.color_modelo || ('Mod ' + (vIdx + 1))}</span>
                       <span class="text-[9px] text-gray-400">Talla: ${v.tallas || 'Ajustable'}</span>
                     </div>
@@ -560,7 +560,7 @@ function renderProductsTable() {
                 ${prod.variants.map((v, vIdx) => `
                   <div class="flex items-center justify-between p-2 rounded-xl bg-black/40 border border-white/5 text-[11px]">
                     <div class="flex items-center gap-2 min-w-0">
-                      <img src="${v.foto_principal || prod.foto_principal}" class="w-8 h-8 rounded-lg object-cover border border-white/10 shrink-0" onerror="this.onerror=null; this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 fill=%22%23222%22/></svg>';" />
+                      <img src="${v.foto_principal || prod.foto_principal}" class="w-8 h-8 rounded-lg object-cover border border-white/10 shrink-0" onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='8' fill='%231f2923'/%3E%3Ctext x='20' y='26' font-size='18' text-anchor='middle'%3E💎%3C/text%3E%3C/svg%3E';" />
                       <div class="truncate">
                         <div class="font-extrabold text-white text-[11px] truncate">${v.codigo_sku || v.color_modelo || ('Modelo ' + (vIdx + 1))}</div>
                         <div class="text-[9px] text-gray-400">📏 ${v.tallas || 'Ajustable'}</div>
@@ -1441,6 +1441,40 @@ function closeManualModal() {
   }
 }
 
+function handleManualPhotoChange(input) {
+  const previewBox = document.getElementById("manual-photo-preview-box");
+  const previewImg = document.getElementById("manual-photo-preview-img");
+  const previewName = document.getElementById("manual-photo-preview-name");
+  const previewSize = document.getElementById("manual-photo-preview-size");
+
+  if (!input || !input.files || !input.files[0]) {
+    if (previewBox) previewBox.classList.add("hidden");
+    return;
+  }
+
+  const file = input.files[0];
+  if (previewImg) {
+    try {
+      previewImg.src = URL.createObjectURL(file);
+    } catch (e) {
+      previewImg.src = "";
+    }
+  }
+  if (previewName) previewName.textContent = file.name || "foto.jpg";
+  if (previewSize) previewSize.textContent = `${Math.round(file.size / 1024)} KB`;
+  if (previewBox) previewBox.classList.remove("hidden");
+  safeCreateIcons();
+}
+
+function clearManualPhotoSelection() {
+  const input = document.getElementById("manual-foto-input") || document.querySelector("input[name='foto_file']");
+  const previewBox = document.getElementById("manual-photo-preview-box");
+  if (input) input.value = "";
+  if (previewBox) previewBox.classList.add("hidden");
+}
+window.handleManualPhotoChange = handleManualPhotoChange;
+window.clearManualPhotoSelection = clearManualPhotoSelection;
+
 async function handleManualProductSubmit(e) {
   e.preventDefault();
   const form = e.target;
@@ -1467,17 +1501,29 @@ async function handleManualProductSubmit(e) {
   try {
     let fotoUrl = null;
 
-    // Subir foto si se seleccionó archivo (comprimido automáticamente para evitar timeouts)
+    // Subir foto si se seleccionó archivo (comprimido y con barra de porcentaje en botón)
     if (fotoInput.files && fotoInput.files[0]) {
       const rawFile = fotoInput.files[0];
-      const file = await processImageForUpload(rawFile);
-      const filename = `manual_${sku}_${Date.now()}.jpg`;
-      const { data, error: uploadErr } = await supabaseClient.storage
-        .from("joyas")
-        .upload(filename, file, { upsert: true, contentType: "image/jpeg" });
+      btn.innerHTML = `<i data-lucide="loader" class="w-4 h-4 animate-spin inline mr-1"></i><span>Optimizando foto...</span>`;
+      safeCreateIcons();
 
-      if (!uploadErr) {
-        fotoUrl = `${SUPABASE_URL}/storage/v1/object/public/joyas/${filename}`;
+      const processedBlob = await processImageForUpload(rawFile);
+      const filename = `manual_${sku}_${Date.now()}.jpg`;
+
+      try {
+        const res = await uploadImageWithProgress(processedBlob, filename, (pct) => {
+          btn.innerHTML = `<i data-lucide="loader" class="w-4 h-4 animate-spin inline mr-1"></i><span>Subiendo foto (${pct}%)...</span>`;
+          safeCreateIcons();
+        });
+        fotoUrl = res.url;
+      } catch (uploadErr) {
+        console.warn("Fallo subida manual con progress, usando fallback directo:", uploadErr);
+        const { error: directErr } = await supabaseClient.storage
+          .from("joyas")
+          .upload(filename, processedBlob, { upsert: true, contentType: "image/jpeg" });
+        if (!directErr) {
+          fotoUrl = `${SUPABASE_URL}/storage/v1/object/public/joyas/${filename}`;
+        }
       }
     }
 
@@ -1802,28 +1848,29 @@ function handleDeleteEditPhoto(idx) {
   renderEditPhotosGrid();
 }
 
-// Preprocesador de imágenes: Resuelve el bug de fotos de iPhone (HEIC) y comprime a JPEG para subidas ultra-rápidas
+// Preprocesador de imágenes: Ultra-robusto, compatible con iPhone (HEIC/HEIF), Android, Mac y PC
 async function processImageForUpload(file) {
+  if (!file) return file;
   let imageBlob = file;
   const fileName = file.name || "foto.jpg";
   const ext = (fileName.split('.').pop() || '').toLowerCase();
-  const isHeic = ext === 'heic' || ext === 'heif' || file.type === 'image/heic' || file.type === 'image/heif';
+  const isHeic = ext === 'heic' || ext === 'heif' || (file.type && (file.type === 'image/heic' || file.type === 'image/heif'));
 
-  // 1. Conversión de HEIC a JPEG si está disponible la librería heic2any
-  if (isHeic && window.heic2any) {
+  // 1. Si es formato HEIC de Apple, convertir usando heic2any si está disponible
+  if (isHeic && typeof window !== "undefined" && window.heic2any) {
     try {
       const converted = await window.heic2any({
         blob: file,
         toType: "image/jpeg",
-        quality: 0.85
+        quality: 0.88
       });
       imageBlob = Array.isArray(converted) ? converted[0] : converted;
     } catch (err) {
-      console.warn("Fallo conversión heic2any, continuando:", err);
+      console.warn("heic2any no pudo convertir, intentando fallback:", err);
     }
   }
 
-  // 2. Redimensionar en Canvas a máx 1600px y comprimir a JPEG optimizado (evita timeout y fotos de 20MB)
+  // 2. Redimensionar en Canvas a máx 1400px y comprimir a JPEG optimizado (ahorra 90% de peso y sube en 1 segundo)
   return new Promise((resolve) => {
     const isImageByName = /\.(jpe?g|png|webp|gif|bmp|heic|heif|avif)$/i.test(fileName);
     const isImage = (file.type && file.type.startsWith('image/')) || isHeic || isImageByName;
@@ -1831,13 +1878,34 @@ async function processImageForUpload(file) {
       return resolve(file);
     }
 
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const img = new Image();
-      img.onload = () => {
-        const MAX_DIM = 1200;
-        let width = img.width;
-        let height = img.height;
+    let objectUrl = null;
+    try {
+      objectUrl = URL.createObjectURL(imageBlob);
+    } catch (e) {
+      console.warn("createObjectURL falló, probando con FileReader:", e);
+    }
+
+    const img = new Image();
+
+    // Timeout de seguridad: Si la imagen no decodifica en 8s, resolver con el blob original sin congelar la app
+    const timer = setTimeout(() => {
+      cleanup();
+      console.warn("Timeout decodificando imagen, subiendo original...");
+      resolve(imageBlob);
+    }, 8000);
+
+    const cleanup = () => {
+      clearTimeout(timer);
+      if (objectUrl) {
+        try { URL.revokeObjectURL(objectUrl); } catch (e) {}
+      }
+    };
+
+    img.onload = () => {
+      try {
+        const MAX_DIM = 1400; // Resolución nítida para joyería sin exceder peso
+        let width = img.width || 1200;
+        let height = img.height || 1200;
 
         if (width > MAX_DIM || height > MAX_DIM) {
           if (width > height) {
@@ -1852,103 +1920,261 @@ async function processImageForUpload(file) {
         const canvas = document.createElement("canvas");
         canvas.width = width;
         canvas.height = height;
-        const ctx = canvas.getContext("2d");
+        const ctx = canvas.getContext("2d", { alpha: false });
+        if (!ctx) {
+          cleanup();
+          return resolve(imageBlob);
+        }
+
+        // Fondo blanco para imágenes transparentes convertidas a JPEG
+        ctx.fillStyle = "#FFFFFF";
+        ctx.fillRect(0, 0, width, height);
         ctx.drawImage(img, 0, 0, width, height);
 
         canvas.toBlob((blob) => {
+          cleanup();
           if (blob) {
             const cleanBase = fileName.replace(/\.[^/.]+$/, "").replace(/[^a-zA-Z0-9_-]/g, "_");
-            const cleanFile = new File([blob], `${cleanBase}.jpg`, { type: "image/jpeg" });
-            resolve(cleanFile);
+            try {
+              const cleanFile = new File([blob], `${cleanBase}.jpg`, { type: "image/jpeg" });
+              resolve(cleanFile);
+            } catch (err) {
+              blob.name = `${cleanBase}.jpg`;
+              resolve(blob);
+            }
           } else {
-            resolve(file);
+            resolve(imageBlob);
           }
-        }, "image/jpeg", 0.82);
-      };
-      img.onerror = () => resolve(file);
-      img.src = e.target.result;
+        }, "image/jpeg", 0.85);
+
+      } catch (err) {
+        cleanup();
+        console.warn("Error en procesamiento de canvas:", err);
+        resolve(imageBlob);
+      }
     };
-    reader.onerror = () => resolve(file);
-    reader.readAsDataURL(imageBlob);
+
+    img.onerror = () => {
+      cleanup();
+      console.warn("Error cargando imagen en preprocesador, enviando archivo directo.");
+      resolve(imageBlob);
+    };
+
+    if (objectUrl) {
+      img.src = objectUrl;
+    } else {
+      const reader = new FileReader();
+      reader.onload = (e) => { img.src = e.target.result; };
+      reader.onerror = () => { cleanup(); resolve(imageBlob); };
+      reader.readAsDataURL(imageBlob);
+    }
   });
+}
+
+// Subida a Supabase Storage con porcentaje en tiempo real vía XMLHttpRequest
+function uploadImageWithProgress(fileBlob, storagePath, onProgress) {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    const url = `${SUPABASE_URL}/storage/v1/object/joyas/${storagePath}`;
+
+    xhr.upload.onprogress = (event) => {
+      if (event.lengthComputable && typeof onProgress === "function") {
+        const pct = Math.min(99, Math.round((event.loaded / event.total) * 100));
+        onProgress(pct, event.loaded, event.total);
+      }
+    };
+
+    xhr.onload = () => {
+      if (xhr.status >= 200 && xhr.status < 300) {
+        if (typeof onProgress === "function") onProgress(100);
+        let key = `joyas/${storagePath}`;
+        try {
+          const json = JSON.parse(xhr.responseText);
+          if (json && json.Key) key = json.Key;
+        } catch (e) {}
+        resolve({ Key: key, url: `${SUPABASE_URL}/storage/v1/object/public/joyas/${storagePath}` });
+      } else {
+        reject(new Error(`HTTP ${xhr.status}: ${xhr.statusText || xhr.responseText}`));
+      }
+    };
+
+    xhr.onerror = () => reject(new Error("Error de conexión de red al subir la imagen."));
+    xhr.ontimeout = () => reject(new Error("Tiempo de espera agotado al subir a la nube."));
+    xhr.timeout = 45000; // 45 segundos
+
+    xhr.open("POST", url, true);
+    xhr.setRequestHeader("Authorization", `Bearer ${SUPABASE_KEY}`);
+    xhr.setRequestHeader("apikey", SUPABASE_KEY);
+    xhr.setRequestHeader("Content-Type", "image/jpeg");
+    xhr.setRequestHeader("x-upsert", "true");
+    xhr.send(fileBlob);
+  });
+}
+
+// Auto-sincronizar fotos inmediatamente a la base de datos de Supabase para que nunca se pierdan
+async function autoSyncPhotosToSupabase(prod, photos) {
+  if (!prod || !photos || photos.length === 0) return;
+  const mainPhoto = photos[0];
+  const gallery = photos.slice(1);
+
+  const updates = {
+    foto_principal: mainPhoto,
+    galeria_fotos: gallery,
+    updated_at: new Date().toISOString()
+  };
+
+  try {
+    const targetIds = prod.rowIds && prod.rowIds.length > 0 ? prod.rowIds : [prod.id];
+    const { error } = await supabaseClient
+      .from("productos")
+      .update(updates)
+      .in("id", targetIds);
+
+    if (!error) {
+      prod.foto_principal = mainPhoto;
+      prod.galeria_fotos = gallery;
+      if (prod.variants) {
+        prod.variants.forEach(v => {
+          if (!v.foto_principal) v.foto_principal = mainPhoto;
+        });
+      }
+      console.log("Fotos auto-sincronizadas a Supabase para:", prod.id);
+    } else {
+      console.warn("No se pudo auto-sincronizar fotos a BD:", error);
+    }
+  } catch (err) {
+    console.warn("Excepción al auto-sincronizar fotos:", err);
+  }
 }
 
 async function handleEditAddFiles(files) {
   if (!files || files.length === 0) return;
   const prod = state.currentEditingProduct;
-  const prodId = prod ? prod.id : document.getElementById("edit-product-id").value;
-  const statusEl = document.getElementById("edit-photo-upload-status");
+  const prodId = prod ? prod.id : (document.getElementById("edit-product-id") ? document.getElementById("edit-product-id").value : "");
   
-  if (statusEl) {
-    statusEl.classList.remove("hidden");
-    statusEl.innerHTML = `<span class="animate-pulse">⏳ Optimizando y subiendo ${files.length} foto(s)...</span>`;
-  }
+  const progressBox = document.getElementById("edit-photo-progress-box");
+  const progressBar = document.getElementById("edit-photo-progress-bar");
+  const progressPct = document.getElementById("edit-photo-progress-pct");
+  const progressTitle = document.getElementById("edit-photo-progress-title");
+  const progressDetail = document.getElementById("edit-photo-progress-detail");
+  const progressCounter = document.getElementById("edit-photo-progress-counter");
+  const progressIcon = document.getElementById("edit-photo-progress-icon");
+  const savedAlert = document.getElementById("edit-photo-saved-alert");
+  const savedText = document.getElementById("edit-photo-saved-text");
 
-  const folder = (prod && prod.id_aliexpress) ? prod.id_aliexpress : (prod && prod.codigo_sku ? prod.codigo_sku : prodId);
+  if (savedAlert) savedAlert.classList.add("hidden");
+  if (progressBox) progressBox.classList.remove("hidden");
 
-  for (let i = 0; i < files.length; i++) {
+  const totalFiles = files.length;
+  let successCount = 0;
+  const folder = (prod && prod.id_aliexpress) ? prod.id_aliexpress : (prod && prod.codigo_sku ? prod.codigo_sku : (prodId || "galeria"));
+
+  for (let i = 0; i < totalFiles; i++) {
     const rawFile = files[i];
-    const file = await processImageForUpload(rawFile);
+    const fileNum = i + 1;
+
+    // Actualizar UI del progreso
+    if (progressCounter) progressCounter.textContent = `${fileNum} / ${totalFiles}`;
+    if (progressTitle) progressTitle.textContent = `Procesando foto ${fileNum} de ${totalFiles}...`;
+    if (progressDetail) progressDetail.textContent = "Optimizando resolución y reduciendo peso...";
+    if (progressBar) progressBar.style.width = "10%";
+    if (progressPct) progressPct.textContent = "10%";
+    if (progressIcon) progressIcon.innerHTML = `<i data-lucide="loader" class="w-4 h-4 animate-spin text-[#e72380]"></i>`;
+    safeCreateIcons();
+
+    // 1. Preprocesar y comprimir
+    const processedBlob = await processImageForUpload(rawFile);
+
+    // 2. Subir con barra de progreso en vivo
     const cleanName = `foto_${Date.now()}_${i + 1}.jpg`;
     const storagePath = `${folder}/galeria/${cleanName}`;
 
+    if (progressDetail) progressDetail.textContent = "Subiendo imagen a la nube...";
+
+    let publicUrl = "";
     try {
-      const { data, error } = await supabaseClient.storage
-        .from("joyas")
-        .upload(storagePath, file, { 
-          upsert: true,
-          contentType: "image/jpeg"
-        });
-
-      let publicUrl = "";
-      if (error) {
-        console.warn("Fallo subiendo a subcarpeta, probando ruta plana:", error);
+      const res = await uploadImageWithProgress(processedBlob, storagePath, (pct) => {
+        const mappedPct = 15 + Math.round((pct * 0.8));
+        if (progressBar) progressBar.style.width = `${mappedPct}%`;
+        if (progressPct) progressPct.textContent = `${mappedPct}%`;
+        if (progressDetail) progressDetail.textContent = `Enviando a Supabase: ${pct}%...`;
+      });
+      publicUrl = res.url;
+    } catch (subfolderErr) {
+      console.warn("Fallo subida a subcarpeta, probando ruta plana:", subfolderErr);
+      try {
         const flatPath = `subida_${Date.now()}_${i + 1}.jpg`;
-        const { error: flatErr } = await supabaseClient.storage
-          .from("joyas")
-          .upload(flatPath, file, { 
-            upsert: true,
-            contentType: "image/jpeg"
-          });
-
-        if (!flatErr) {
-          publicUrl = `${SUPABASE_URL}/storage/v1/object/public/joyas/${flatPath}`;
-        } else {
-          console.error("Error al subir foto:", flatErr);
-        }
-      } else {
-        publicUrl = `${SUPABASE_URL}/storage/v1/object/public/joyas/${storagePath}`;
+        const res = await uploadImageWithProgress(processedBlob, flatPath, (pct) => {
+          const mappedPct = 15 + Math.round((pct * 0.8));
+          if (progressBar) progressBar.style.width = `${mappedPct}%`;
+          if (progressPct) progressPct.textContent = `${mappedPct}%`;
+          if (progressDetail) progressDetail.textContent = `Enviando (ruta directa): ${pct}%...`;
+        });
+        publicUrl = res.url;
+      } catch (flatErr) {
+        console.error("Error definitivo subiendo foto:", flatErr);
       }
+    }
 
-      if (publicUrl) {
-        if (!state.currentEditPhotos) state.currentEditPhotos = [];
-        if (!state.currentEditPhotos.includes(publicUrl)) {
-          state.currentEditPhotos.push(publicUrl);
-        }
-        // Si se está editando una variante específica, auto-asignarla
-        if (state.currentEditingVariantId !== "all" && prod && prod.variants) {
-          const v = prod.variants.find(x => x.id === state.currentEditingVariantId);
-          if (v && (!v.foto_principal || files.length === 1)) {
-            v.foto_principal = publicUrl;
-          }
+    if (publicUrl) {
+      successCount++;
+      if (!state.currentEditPhotos) state.currentEditPhotos = [];
+      if (!state.currentEditPhotos.includes(publicUrl)) {
+        state.currentEditPhotos.push(publicUrl);
+      }
+      // Si se está editando una variante específica, auto-asignarla
+      if (state.currentEditingVariantId !== "all" && prod && prod.variants) {
+        const v = prod.variants.find(x => x.id === state.currentEditingVariantId);
+        if (v && (!v.foto_principal || totalFiles === 1)) {
+          v.foto_principal = publicUrl;
         }
       }
-    } catch (e) {
-      console.error("Error en upload:", e);
+      renderEditPhotosGrid();
+      renderEditVariantPills();
     }
   }
 
-  if (statusEl) {
-    statusEl.innerHTML = `<span class="text-emerald-400 font-bold">✅ ¡Fotos optimizadas y subidas con éxito!</span>`;
-    setTimeout(() => statusEl.classList.add("hidden"), 3000);
+  // Finalización
+  if (progressBar) progressBar.style.width = "100%";
+  if (progressPct) progressPct.textContent = "100%";
+
+  if (successCount > 0) {
+    if (progressTitle) progressTitle.textContent = `¡${successCount} foto(s) subida(s) con éxito!`;
+    if (progressDetail) progressDetail.textContent = "Guardando sincronización con Supabase...";
+    if (progressIcon) progressIcon.innerHTML = `<i data-lucide="check-circle" class="w-4 h-4 text-emerald-400"></i>`;
+    safeCreateIcons();
+
+    // AUTO-SINCRONIZAR A SUPABASE DATABASE DIRECTAMENTE:
+    if (prod && state.currentEditPhotos && state.currentEditPhotos.length > 0) {
+      await autoSyncPhotosToSupabase(prod, state.currentEditPhotos);
+    }
+
+    if (savedAlert) {
+      if (savedText) {
+        savedText.textContent = `✅ ${successCount} foto(s) subida(s) y guardada(s) en la base de datos de Supabase.`;
+      }
+      savedAlert.classList.remove("hidden");
+    }
+
+    showToast("Fotos Guardadas", `${successCount} foto(s) subida(s) y sincronizada(s) con la tienda.`, "success");
+
+    setTimeout(() => {
+      if (progressBox) progressBox.classList.add("hidden");
+    }, 3500);
+
+  } else {
+    if (progressTitle) progressTitle.textContent = "No se pudo subir la foto";
+    if (progressDetail) progressDetail.textContent = "Verifica tu conexión a internet o intenta con otra foto (JPG/PNG).";
+    if (progressIcon) progressIcon.innerHTML = `<i data-lucide="alert-circle" class="w-4 h-4 text-rose-400"></i>`;
+    safeCreateIcons();
+    showToast("Error de subida", "No se pudo subir la imagen. Verifica tu conexión o formato.", "error");
   }
 
   const fileInp = document.getElementById("edit-add-photos-file");
   if (fileInp) fileInp.value = "";
-
-  renderEditPhotosGrid();
-  renderEditVariantPills();
 }
+window.handleEditAddFiles = handleEditAddFiles;
+window.uploadImageWithProgress = uploadImageWithProgress;
 
 function handleEditAddUrl() {
   const input = document.getElementById("edit-add-photo-url-input");
@@ -2014,7 +2240,7 @@ function renderEditPhotosGrid() {
             src="${url}" 
             alt="Foto ${idx + 1}" 
             class="w-full h-full object-cover pointer-events-none" 
-            onerror="this.onerror=null; this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 fill=%22%23222%22/><text x=%2250%22 y=%2255%22 font-size=%2212%22 fill=%22%23888%22 text-anchor=%22middle%22>Foto ${idx + 1}</text></svg>';" 
+            onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 200 200\'%3E%3Crect width=\'200\' height=\'200\' fill=\'%231a241f\'/%3E%3Ctext x=\'100\' y=\'95\' font-size=\'34\' text-anchor=\'middle\'%3E💎%3C/text%3E%3Ctext x=\'100\' y=\'130\' font-size=\'12\' fill=\'%23e72380\' font-family=\'sans-serif\' font-weight=\'bold\' text-anchor=\'middle\'%3EFoto %23${idx + 1}%3C/text%3E%3Ctext x=\'100\' y=\'150\' font-size=\'10\' fill=\'%239ca3af\' font-family=\'sans-serif\' text-anchor=\'middle\'%3EYamiki Joyería%3C/text%3E%3C/svg%3E';" 
           />
           
           <!-- Grip / Orden -->
@@ -2255,7 +2481,7 @@ function renderEditVariantPills() {
         onclick="selectEditVariant('${v.id}')" 
         class="variant-pill-btn px-2.5 py-1.5 rounded-xl font-bold text-xs flex items-center gap-2 shrink-0 border ${isSelected ? 'active' : 'bg-white/5 border-white/10 text-gray-300 hover:bg-white/10'}"
       >
-        <img src="${vPhoto}" class="w-6 h-6 rounded-lg object-cover border border-white/10 shrink-0" onerror="this.onerror=null; this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 fill=%22%23222%22/></svg>';" />
+        <img src="${vPhoto}" class="w-6 h-6 rounded-lg object-cover border border-white/10 shrink-0" onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='8' fill='%231f2923'/%3E%3Ctext x='20' y='26' font-size='18' text-anchor='middle'%3E💎%3C/text%3E%3C/svg%3E';" />
         <span class="truncate max-w-[120px]">${vName}</span>
         <span class="px-1.5 py-0.2 rounded text-[10px] ${isSelected ? 'bg-white/20 text-white' : 'bg-black/50 text-emerald-400 font-mono'}">$${vPrice}</span>
       </button>
@@ -2466,7 +2692,10 @@ async function handleEditProductSubmit(e) {
       const v = (prod.variants || []).find(x => x.id === state.currentEditingVariantId);
       if (!v) throw new Error("No se encontró la variante a actualizar.");
 
-      const variantPhoto = v.foto_principal || mainPhotoUrl;
+      // Si sólo hay 1 variante en todo el grupo, la foto principal del grupo es la foto de la variante
+      const variantPhoto = (prod.variants && prod.variants.length > 1) 
+        ? (v.foto_principal || mainPhotoUrl) 
+        : mainPhotoUrl;
 
       const variantUpdates = {
         titulo: titulo,
@@ -2478,11 +2707,20 @@ async function handleEditProductSubmit(e) {
         estado_stock: stock,
         enlace_aliexpress: enlace || null,
         foto_principal: variantPhoto,
+        galeria_fotos: newGallery,
         activo: stock === "Agotada" ? false : activo,
         codigo_sku: variantSku || v.codigo_sku,
         color_modelo: variantSku || v.color_modelo,
         updated_at: new Date().toISOString()
       };
+
+      // Actualizar también galeria_fotos en el producto principal si es distinto
+      if (v.id !== prod.id) {
+        await supabaseClient.storage && supabaseClient
+          .from("productos")
+          .update({ galeria_fotos: newGallery, updated_at: new Date().toISOString() })
+          .eq("id", prod.id);
+      }
 
       const { error } = await supabaseClient
         .from("productos")

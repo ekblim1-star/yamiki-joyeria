@@ -573,7 +573,36 @@
 
         <div>
           <label class="block font-bold text-gray-300 mb-1">Subir Foto de la Joya</label>
-          <input type="file" name="foto_file" accept="image/*" class="w-full text-xs text-gray-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-[#e72380]/20 file:text-[#e72380] hover:file:bg-[#e72380]/30 cursor-pointer" />
+          <input 
+            type="file" 
+            name="foto_file" 
+            id="manual-foto-input" 
+            accept="image/jpeg,image/png,image/webp,image/*" 
+            onchange="handleManualPhotoChange(this)" 
+            class="w-full text-xs text-gray-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-[#e72380]/20 file:text-[#e72380] hover:file:bg-[#e72380]/30 cursor-pointer" 
+          />
+
+          <!-- Vista previa inmediata de la foto seleccionada -->
+          <div id="manual-photo-preview-box" class="hidden mt-2 p-2.5 rounded-2xl bg-white/[0.04] border border-white/10 flex items-center gap-3">
+            <div class="w-12 h-12 rounded-xl overflow-hidden bg-black/40 border border-white/10 shrink-0">
+              <img id="manual-photo-preview-img" src="" alt="Vista previa" class="w-full h-full object-cover" />
+            </div>
+            <div class="flex-1 min-w-0">
+              <p id="manual-photo-preview-name" class="text-xs font-bold text-white truncate">foto.jpg</p>
+              <p id="manual-photo-preview-size" class="text-[10px] text-gray-400">0 KB</p>
+              <span class="inline-flex items-center gap-1 text-[10px] text-emerald-400 font-bold mt-0.5">
+                <i data-lucide="check" class="w-3 h-3"></i> Lista para subir
+              </span>
+            </div>
+            <button 
+              type="button" 
+              onclick="clearManualPhotoSelection()" 
+              class="p-1.5 rounded-lg bg-white/5 hover:bg-rose-500/20 text-gray-400 hover:text-rose-400 transition"
+              title="Quitar foto"
+            >
+              <i data-lucide="x" class="w-4 h-4"></i>
+            </button>
+          </div>
         </div>
 
         <div class="flex items-center gap-2 pt-1">
@@ -669,12 +698,43 @@
               <input 
                 type="file" 
                 id="edit-add-photos-file" 
-                accept="image/*" 
+                accept="image/jpeg,image/png,image/webp,image/*" 
                 multiple 
                 onchange="handleEditAddFiles(this.files)"
                 class="w-full text-xs text-gray-400 file:mr-2 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-[11px] file:font-bold file:bg-[#e72380]/20 file:text-[#e72380] hover:file:bg-[#e72380]/30 cursor-pointer" 
               />
-              <span class="text-[10px] text-gray-500 block">Puedes seleccionar varias fotos a la vez (JPG, PNG, WEBP).</span>
+              <span class="text-[10px] text-gray-500 block">Soporta JPG, PNG, WEBP y fotos de iPhone (HEIC convertidas automáticamente).</span>
+            </div>
+
+            <!-- Barra de Progreso y Estado de Subida en Tiempo Real -->
+            <div id="edit-photo-progress-box" class="hidden space-y-2 p-3 rounded-2xl bg-white/[0.04] border border-[#e72380]/40 transition-all">
+              <div class="flex items-center justify-between text-xs">
+                <div class="flex items-center gap-2">
+                  <span id="edit-photo-progress-icon" class="text-[#e72380]">
+                    <i data-lucide="loader" class="w-4 h-4 animate-spin"></i>
+                  </span>
+                  <span id="edit-photo-progress-title" class="font-bold text-white text-xs">Optimizando y subiendo...</span>
+                </div>
+                <span id="edit-photo-progress-pct" class="font-mono font-extrabold text-[#e72380] text-xs">0%</span>
+              </div>
+
+              <!-- Barra visual -->
+              <div class="w-full h-2.5 rounded-full bg-black/60 overflow-hidden border border-white/10 p-0.5">
+                <div id="edit-photo-progress-bar" class="h-full rounded-full bg-gradient-to-r from-[#e72380] via-rose-400 to-amber-400 transition-all duration-150 w-0"></div>
+              </div>
+
+              <div class="flex items-center justify-between text-[11px] text-gray-400">
+                <span id="edit-photo-progress-detail">Preparando archivo...</span>
+                <span id="edit-photo-progress-counter" class="font-mono text-[10px] text-gray-400">0 / 0</span>
+              </div>
+            </div>
+
+            <!-- Notificación de Éxito / Auto-Guardado -->
+            <div id="edit-photo-saved-alert" class="hidden p-2.5 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-xs font-medium flex items-center justify-between gap-2">
+              <div class="flex items-center gap-2">
+                <i data-lucide="check-circle" class="w-4 h-4 text-emerald-400 shrink-0"></i>
+                <span id="edit-photo-saved-text">¡Foto subida y guardada en Supabase!</span>
+              </div>
             </div>
 
             <!-- Agregar Foto por URL -->
