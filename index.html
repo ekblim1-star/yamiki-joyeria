@@ -1196,80 +1196,85 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10 flex-grow w-full">
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
 
-        <!-- ================= COLUMNA IZQUIERDA: GALERÍA (lg:col-span-7) ================= -->
-        <div class="lg:col-span-7 space-y-4 lg:sticky lg:top-[130px]">
+        <!-- ================= COLUMNA IZQUIERDA: GALERÍA CON RIEL VERTICAL A LA IZQUIERDA (lg:col-span-7) ================= -->
+        <div class="lg:col-span-7 lg:sticky lg:top-[130px]">
           
-          <!-- Visor Principal con Gestos Táctiles y Controles -->
-          <div id="product-page-image-box" class="relative w-full aspect-square rounded-3xl overflow-hidden bg-white dark:bg-[#121915] border border-sage-200/80 dark:border-white/10 shadow-lg dark:shadow-black/50 group select-none">
+          <!-- Galería: Riel Vertical a la Izquierda en PC/Tablet, Horizontal abajo en Móvil -->
+          <div class="flex flex-col-reverse md:flex-row gap-3 sm:gap-4 items-start">
             
-            <!-- Imagen Principal -->
-            <img 
-              id="product-page-main-img" 
-              src="" 
-              alt="Joya Yamiki" 
-              onclick="openProductPageLightbox()"
-              decoding="async"
-              class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.02] cursor-zoom-in" 
-              onerror="handleProductImageError(this)" 
-            />
-
-            <!-- Botón Zoom / Pantalla Completa -->
-            <button
-              type="button"
-              onclick="openProductPageLightbox()"
-              class="absolute bottom-3 left-3 z-10 px-2.5 py-1 rounded-full bg-black/60 hover:bg-black/90 text-white backdrop-blur-md text-[11px] font-bold border border-white/20 flex items-center gap-1.5 transition opacity-90 cursor-pointer"
-              title="Ver foto en tamaño completo"
+            <!-- Riel Vertical de Miniaturas (a la izquierda en PC/Tablet, horizontal en móvil) -->
+            <div 
+              id="product-page-thumbnails" 
+              class="flex md:flex-col gap-2 sm:gap-2.5 overflow-x-auto md:overflow-y-auto w-full md:w-20 lg:w-24 shrink-0 max-h-[500px] lg:max-h-[580px] py-1 px-0.5 scrollbar-thin"
             >
-              <i data-lucide="zoom-in" class="w-3.5 h-3.5"></i>
-              <span>Ampliar</span>
-            </button>
-
-            <!-- Badge Superior Izquierdo (Descuento o Plata S925) -->
-            <div id="product-page-badge-wrapper" class="absolute top-3.5 left-3.5 z-10 pointer-events-none">
-              <span id="product-page-badge" class="px-3 py-1 rounded-full text-xs font-extrabold uppercase tracking-wider bg-rose-500 text-white shadow-md">
-                PLATA S925
-              </span>
+              <!-- Inyectado dinámicamente -->
             </div>
 
-            <!-- Contador de Fotos -->
-            <div class="absolute top-3.5 right-3.5 z-10 pointer-events-none">
-              <span id="product-page-photo-counter" class="px-2.5 py-1 rounded-full text-[11px] font-mono font-bold bg-black/60 text-white backdrop-blur-md border border-white/20">
-                1 / 1
-              </span>
+            <!-- Visor Principal con Gestos Táctiles y Controles (Grande, a la derecha del riel) -->
+            <div id="product-page-image-box" class="relative flex-1 w-full aspect-square rounded-3xl overflow-hidden bg-white dark:bg-[#121915] border border-sage-200/80 dark:border-white/10 shadow-lg dark:shadow-black/50 group select-none">
+              
+              <!-- Imagen Principal -->
+              <img 
+                id="product-page-main-img" 
+                src="" 
+                alt="Joya Yamiki" 
+                onclick="openProductPageLightbox()"
+                decoding="async"
+                class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.02] cursor-zoom-in" 
+                onerror="handleProductImageError(this)" 
+              />
+
+              <!-- Botón Zoom / Pantalla Completa -->
+              <button
+                type="button"
+                onclick="openProductPageLightbox()"
+                class="absolute bottom-3 left-3 z-10 px-2.5 py-1 rounded-full bg-black/60 hover:bg-black/90 text-white backdrop-blur-md text-[11px] font-bold border border-white/20 flex items-center gap-1.5 transition opacity-90 cursor-pointer"
+                title="Ver foto en tamaño completo"
+              >
+                <i data-lucide="zoom-in" class="w-3.5 h-3.5"></i>
+                <span>Ampliar</span>
+              </button>
+
+              <!-- Badge Superior Izquierdo (Descuento o Plata S925) -->
+              <div id="product-page-badge-wrapper" class="absolute top-3.5 left-3.5 z-10 pointer-events-none">
+                <span id="product-page-badge" class="px-3 py-1 rounded-full text-xs font-extrabold uppercase tracking-wider bg-rose-500 text-white shadow-md">
+                  PLATA S925
+                </span>
+              </div>
+
+              <!-- Contador de Fotos -->
+              <div class="absolute top-3.5 right-3.5 z-10 pointer-events-none">
+                <span id="product-page-photo-counter" class="px-2.5 py-1 rounded-full text-[11px] font-mono font-bold bg-black/60 text-white backdrop-blur-md border border-white/20">
+                  1 / 1
+                </span>
+              </div>
+
+              <!-- Flechas de Navegación en la Foto (Touch-friendly & Desktop hover) -->
+              <button 
+                type="button" 
+                id="product-page-prev-btn" 
+                onclick="changeProductPagePhoto(-1)" 
+                class="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/60 hover:bg-black/90 text-white flex items-center justify-center backdrop-blur-md transition opacity-80 sm:opacity-0 sm:group-hover:opacity-100 border border-white/20 cursor-pointer z-10"
+                aria-label="Foto anterior"
+              >
+                <i data-lucide="chevron-left" class="w-5 h-5"></i>
+              </button>
+              <button 
+                type="button" 
+                id="product-page-next-btn" 
+                onclick="changeProductPagePhoto(1)" 
+                class="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/60 hover:bg-black/90 text-white flex items-center justify-center backdrop-blur-md transition opacity-80 sm:opacity-0 sm:group-hover:opacity-100 border border-white/20 cursor-pointer z-10"
+                aria-label="Siguiente foto"
+              >
+                <i data-lucide="chevron-right" class="w-5 h-5"></i>
+              </button>
+
+              <!-- Indicador de Deslizar en Móvil -->
+              <div class="absolute bottom-3 right-3 sm:hidden px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-xs text-[10px] text-white/90 pointer-events-none font-bold">
+                👈 Desliza foto 👉
+              </div>
             </div>
 
-            <!-- Flechas de Navegación en la Foto (Touch-friendly & Desktop hover) -->
-            <button 
-              type="button" 
-              id="product-page-prev-btn" 
-              onclick="changeProductPagePhoto(-1)" 
-              class="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/60 hover:bg-black/90 text-white flex items-center justify-center backdrop-blur-md transition opacity-80 sm:opacity-0 sm:group-hover:opacity-100 border border-white/20 cursor-pointer z-10"
-              aria-label="Foto anterior"
-            >
-              <i data-lucide="chevron-left" class="w-5 h-5"></i>
-            </button>
-            <button 
-              type="button" 
-              id="product-page-next-btn" 
-              onclick="changeProductPagePhoto(1)" 
-              class="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/60 hover:bg-black/90 text-white flex items-center justify-center backdrop-blur-md transition opacity-80 sm:opacity-0 sm:group-hover:opacity-100 border border-white/20 cursor-pointer z-10"
-              aria-label="Siguiente foto"
-            >
-              <i data-lucide="chevron-right" class="w-5 h-5"></i>
-            </button>
-
-            <!-- Indicador de Deslizar en Móvil -->
-            <div class="absolute bottom-3 right-3 sm:hidden px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-xs text-[10px] text-white/90 pointer-events-none font-bold">
-              👈 Desliza foto 👉
-            </div>
-          </div>
-
-          <!-- Tira Horizontal de Miniaturas (Thumbnail Strip) -->
-          <div 
-            id="product-page-thumbnails" 
-            class="flex items-center gap-2.5 overflow-x-auto py-2 scrollbar-thin px-1"
-          >
-            <!-- Inyectado dinámicamente -->
           </div>
 
         </div>

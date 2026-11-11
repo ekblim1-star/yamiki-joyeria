@@ -1516,3 +1516,16 @@ html.dark .product-hover-badge:hover svg {
   border-radius: 0.375rem;
   object-fit: cover;
 }
+
+/* Riel vertical de miniaturas Yamiki */
+#product-page-thumbnails::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+#product-page-thumbnails::-webkit-scrollbar-thumb {
+  background: rgba(231, 35, 128, 0.3);
+  border-radius: 9999px;
+}
+#product-page-thumbnails::-webkit-scrollbar-thumb:hover {
+  background: rgba(231, 35, 128, 0.6);
+}

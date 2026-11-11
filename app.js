@@ -3259,8 +3259,9 @@ function renderProductPageThumbnails() {
       <button 
         type="button" 
         onclick="setProductPagePhoto(${idx})" 
-        class="product-thumb-item relative w-16 h-16 sm:w-20 sm:h-20 rounded-2xl overflow-hidden shrink-0 border-2 transition-all cursor-pointer ${isActive ? 'border-[#e72380] ring-2 ring-[#e72380]/40 scale-105' : 'border-sage-200 dark:border-white/10 opacity-70 hover:opacity-100'}"
+        class="product-thumb-item relative w-16 h-16 sm:w-18 sm:h-18 md:w-20 md:h-20 lg:w-22 lg:h-22 rounded-2xl overflow-hidden shrink-0 border-2 transition-all cursor-pointer ${isActive ? 'border-[#e72380] ring-2 ring-[#e72380]/40 scale-[1.02] opacity-100 shadow-md' : 'border-sage-200 dark:border-white/10 opacity-70 hover:opacity-100 hover:border-sage-400 dark:hover:border-white/30'}"
         data-thumb-idx="${idx}"
+        title="Ver foto ${idx + 1}"
       >
         <img 
           src="${url}" 
@@ -3279,13 +3280,39 @@ function updateProductPageThumbnailsActive() {
   const pState = state.currentProductPage;
   if (!pState) return;
   const currentIdx = pState.currentPhotoIndex;
+  const container = document.getElementById("product-page-thumbnails");
   
   document.querySelectorAll(".product-thumb-item").forEach((thumb, idx) => {
     if (idx === currentIdx) {
-      thumb.className = "product-thumb-item relative w-16 h-16 sm:w-20 sm:h-20 rounded-2xl overflow-hidden shrink-0 border-2 transition-all cursor-pointer border-[#e72380] ring-2 ring-[#e72380]/40 scale-105 opacity-100";
-      thumb.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
+      thumb.className = "product-thumb-item relative w-16 h-16 sm:w-18 sm:h-18 md:w-20 md:h-20 lg:w-22 lg:h-22 rounded-2xl overflow-hidden shrink-0 border-2 transition-all cursor-pointer border-[#e72380] ring-2 ring-[#e72380]/40 scale-[1.02] opacity-100 shadow-md";
+      
+      // Auto-desplazamiento confinado EXCLUSIVAMENTE al contenedor (NUNCA desplazar la página principal)
+      if (container && typeof container.scrollTo === "function") {
+        const isVertical = typeof window !== "undefined" && window.innerWidth >= 768;
+        if (isVertical) {
+          const tTop = thumb.offsetTop;
+          const tHeight = thumb.offsetHeight;
+          const cTop = container.scrollTop;
+          const cHeight = container.clientHeight;
+          if (tTop < cTop) {
+            container.scrollTo({ top: tTop, behavior: "smooth" });
+          } else if (tTop + tHeight > cTop + cHeight) {
+            container.scrollTo({ top: tTop + tHeight - cHeight, behavior: "smooth" });
+          }
+        } else {
+          const tLeft = thumb.offsetLeft;
+          const tWidth = thumb.offsetWidth;
+          const cLeft = container.scrollLeft;
+          const cWidth = container.clientWidth;
+          if (tLeft < cLeft) {
+            container.scrollTo({ left: tLeft, behavior: "smooth" });
+          } else if (tLeft + tWidth > cLeft + cWidth) {
+            container.scrollTo({ left: tLeft + tWidth - cWidth, behavior: "smooth" });
+          }
+        }
+      }
     } else {
-      thumb.className = "product-thumb-item relative w-16 h-16 sm:w-20 sm:h-20 rounded-2xl overflow-hidden shrink-0 border-2 transition-all cursor-pointer border-sage-200 dark:border-white/10 opacity-70 hover:opacity-100";
+      thumb.className = "product-thumb-item relative w-16 h-16 sm:w-18 sm:h-18 md:w-20 md:h-20 lg:w-22 lg:h-22 rounded-2xl overflow-hidden shrink-0 border-2 transition-all cursor-pointer border-sage-200 dark:border-white/10 opacity-70 hover:opacity-100 hover:border-sage-400 dark:hover:border-white/30";
     }
   });
 }
