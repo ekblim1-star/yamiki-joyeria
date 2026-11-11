@@ -2580,7 +2580,7 @@ function toggleVariantsPreview(productId) {
 // ==============================================================================
 // SISTEMA DE SEGURIDAD Y PIN DE ACCESO
 // ==============================================================================
-const DEFAULT_PINS = ["9250", "yamiki925", "1234"];
+const DEFAULT_PINS = ["9250", "yamiki925"];
 const STORAGE_AUTH_KEY = "yamiki_admin_authenticated";
 const STORAGE_CUSTOM_PIN_KEY = "yamiki_admin_custom_pin";
 
@@ -2625,7 +2625,7 @@ function handlePinSubmit(e) {
     }
   } else {
     if (errorMsg) {
-      errorMsg.textContent = "PIN incorrecto. Intenta con 9250 o tu clave.";
+      errorMsg.textContent = "PIN incorrecto. Acceso denegado.";
       errorMsg.classList.remove("hidden");
     }
     input.classList.add("border-rose-500", "animate-shake");
