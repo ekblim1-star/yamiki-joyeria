@@ -1080,29 +1080,33 @@ function updateFilterTriggerLabels() {
  * Actualiza el indicador visual de pestaña activa en el navbar fijo superior
  */
 function updateNavTabsHighlight() {
-  const isHome = state.currentView === "home";
+  const current = state.currentView;
   const navHome = document.getElementById("nav-link-home");
   const navCat = document.getElementById("nav-link-catalogo");
-  
-  if (navHome) {
-    if (isHome) {
-      navHome.classList.add("active-nav-tab");
-      navHome.classList.remove("border-transparent");
-    } else {
-      navHome.classList.remove("active-nav-tab");
-      navHome.classList.add("border-transparent");
-    }
-  }
+  const navOfertas = document.getElementById("nav-link-ofertas");
+  const navTallas = document.getElementById("nav-link-tallas");
+  const navGarantia = document.getElementById("nav-link-garantia");
+  const navNosotros = document.getElementById("nav-link-nosotros");
 
-  if (navCat) {
-    if (!isHome) {
-      navCat.classList.add("active-nav-tab");
-      navCat.classList.remove("border-transparent");
+  const setTab = (el, active) => {
+    if (!el) return;
+    if (active) {
+      el.classList.add("active-nav-tab");
+      el.classList.remove("border-transparent");
     } else {
-      navCat.classList.remove("active-nav-tab");
-      navCat.classList.add("border-transparent");
+      el.classList.remove("active-nav-tab");
+      el.classList.add("border-transparent");
     }
-  }
+  };
+
+  const isOfertas = current === "catalogo" && state.currentCategory === "ofertas";
+
+  setTab(navHome, current === "home");
+  setTab(navCat, current === "catalogo" && !isOfertas);
+  setTab(navOfertas, isOfertas);
+  setTab(navTallas, current === "guia-tallas");
+  setTab(navGarantia, current === "garantia");
+  setTab(navNosotros, current === "nosotros");
 }
 
 /**
@@ -1140,73 +1144,76 @@ function updateBreadcrumbCategoryBadge() {
 function clearCategoryFilter(event) {
   if (event) event.stopPropagation();
   selectCategoryFilter("todos");
-  history.replaceState(null, "", "#/catalogo");
+  history.replaceState(null, "", "/catalogo");
 }
 
 /**
- * Navega de forma limpia y fluida entre las subpáginas (Home y Catálogo)
- * @param {string} viewName - "home" o "catalogo"
- * @param {object} options - { category, scrollTo, pushState }
+ * Navega de forma limpia y fluida entre todas las subpáginas dedicadas de Yamiki
+ * @param {string} viewName - "home" | "catalogo" | "producto" | "garantia" | "guia-tallas" | "nosotros"
+ * @param {object} options - { category, scrollTo, pushState, restoreScroll }
  */
 function navigateTo(viewName, options = {}) {
   let targetView = "home";
-  if (viewName === "catalogo" || viewName === "catalog") {
+  const v = (viewName || "").toLowerCase().trim();
+  if (v === "catalogo" || v === "catalog") {
     targetView = "catalogo";
-  } else if (viewName === "producto" || viewName === "product") {
+  } else if (v === "producto" || v === "product") {
     targetView = "producto";
+  } else if (v === "garantia") {
+    targetView = "garantia";
+  } else if (v === "guia-tallas" || v === "tallas") {
+    targetView = "guia-tallas";
+  } else if (v === "nosotros") {
+    targetView = "nosotros";
   }
   state.currentView = targetView;
 
-  const viewHome = document.getElementById("view-home");
-  const viewCatalogo = document.getElementById("view-catalogo");
-  const viewProducto = document.getElementById("view-producto");
+  const views = {
+    home: document.getElementById("view-home"),
+    catalogo: document.getElementById("view-catalogo"),
+    producto: document.getElementById("view-producto"),
+    garantia: document.getElementById("view-garantia"),
+    "guia-tallas": document.getElementById("view-guia-tallas"),
+    nosotros: document.getElementById("view-nosotros")
+  };
+
+  Object.entries(views).forEach(([name, el]) => {
+    if (!el) return;
+    if (name === targetView) {
+      el.classList.remove("hidden");
+      el.classList.add("page-view");
+    } else {
+      el.classList.add("hidden");
+    }
+  });
 
   if (targetView === "home") {
-    if (viewHome) {
-      viewHome.classList.remove("hidden");
-      viewHome.classList.add("page-view");
-    }
-    if (viewCatalogo) viewCatalogo.classList.add("hidden");
-    if (viewProducto) viewProducto.classList.add("hidden");
-
-    // Reanudar carruseles de la portada
     if (typeof startHeroAutoPlay === "function") startHeroAutoPlay();
     if (typeof startCarouselAutoPlay === "function") startCarouselAutoPlay();
 
-    // Actualizar URL
+    document.title = "Yamiki Joyería | Plata Esterlina Ley S925";
+
     if (options.pushState !== false) {
       if (options.scrollTo) {
-        history.pushState(null, "", `#/inicio#${options.scrollTo}`);
+        history.pushState(null, "", `/#${options.scrollTo}`);
       } else {
-        history.pushState(null, "", "#/");
+        history.pushState(null, "", "/");
       }
     }
 
-    // Desplazamiento suave
     if (options.scrollTo) {
       setTimeout(() => {
         const targetEl = document.getElementById(options.scrollTo);
-        if (targetEl) {
-          targetEl.scrollIntoView({ behavior: "smooth", block: "start" });
-        }
+        if (targetEl) targetEl.scrollIntoView({ behavior: "smooth", block: "start" });
       }, 60);
     } else {
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
 
   } else if (targetView === "catalogo") {
-    if (viewHome) viewHome.classList.add("hidden");
-    if (viewCatalogo) {
-      viewCatalogo.classList.remove("hidden");
-      viewCatalogo.classList.add("page-view");
-    }
-    if (viewProducto) viewProducto.classList.add("hidden");
-
-    // Pausar carruseles pesados de la portada para máximo rendimiento
     if (typeof stopHeroAutoPlay === "function") stopHeroAutoPlay();
     if (typeof stopCarouselAutoPlay === "function") stopCarouselAutoPlay();
 
-    // Filtro de categoría directo
     if (options.category) {
       state.currentCategory = options.category;
       state.currentPage = 1;
@@ -1217,51 +1224,79 @@ function navigateTo(viewName, options = {}) {
     updateFilterTriggerLabels();
     renderProducts();
 
-    // Actualizar URL
+    const cat = state.currentCategory;
+    if (cat === "anillos") {
+      document.title = "Anillos en Plata Ley S925 | Yamiki Joyería";
+    } else if (cat === "aretes") {
+      document.title = "Aretes y Pendientes en Plata S925 | Yamiki Joyería";
+    } else if (cat === "collares") {
+      document.title = "Collares y Cadenas en Plata S925 | Yamiki Joyería";
+    } else if (cat === "pulseras") {
+      document.title = "Pulseras en Plata Ley S925 | Yamiki Joyería";
+    } else if (cat === "ofertas") {
+      document.title = "Ofertas y Promociones Activas | Yamiki Joyería";
+    } else {
+      document.title = "Catálogo Oficial de Joyería S925 | Yamiki Joyería";
+    }
+
     if (options.pushState !== false) {
-      if (options.category && options.category !== "todos") {
-        history.pushState(null, "", `#/catalogo?categoria=${options.category}`);
+      if (cat && cat !== "todos" && ["anillos", "aretes", "collares", "pulseras", "ofertas"].includes(cat)) {
+        history.pushState(null, "", `/${cat}`);
+      } else if (cat && cat !== "todos") {
+        history.pushState(null, "", `/catalogo?categoria=${cat}`);
       } else {
-        history.pushState(null, "", "#/catalogo");
+        history.pushState(null, "", "/catalogo");
       }
     }
 
-    // Desplazamiento suave o restauración de scroll
     if (options.scrollTo) {
       setTimeout(() => {
         const targetEl = document.getElementById(options.scrollTo);
-        if (targetEl) {
-          targetEl.scrollIntoView({ behavior: "smooth", block: "start" });
-        }
+        if (targetEl) targetEl.scrollIntoView({ behavior: "smooth", block: "start" });
       }, 60);
-    } else if (options.restoreScroll) {
-      // scroll restaurado por el invocador
-    } else {
+    } else if (!options.restoreScroll) {
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
 
   } else if (targetView === "producto") {
-    if (viewHome) viewHome.classList.add("hidden");
-    if (viewCatalogo) viewCatalogo.classList.add("hidden");
-    if (viewProducto) {
-      viewProducto.classList.remove("hidden");
-      viewProducto.classList.add("page-view");
-    }
-
-    // Pausar carruseles pesados
     if (typeof stopHeroAutoPlay === "function") stopHeroAutoPlay();
     if (typeof stopCarouselAutoPlay === "function") stopCarouselAutoPlay();
-
     window.scrollTo({ top: 0, behavior: "instant" });
+
+  } else if (targetView === "garantia") {
+    if (typeof stopHeroAutoPlay === "function") stopHeroAutoPlay();
+    if (typeof stopCarouselAutoPlay === "function") stopCarouselAutoPlay();
+    document.title = "Garantía Oficial y Pureza S925 | Yamiki Joyería";
+    if (options.pushState !== false) {
+      history.pushState(null, "", "/garantia");
+    }
+    window.scrollTo({ top: 0, behavior: "smooth" });
+
+  } else if (targetView === "guia-tallas") {
+    if (typeof stopHeroAutoPlay === "function") stopHeroAutoPlay();
+    if (typeof stopCarouselAutoPlay === "function") stopCarouselAutoPlay();
+    document.title = "Guía Oficial de Tallas y Medidas de Anillos | Yamiki Joyería";
+    if (options.pushState !== false) {
+      history.pushState(null, "", "/guia-tallas");
+    }
+    window.scrollTo({ top: 0, behavior: "smooth" });
+
+  } else if (targetView === "nosotros") {
+    if (typeof stopHeroAutoPlay === "function") stopHeroAutoPlay();
+    if (typeof stopCarouselAutoPlay === "function") stopCarouselAutoPlay();
+    document.title = "Sobre Nosotros y Compromiso S925 | Yamiki Joyería";
+    if (options.pushState !== false) {
+      history.pushState(null, "", "/nosotros");
+    }
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
   updateNavTabsHighlight();
-
   safeCreateIcons();
 }
 
 /**
- * Escucha cambios en el hash de la URL o botones de Atrás / Adelante del navegador
+ * Escucha cambios en la URL (subpáginas limpias, popstate, hash de compatibilidad y botones Atrás/Adelante)
  */
 function handleUrlRouting(event) {
   // 1. Si el popstate fue originado por nuestro propio history.back() al cerrar con la X o UI
@@ -1283,7 +1318,7 @@ function handleUrlRouting(event) {
     return;
   }
 
-  // 3. Si la guía de medidas está abierta, cerrarla y volver al modal o vista previa
+  // 3. Si la guía de medidas modal está abierta, cerrarla y volver al modal o vista previa
   const guideModal = document.getElementById("ring-size-guide-modal");
   const isGuideModalOpen = state.isGuideModalOpen || (guideModal && !guideModal.classList.contains("hidden") && guideModal.style.display !== "none");
   if (isGuideModalOpen) {
@@ -1297,7 +1332,7 @@ function handleUrlRouting(event) {
     return;
   }
 
-  // 4. Si el modal de producto está abierto, cerrarlo y restaurar EXACTAMENTE la posición de scroll donde estaba
+  // 4. Si el modal de producto está abierto, cerrarlo y restaurar EXACTAMENTE la posición de scroll
   const productModal = document.getElementById("product-modal");
   const isProductModalOpen = state.isProductModalOpen || (productModal && !productModal.classList.contains("hidden") && productModal.style.display !== "none");
   if (isProductModalOpen) {
@@ -1321,44 +1356,105 @@ function handleUrlRouting(event) {
     return;
   }
 
-  // 6. Navegación normal de hash de página o subpáginas
-  const hash = window.location.hash || "#/";
+  // 6. Subpáginas limpias (Pathname prioritario + Hash de compatibilidad histórica)
+  const rawPath = (window.location && window.location.pathname) ? window.location.pathname : "/";
+  const pathname = rawPath.toLowerCase().replace(/\/+$/, "") || "/";
+  const hash = (window.location && window.location.hash) || "";
+  const search = (window.location && window.location.search) || "";
 
-  if (hash.startsWith("#/joya/") || hash.startsWith("#/producto/")) {
-    const slug = decodeURIComponent(hash.replace(/^#\/(joya|producto)\//, "").split("?")[0].trim());
-    if (slug) {
-      navigateToProduct(slug, null, null, { pushState: false });
-      return;
-    }
-  } else if (hash.includes("producto?id=") || window.location.search.includes("id=")) {
-    const match = (hash + window.location.search).match(/id=([a-zA-Z0-9_-]+)/);
-    if (match && match[1]) {
-      navigateToProduct(match[1], null, null, { pushState: false });
-      return;
-    }
+  // Detección de subpágina de producto (/joya/:slug o /producto/:slug o #/joya/:slug)
+  let productSlug = null;
+  const pathMatch = pathname.match(/^\/(joya|producto)\/([^/]+)/);
+  if (pathMatch && pathMatch[2]) {
+    productSlug = decodeURIComponent(pathMatch[2]);
+  } else if (hash.startsWith("#/joya/") || hash.startsWith("#/producto/")) {
+    productSlug = decodeURIComponent(hash.replace(/^#\/(joya|producto)\//, "").split("?")[0].trim());
+  } else if (search.includes("id=") || hash.includes("id=")) {
+    const match = (search + hash).match(/id=([a-zA-Z0-9_-]+)/);
+    if (match && match[1]) productSlug = match[1];
   }
 
-  if (hash.startsWith("#/catalogo") || hash === "#catalogo") {
+  if (productSlug) {
+    navigateToProduct(productSlug, null, null, { pushState: false });
+    return;
+  }
+
+  // Subpágina /garantia
+  if (pathname === "/garantia" || hash === "#/garantia" || hash === "#garantia") {
+    navigateTo("garantia", { pushState: false });
+    return;
+  }
+
+  // Subpágina /guia-tallas
+  if (pathname === "/guia-tallas" || pathname === "/tallas" || hash === "#/guia-tallas" || hash === "#guia-tallas") {
+    navigateTo("guia-tallas", { pushState: false });
+    return;
+  }
+
+  // Subpágina /nosotros
+  if (pathname === "/nosotros" || pathname === "/sobre-nosotros" || hash === "#/nosotros" || hash === "#nosotros") {
+    navigateTo("nosotros", { pushState: false });
+    return;
+  }
+
+  // Categorías directas con URL limpia (/anillos, /aretes, /collares, /pulseras, /ofertas, /sets)
+  const directCats = ["anillos", "aretes", "collares", "pulseras", "ofertas", "sets"];
+  const directCat = directCats.find(c => pathname === `/${c}` || hash === `#/${c}`);
+  if (directCat) {
+    navigateTo("catalogo", { category: directCat, pushState: false });
+    return;
+  }
+
+  // Catálogo completo (/catalogo o #/catalogo)
+  if (pathname === "/catalogo" || hash.startsWith("#/catalogo") || hash === "#catalogo") {
     let category = "todos";
-    if (hash.includes("categoria=")) {
-      const match = hash.match(/categoria=([a-zA-Z0-9_-]+)/);
-      if (match && match[1]) {
-        category = match[1];
-      }
+    const query = search + hash;
+    if (query.includes("categoria=")) {
+      const match = query.match(/categoria=([a-zA-Z0-9_-]+)/);
+      if (match && match[1]) category = match[1];
     }
     navigateTo("catalogo", { category: category, pushState: false });
-  } else if (hash.includes("#novedades-carousel") || hash.includes("#inicio")) {
-    let scrollTarget = "inicio";
-    if (hash.includes("novedades-carousel")) scrollTarget = "novedades-carousel";
-    navigateTo("home", { scrollTo: scrollTarget, pushState: false });
-  } else {
-    navigateTo("home", { pushState: false });
+    return;
   }
+
+  // Sección de novedades o carrusel en Home
+  if (hash.includes("novedades-carousel") || pathname.includes("novedades")) {
+    navigateTo("home", { scrollTo: "novedades-carousel", pushState: false });
+    return;
+  }
+
+  // Por defecto: Home
+  navigateTo("home", { pushState: false });
 }
 
-// Escuchadores de eventos para navegación nativa del navegador
+// Escuchadores de eventos para navegación limpia y nativa del navegador
 window.addEventListener("hashchange", handleUrlRouting);
 window.addEventListener("popstate", handleUrlRouting);
+
+// Interceptor global para enlaces internos con subpáginas limpias (0 segundos de recarga)
+document.addEventListener("click", function(event) {
+  const link = event.target && event.target.closest ? event.target.closest("a") : null;
+  if (!link) return;
+  const href = link.getAttribute("href");
+  if (!href) return;
+
+  // Ignorar enlaces externos, mails, tel, descargas o nuevas pestañas
+  if (link.target === "_blank" || href.startsWith("http://") || href.startsWith("https://") || 
+      href.startsWith("mailto:") || href.startsWith("tel:") || href.startsWith("javascript:") ||
+      link.hasAttribute("download")) {
+    return;
+  }
+
+  // Rutas internas de subpáginas (ej: /, /catalogo, /anillos, /garantia, /guia-tallas, /nosotros, /joya/...)
+  if (href.startsWith("/") && !href.startsWith("//")) {
+    // Si apunta al panel de administración, dejar que el navegador abra el archivo admin
+    if (href.startsWith("/admin")) return;
+
+    event.preventDefault();
+    history.pushState(null, "", href);
+    handleUrlRouting();
+  }
+});
 
 function selectCategoryFilter(categoryId) {
   state.currentCategory = categoryId;
@@ -1375,11 +1471,15 @@ function selectCategoryFilter(categoryId) {
   updateFilterTriggerLabels();
   renderProducts();
 
-  // Actualizar URL sin recargar
+  // Actualizar URL limpia sin recargar
   if (categoryId && categoryId !== "todos") {
-    history.replaceState(null, "", `#/catalogo?categoria=${categoryId}`);
+    if (["anillos", "aretes", "collares", "pulseras", "ofertas"].includes(categoryId)) {
+      history.replaceState(null, "", `/${categoryId}`);
+    } else {
+      history.replaceState(null, "", `/catalogo?categoria=${categoryId}`);
+    }
   } else {
-    history.replaceState(null, "", "#/catalogo");
+    history.replaceState(null, "", "/catalogo");
   }
 
   safeCreateIcons();
@@ -2924,7 +3024,7 @@ function navigateToProduct(productId, defaultSize = null, defaultVariantId = nul
   // Actualizar URL limpia para compartir
   if (options.pushState !== false) {
     const slug = encodeURIComponent(prod.groupId || prod.code || prod.id);
-    history.pushState({ type: "producto", id: prod.id }, "", `#/joya/${slug}`);
+    history.pushState({ type: "producto", id: prod.id }, "", `/joya/${slug}`);
   }
 
   window.scrollTo({ top: 0, behavior: options.instantScroll ? "instant" : "smooth" });

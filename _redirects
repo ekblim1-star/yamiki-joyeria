@@ -1,0 +1,4 @@
+# Cloudflare Pages SPA Routing & Clean URLs
+/admin /admin/index.html 200
+/admin/* /admin/index.html 200
+/* /index.html 200
