@@ -1239,9 +1239,10 @@ function cleanBrandNames(str) {
 
 function detectCategory(title) {
   const t = title.toLowerCase();
+  if (t.includes("set") || t.includes("juego") || t.includes("conjunto") || t.includes("kit")) return "sets";
   if (t.includes("anillo") || t.includes("sortija") || t.includes("banda")) return "anillos";
-  if (t.includes("pendiente") || t.includes("arete") || t.includes("tuerca")) return "aretes";
-  if (t.includes("collar") || t.includes("colgante") || t.includes("cadena")) return "collares";
+  if (t.includes("pendiente") || t.includes("arete") || t.includes("tuerca") || t.includes("huggie")) return "aretes";
+  if (t.includes("collar") || t.includes("colgante") || t.includes("cadena") || t.includes("gargantilla")) return "collares";
   if (t.includes("dije") || t.includes("charm") || t.includes("abalorio")) return "dijes";
   if (t.includes("pulsera") || t.includes("brazalete")) return "pulseras";
   return "anillos";

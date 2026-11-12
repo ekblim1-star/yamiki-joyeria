@@ -867,7 +867,9 @@ function renderFilterDropdownOptions(type) {
       </div>
       <div class="space-y-1">
         ${CATEGORIES.map(cat => {
-          const isActive = cat.id === state.currentCategory;
+          const isActive = cat.id === state.currentCategory || 
+            ((cat.id === "sets" || cat.id === "pulseras") && (state.currentCategory === "sets" || state.currentCategory === "pulseras")) ||
+            ((cat.id === "collares" || cat.id === "dijes") && (state.currentCategory === "collares" || state.currentCategory === "dijes"));
           return `
             <button 
               type="button"
@@ -1230,10 +1232,10 @@ function navigateTo(viewName, options = {}) {
       document.title = "Anillos en Plata Ley S925 | Yamiki Joyería";
     } else if (cat === "aretes") {
       document.title = "Aretes y Pendientes en Plata S925 | Yamiki Joyería";
-    } else if (cat === "collares") {
+    } else if (cat === "collares" || cat === "dijes") {
       document.title = "Collares y Cadenas en Plata S925 | Yamiki Joyería";
-    } else if (cat === "pulseras") {
-      document.title = "Pulseras en Plata Ley S925 | Yamiki Joyería";
+    } else if (cat === "pulseras" || cat === "sets") {
+      document.title = "Pulseras & Sets en Plata Ley S925 | Yamiki Joyería";
     } else if (cat === "ofertas") {
       document.title = "Ofertas y Promociones Activas | Yamiki Joyería";
     } else {
@@ -1241,7 +1243,7 @@ function navigateTo(viewName, options = {}) {
     }
 
     if (options.pushState !== false) {
-      if (cat && cat !== "todos" && ["anillos", "aretes", "collares", "pulseras", "ofertas"].includes(cat)) {
+      if (cat && cat !== "todos" && ["anillos", "aretes", "collares", "pulseras", "sets", "ofertas"].includes(cat)) {
         history.pushState(null, "", `/${cat}`);
       } else if (cat && cat !== "todos") {
         history.pushState(null, "", `/catalogo?categoria=${cat}`);
@@ -1542,7 +1544,7 @@ function selectCategoryFilter(categoryId) {
 
   // Actualizar URL limpia sin recargar
   if (categoryId && categoryId !== "todos") {
-    if (["anillos", "aretes", "collares", "pulseras", "ofertas"].includes(categoryId)) {
+    if (["anillos", "aretes", "collares", "pulseras", "sets", "ofertas"].includes(categoryId)) {
       history.replaceState(null, "", `/${categoryId}`);
     } else {
       history.replaceState(null, "", `/catalogo?categoria=${categoryId}`);
@@ -1629,6 +1631,10 @@ function getFilteredProducts() {
       matchesCategory = true;
     } else if (state.currentCategory === "ofertas") {
       matchesCategory = prod.hasDiscount === true || (prod.badge && (prod.badge.includes("%") || prod.badge.includes("🔥") || prod.badge.toLowerCase().includes("oferta")));
+    } else if (state.currentCategory === "sets" || state.currentCategory === "pulseras") {
+      matchesCategory = prod.category === "sets" || prod.category === "pulseras";
+    } else if (state.currentCategory === "collares" || state.currentCategory === "dijes") {
+      matchesCategory = prod.category === "collares" || prod.category === "dijes";
     } else {
       matchesCategory = prod.category === state.currentCategory;
     }
@@ -1974,6 +1980,8 @@ function changePage(page) {
 }
 
 function getCategoryLabel(catId) {
+  if (catId === "sets" || catId === "pulseras") return "Pulseras & Sets";
+  if (catId === "collares" || catId === "dijes") return "Cadenas y Collares";
   const found = CATEGORIES.find(c => c.id === catId);
   return found ? found.label.replace(/\s*\(\d+\)/, '') : "Joyería S925";
 }
