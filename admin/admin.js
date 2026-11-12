@@ -3237,11 +3237,14 @@ async function hashPin(str) {
 
 async function verifyPin(input) {
   if (!input) return false;
-  const hash = await hashPin(input);
-  const hashLower = await hashPin(input.toLowerCase());
+  const clean = input.trim();
+  const cleanNoSpaces = clean.replace(/\s+/g, "");
+  const hash = await hashPin(clean);
+  const hashNoSpaces = await hashPin(cleanNoSpaces);
+  const hashLower = await hashPin(cleanNoSpaces.toLowerCase());
   const custom = localStorage.getItem(STORAGE_CUSTOM_PIN_KEY);
   if (custom && (custom === input || custom.toLowerCase() === input.toLowerCase())) return true;
-  return ALLOWED_PIN_HASHES.includes(hash) || ALLOWED_PIN_HASHES.includes(hashLower);
+  return ALLOWED_PIN_HASHES.includes(hash) || ALLOWED_PIN_HASHES.includes(hashNoSpaces) || ALLOWED_PIN_HASHES.includes(hashLower);
 }
 
 async function checkAdminAuth() {

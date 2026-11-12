@@ -81,54 +81,92 @@ async function verifyTurnstileToken(token, secretKey, remoteIp, isDevEnvironment
 }
 
 /**
- * Verificación PBKDF2 (HMAC-SHA512, 210,000 iteraciones) usando Web Crypto API
+ * Verificación de Contraseña y PIN de Seguridad Administrativa
+ * Soporta PBKDF2 (HMAC-SHA512, 210,000 iteraciones) y hashes autorizados de Yamiki Joyería.
+ * Normaliza espacios accidentales y diferencias de mayúsculas/minúsculas.
  */
-async function verifyPasswordPBKDF2(password, storedHash) {
+const ALLOWED_ADMIN_SHA256 = [
+  "2fdb26c08f0dec644da0057a69ec9720eedb71c90de0fc2f871f6d6ba24bc349", // Yamitaeslamasbonitamymonkeynovia
+  "7b4282e8cfed588a578a4b55f6eb6e9546fe1a979c737c5928a571778db8d7da", // yamitaeslamasbonitamymonkeynovia
+  "166ef5a9db1ef1103a1dc744f8bc7cb59eb94fd6e7f48a6cd60c0e706ee9881e", // 9250
+  "15de5467435fe3fec60ba5d9453c2ae8c05bfbf8dc4bee0ccdd5d2e832b90cd2"  // yamiki925
+];
+
+async function verifyPasswordPBKDF2(password, storedHashesStr) {
   try {
-    if (!storedHash || typeof storedHash !== "string") return false;
-    const parts = storedHash.split("$");
-    if (parts.length !== 4 || parts[0] !== "pbkdf2") return false;
+    if (!password || typeof password !== "string") return false;
+    const cleanPass = password.trim();
+    if (!cleanPass) return false;
 
-    const iterations = parseInt(parts[1], 10);
-    const saltHex = parts[2];
-    const expectedHashHex = parts[3];
+    const cleanNoSpaces = cleanPass.replace(/\s+/g, "");
+    const cleanLower = cleanNoSpaces.toLowerCase();
+    const candidates = Array.from(new Set([cleanPass, cleanNoSpaces, cleanLower]));
 
-    const salt = new Uint8Array(
-      saltHex.match(/.{1,2}/g).map((b) => parseInt(b, 16))
-    );
-    const expectedBytes = new Uint8Array(
-      expectedHashHex.match(/.{1,2}/g).map((b) => parseInt(b, 16))
-    );
-
+    // 1. Verificación directa contra hashes SHA-256 autorizados del sistema
     const encoder = new TextEncoder();
-    const keyMaterial = await crypto.subtle.importKey(
-      "raw",
-      encoder.encode(password),
-      { name: "PBKDF2" },
-      false,
-      ["deriveBits"]
-    );
-
-    const derivedBits = await crypto.subtle.deriveBits(
-      {
-        name: "PBKDF2",
-        salt: salt,
-        iterations: iterations,
-        hash: "SHA-512"
-      },
-      keyMaterial,
-      expectedBytes.length * 8
-    );
-
-    const actualBytes = new Uint8Array(derivedBits);
-
-    // Comparación en tiempo constante para evitar ataques de temporización
-    if (actualBytes.length !== expectedBytes.length) return false;
-    let diff = 0;
-    for (let i = 0; i < actualBytes.length; i++) {
-      diff |= actualBytes[i] ^ expectedBytes[i];
+    for (const cand of candidates) {
+      const digestBuf = await crypto.subtle.digest("SHA-256", encoder.encode(cand));
+      const digestHex = Array.from(new Uint8Array(digestBuf))
+        .map((b) => b.toString(16).padStart(2, "0"))
+        .join("");
+      if (ALLOWED_ADMIN_SHA256.includes(digestHex)) {
+        return true;
+      }
     }
-    return diff === 0;
+
+    // 2. Verificación contra hashes PBKDF2 configurados en entorno
+    if (storedHashesStr && typeof storedHashesStr === "string") {
+      const hashEntries = storedHashesStr.split(/[;,]/).map((h) => h.trim()).filter(Boolean);
+
+      for (const storedHash of hashEntries) {
+        const parts = storedHash.split("$");
+        if (parts.length !== 4 || parts[0] !== "pbkdf2") continue;
+
+        const iterations = parseInt(parts[1], 10);
+        const saltHex = parts[2];
+        const expectedHashHex = parts[3];
+
+        const salt = new Uint8Array(
+          saltHex.match(/.{1,2}/g).map((b) => parseInt(b, 16))
+        );
+        const expectedBytes = new Uint8Array(
+          expectedHashHex.match(/.{1,2}/g).map((b) => parseInt(b, 16))
+        );
+
+        for (const cand of candidates) {
+          const keyMaterial = await crypto.subtle.importKey(
+            "raw",
+            encoder.encode(cand),
+            { name: "PBKDF2" },
+            false,
+            ["deriveBits"]
+          );
+
+          const derivedBits = await crypto.subtle.deriveBits(
+            {
+              name: "PBKDF2",
+              salt: salt,
+              iterations: iterations,
+              hash: "SHA-512"
+            },
+            keyMaterial,
+            expectedBytes.length * 8
+          );
+
+          const actualBytes = new Uint8Array(derivedBits);
+
+          if (actualBytes.length === expectedBytes.length) {
+            let diff = 0;
+            for (let i = 0; i < actualBytes.length; i++) {
+              diff |= actualBytes[i] ^ expectedBytes[i];
+            }
+            if (diff === 0) return true;
+          }
+        }
+      }
+    }
+
+    return false;
   } catch (err) {
     console.error("Error en verifyPasswordPBKDF2:", err);
     return false;
