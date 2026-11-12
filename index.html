@@ -219,7 +219,7 @@
         </a>
 
         <!-- Enlaces de Navegación de Escritorio (PC) - Sistema de Subpáginas Profesionales -->
-        <nav class="desktop-nav hidden md:flex items-center gap-3 lg:gap-5 text-xs sm:text-sm font-semibold text-[#000000] dark:text-gray-100">
+        <nav class="desktop-nav hidden md:flex items-center gap-3 lg:gap-6 text-xs sm:text-sm font-semibold text-[#000000] dark:text-gray-100">
           <a href="/" onclick="navigateTo('home'); return false;" id="nav-link-home" class="nav-tab-link active-nav-tab py-1 border-b-2 border-transparent hover:border-[#e72380] hover:text-[#e72380] dark:hover:text-rose-400 transition-all flex items-center gap-1.5">
             <i data-lucide="home" class="w-3.5 h-3.5 text-sage-600 dark:text-sage-400"></i>
             <span>Inicio</span>
@@ -235,14 +235,6 @@
           <a href="/guia-tallas" onclick="navigateTo('guia-tallas'); return false;" id="nav-link-tallas" class="nav-tab-link py-1 border-b-2 border-transparent hover:border-[#e72380] hover:text-[#e72380] dark:hover:text-rose-400 transition-all flex items-center gap-1" title="Guía oficial de medidas y tallas de anillos">
             <i data-lucide="ruler" class="w-3.5 h-3.5 text-sage-600 dark:text-sage-400"></i>
             <span>Guía de Tallas</span>
-          </a>
-          <a href="/garantia" onclick="navigateTo('garantia'); return false;" id="nav-link-garantia" class="nav-tab-link py-1 border-b-2 border-transparent hover:border-[#e72380] hover:text-[#e72380] dark:hover:text-rose-400 transition-all flex items-center gap-1" title="Garantía de 30 días y autenticidad S925">
-            <i data-lucide="shield-check" class="w-3.5 h-3.5 text-sage-600 dark:text-sage-400"></i>
-            <span>Garantía</span>
-          </a>
-          <a href="/envios" onclick="navigateTo('politicas', {subTab: 'envios'}); return false;" id="nav-link-envios" class="nav-tab-link py-1 border-b-2 border-transparent hover:border-[#e72380] hover:text-[#e72380] dark:hover:text-rose-400 transition-all flex items-center gap-1" title="Preparación, entregas personales en Tabasco y envíos nacionales">
-            <i data-lucide="truck" class="w-3.5 h-3.5 text-sage-600 dark:text-sage-400"></i>
-            <span>Envíos</span>
           </a>
           <a href="/nosotros" onclick="navigateTo('nosotros'); return false;" id="nav-link-nosotros" class="nav-tab-link py-1 border-b-2 border-transparent hover:border-[#e72380] hover:text-[#e72380] dark:hover:text-rose-400 transition-all flex items-center gap-1" title="Sobre Yamiki Joyería">
             <i data-lucide="sparkles" class="w-3.5 h-3.5 text-sage-600 dark:text-sage-400"></i>
@@ -340,18 +332,25 @@
         <i data-lucide="ruler" class="w-4 h-4 text-emerald-500"></i>
         <span>Guía Oficial de Tallas</span>
       </a>
-      <a href="/garantia" onclick="navigateTo('garantia'); document.getElementById('mobile-menu').classList.add('hidden'); return false;" class="block py-2 text-sm font-semibold text-[#000000] hover:text-[#e72380] dark:text-gray-100 dark:hover:text-rose-400 border-b border-gray-100 dark:border-white/5 flex items-center gap-2">
-        <i data-lucide="shield-check" class="w-4 h-4 text-emerald-500"></i>
-        <span>Garantía y Pureza S925</span>
-      </a>
-      <a href="/envios" onclick="navigateTo('politicas', {subTab: 'envios'}); document.getElementById('mobile-menu').classList.add('hidden'); return false;" class="block py-2 text-sm font-semibold text-[#000000] hover:text-[#e72380] dark:text-gray-100 dark:hover:text-rose-400 border-b border-gray-100 dark:border-white/5 flex items-center gap-2">
-        <i data-lucide="truck" class="w-4 h-4 text-sky-500"></i>
-        <span>Envíos y Entregas en Tabasco</span>
-      </a>
       <a href="/nosotros" onclick="navigateTo('nosotros'); document.getElementById('mobile-menu').classList.add('hidden'); return false;" class="block py-2 text-sm font-semibold text-[#000000] hover:text-[#e72380] dark:text-gray-100 dark:hover:text-rose-400 border-b border-gray-100 dark:border-white/5 flex items-center gap-2">
         <i data-lucide="sparkles" class="w-4 h-4 text-rose-500"></i>
         <span>Sobre Yamiki Joyería</span>
       </a>
+
+      <!-- Acceso Rápido: Ayuda, Envíos y Garantía en Móvil -->
+      <div class="py-2.5 border-b border-gray-100 dark:border-white/5 space-y-1.5">
+        <span class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider">Ayuda & Envíos</span>
+        <div class="grid grid-cols-2 gap-2 text-xs">
+          <a href="/envios" onclick="navigateTo('politicas', {subTab: 'envios'}); document.getElementById('mobile-menu').classList.add('hidden'); return false;" class="p-2 rounded-xl bg-gray-50 dark:bg-white/5 hover:text-[#e72380] flex items-center gap-1.5 font-medium text-gray-700 dark:text-gray-300">
+            <i data-lucide="truck" class="w-3.5 h-3.5 text-sky-500"></i>
+            <span>Envíos</span>
+          </a>
+          <a href="/garantia" onclick="navigateTo('garantia'); document.getElementById('mobile-menu').classList.add('hidden'); return false;" class="p-2 rounded-xl bg-gray-50 dark:bg-white/5 hover:text-[#e72380] flex items-center gap-1.5 font-medium text-gray-700 dark:text-gray-300">
+            <i data-lucide="shield-check" class="w-3.5 h-3.5 text-emerald-500"></i>
+            <span>Garantía S925</span>
+          </a>
+        </div>
+      </div>
 
       <div class="pt-3 flex items-center justify-between">
         <span class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Tema Visual</span>
@@ -2329,22 +2328,35 @@
   <footer class="bg-sage-950 text-sage-300 pt-12 pb-8 border-t border-sage-800">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       
-      <div class="grid grid-cols-1 md:grid-cols-12 gap-8 pb-10 border-b border-sage-800/80">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-8 pb-10 border-b border-sage-800/80">
         
-        <div class="md:col-span-5 space-y-3.5">
+        <!-- Columna 1: Marca y Ubicación (lg:col-span-4) -->
+        <div class="lg:col-span-4 space-y-3.5">
           <div class="flex items-center gap-2.5">
-            <div class="w-8 h-8 rounded-full bg-rose-400 text-sage-950 flex items-center justify-center font-bold">
-              ✨
+            <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-[#000000] via-[#2D3C35] to-[#e72380] text-white flex items-center justify-center font-bold shadow-xs border border-white/20">
+              <i data-lucide="gem" class="w-4 h-4 text-white"></i>
             </div>
-            <span class="font-sans text-2xl font-extrabold text-white tracking-wide" data-bind="brandName">Yamiki</span>
+            <div class="flex flex-col">
+              <span class="font-sans text-xl font-extrabold text-white tracking-wide leading-none" data-bind="brandName">Yamiki</span>
+              <span class="text-[9px] uppercase tracking-wider font-bold text-rose-400 leading-none mt-1">Plata Ley S925</span>
+            </div>
           </div>
           <p class="text-xs text-sage-400 max-w-sm leading-relaxed" data-bind="slogan">
-            Joyería de plata única y elegante hecha para ti.
+            Joyería fina en Plata Esterlina S925. Diseños únicos, elegantes y con garantía de calidad para cada momento especial.
           </p>
-          <p class="text-xs text-rose-300 font-semibold">WhatsApp Oficial: +52 993 290 2704</p>
+          <div class="pt-1 space-y-1.5 text-xs text-sage-400">
+            <p class="flex items-center gap-2 text-sage-300">
+              <i data-lucide="map-pin" class="w-3.5 h-3.5 text-rose-400 shrink-0"></i>
+              <span>Tacotalpa, Tabasco, México</span>
+            </p>
+            <p class="flex items-center gap-2 text-sage-300">
+              <i data-lucide="phone" class="w-3.5 h-3.5 text-emerald-400 shrink-0"></i>
+              <span>WhatsApp: +52 993 290 2704</span>
+            </p>
+          </div>
 
-          <!-- Iconos rápidos de Redes Sociales con Logos Oficiales -->
-          <div class="pt-1 flex items-center gap-2.5">
+          <!-- Redes Sociales Rápidas con Logos Oficiales -->
+          <div class="pt-2 flex items-center gap-2.5">
             <a 
               href="https://www.instagram.com/yamiki_oficial?exln=MW5teW12N3Fpa3cxNA%3D%3D&utm_source=qr" 
               target="_blank"
@@ -2387,67 +2399,54 @@
           </div>
         </div>
 
-        <div class="md:col-span-3 space-y-2">
-          <h5 class="text-xs font-bold uppercase tracking-widest text-rose-300">Navegación</h5>
-          <ul class="space-y-1.5 text-xs text-sage-400">
+        <!-- Columna 2: Explorar Tienda (lg:col-span-2) -->
+        <div class="lg:col-span-2 space-y-2.5">
+          <h5 class="text-xs font-bold uppercase tracking-widest text-rose-300">Explorar</h5>
+          <ul class="space-y-2 text-xs text-sage-400">
             <li><a href="/" onclick="navigateTo('home'); return false;" class="hover:text-white transition">Inicio</a></li>
             <li><a href="/catalogo" onclick="navigateTo('catalogo'); return false;" class="hover:text-white transition">Catálogo Completo</a></li>
-            <li><a href="/guia-tallas" onclick="navigateTo('guia-tallas'); return false;" class="hover:text-white transition">Guía Oficial de Tallas</a></li>
-            <li><a href="/garantia" onclick="navigateTo('garantia'); return false;" class="hover:text-white transition">Garantía y Pureza S925</a></li>
+            <li><a href="/ofertas" onclick="navigateTo('catalogo', { category: 'ofertas' }); return false;" class="hover:text-white text-rose-300 font-semibold transition">Ofertas Especiales</a></li>
+            <li><a href="/guia-tallas" onclick="navigateTo('guia-tallas'); return false;" class="hover:text-white transition">Guía de Tallas</a></li>
             <li><a href="/nosotros" onclick="navigateTo('nosotros'); return false;" class="hover:text-white transition">Sobre Nosotros</a></li>
-            <li><a href="/envios" onclick="navigateTo('politicas', {subTab: 'envios'}); return false;" class="hover:text-white transition">Envíos y Entregas en Tabasco</a></li>
-            <li><a href="/cambios" onclick="navigateTo('politicas', {subTab: 'cambios'}); return false;" class="hover:text-white transition">Cambios y Devoluciones</a></li>
-            <li><a href="/terminos" onclick="navigateTo('politicas', {subTab: 'terminos'}); return false;" class="hover:text-white transition">Términos del Servicio</a></li>
-            <li><a href="/privacidad" onclick="navigateTo('politicas', {subTab: 'privacidad'}); return false;" class="hover:text-white transition">Aviso de Privacidad (LFPDPPP)</a></li>
           </ul>
         </div>
 
-        <div class="md:col-span-4 space-y-2.5">
-          <h5 class="text-xs font-bold uppercase tracking-widest text-rose-300">Contacto & Redes Oficiales</h5>
-          <div class="space-y-2 text-xs">
-            <!-- Botón Instagram Oficial con Logo SVG -->
-            <a 
-              href="https://www.instagram.com/yamiki_oficial?exln=MW5teW12N3Fpa3cxNA%3D%3D&utm_source=qr" 
-              target="_blank"
-              rel="noopener noreferrer"
-              class="inline-flex items-center gap-2.5 px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/15 text-white text-xs font-semibold border border-white/10 hover:border-pink-400/50 transition w-full group"
-            >
-              <span class="w-6 h-6 rounded-lg flex items-center justify-center shrink-0" style="background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285AEB 90%);">
-                <svg class="w-3.5 h-3.5 fill-white" viewBox="0 0 24 24">
-                  <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
-                </svg>
-              </span>
-              <span>Instagram: @yamiki_oficial</span>
-            </a>
+        <!-- Columna 3: Ayuda & Políticas (lg:col-span-3) -->
+        <div class="lg:col-span-3 space-y-2.5">
+          <h5 class="text-xs font-bold uppercase tracking-widest text-rose-300">Ayuda & Políticas</h5>
+          <ul class="space-y-2 text-xs text-sage-400">
+            <li><a href="/envios" onclick="navigateTo('politicas', {subTab: 'envios'}); return false;" class="hover:text-white transition flex items-center gap-1.5"><span>📦 Preparación y Envíos</span></a></li>
+            <li><a href="/envios" onclick="navigateTo('politicas', {subTab: 'envios'}); return false;" class="hover:text-white transition flex items-center gap-1.5"><span>📍 Entregas en Tabasco</span></a></li>
+            <li><a href="/garantia" onclick="navigateTo('garantia'); return false;" class="hover:text-white transition flex items-center gap-1.5"><span>🛡️ Garantía S925 (30 Días)</span></a></li>
+            <li><a href="/cambios" onclick="navigateTo('politicas', {subTab: 'cambios'}); return false;" class="hover:text-white transition">Cambios y Devoluciones</a></li>
+            <li><a href="/privacidad" onclick="navigateTo('politicas', {subTab: 'privacidad'}); return false;" class="hover:text-white transition">Aviso de Privacidad</a></li>
+            <li><a href="/terminos" onclick="navigateTo('politicas', {subTab: 'terminos'}); return false;" class="hover:text-white transition">Términos del Servicio</a></li>
+          </ul>
+        </div>
 
-            <!-- Botón Facebook Oficial con Logo SVG -->
-            <a 
-              href="https://www.facebook.com/share/1FDfvHc4p3/?mibextid=wwXIfr" 
-              target="_blank"
-              rel="noopener noreferrer"
-              class="inline-flex items-center gap-2.5 px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/15 text-white text-xs font-semibold border border-white/10 hover:border-blue-400/50 transition w-full group"
-            >
-              <span class="w-6 h-6 rounded-lg bg-[#1877F2] flex items-center justify-center shrink-0">
-                <svg class="w-3.5 h-3.5 fill-white" viewBox="0 0 24 24">
-                  <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-                </svg>
-              </span>
-              <span>Facebook: Yamiki Joyería</span>
-            </a>
-
-            <!-- Botón WhatsApp Oficial con Logo SVG -->
+        <!-- Columna 4: Atención al Cliente (lg:col-span-3) -->
+        <div class="lg:col-span-3 space-y-2.5">
+          <h5 class="text-xs font-bold uppercase tracking-widest text-rose-300">Atención al Cliente</h5>
+          <p class="text-xs text-sage-400 leading-relaxed">
+            ¿Tienes dudas sobre una joya, tu talla de anillo o una entrega personal? Te atendemos con gusto directamente por WhatsApp.
+          </p>
+          <div class="space-y-2 pt-1">
             <a 
               href="https://wa.me/529932902704" 
               target="_blank"
               rel="noopener noreferrer"
-              class="inline-flex items-center gap-2.5 px-3.5 py-2 rounded-xl bg-[#25D366] text-white text-xs font-bold hover:bg-[#20ba5a] transition shadow-xs w-full group"
+              class="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-[#25D366] hover:bg-[#20ba5a] text-white text-xs font-bold transition shadow-sm w-full group"
             >
-              <span class="w-6 h-6 rounded-lg bg-white/20 flex items-center justify-center shrink-0">
-                <svg class="w-3.5 h-3.5 fill-white" viewBox="0 0 24 24">
-                  <path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0 0 12.04 2zm.01 1.67c2.2 0 4.26.86 5.82 2.42a8.225 8.225 0 0 1 2.41 5.83c0 4.54-3.7 8.24-8.24 8.24-1.48 0-2.93-.4-4.2-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.196 8.196 0 0 1-1.26-4.38c0-4.54 3.7-8.24 8.24-8.24zm4.52 11.66c-.25-.13-1.47-.72-1.7-.81-.23-.08-.39-.13-.56.13-.17.25-.64.81-.79.97-.14.17-.29.19-.54.06-.25-.13-1.06-.39-2.01-1.24-.74-.66-1.25-1.48-1.39-1.73-.14-.25-.02-.39.11-.51.11-.11.25-.29.37-.43.13-.15.17-.25.25-.42.08-.17.04-.31-.02-.44-.06-.13-.56-1.34-.76-1.84-.2-.48-.4-.42-.56-.43h-.47c-.17 0-.44.06-.67.31-.23.25-.88.86-.88 2.1 0 1.24.9 2.44 1.03 2.61.13.17 1.77 2.7 4.29 3.79.6.26 1.07.41 1.44.53.6.19 1.15.16 1.58.1.48-.07 1.47-.6 1.68-1.18.21-.58.21-1.07.15-1.18-.06-.11-.23-.18-.48-.3z"/>
-                </svg>
-              </span>
-              <span>WhatsApp: +52 993 290 2704</span>
+              <i data-lucide="message-circle" class="w-4 h-4"></i>
+              <span>Chatear por WhatsApp</span>
+            </a>
+            <a 
+              href="https://www.instagram.com/yamiki_oficial?exln=MW5teW12N3Fpa3cxNA%3D%3D&utm_source=qr" 
+              target="_blank"
+              rel="noopener noreferrer"
+              class="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-white/10 hover:bg-white/15 text-white text-xs font-medium border border-white/10 transition w-full"
+            >
+              <span>Instagram: @yamiki_oficial</span>
             </a>
           </div>
         </div>

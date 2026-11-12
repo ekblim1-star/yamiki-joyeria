@@ -1085,7 +1085,6 @@ function updateNavTabsHighlight() {
   const navCat = document.getElementById("nav-link-catalogo");
   const navOfertas = document.getElementById("nav-link-ofertas");
   const navTallas = document.getElementById("nav-link-tallas");
-  const navGarantia = document.getElementById("nav-link-garantia");
   const navNosotros = document.getElementById("nav-link-nosotros");
 
   const setTab = (el, active) => {
@@ -1105,7 +1104,6 @@ function updateNavTabsHighlight() {
   setTab(navCat, current === "catalogo" && !isOfertas);
   setTab(navOfertas, isOfertas);
   setTab(navTallas, current === "guia-tallas");
-  setTab(navGarantia, current === "garantia");
   setTab(navNosotros, current === "nosotros");
 }
 
