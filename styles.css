@@ -202,7 +202,7 @@ html.dark #inicio {
 /* 1. MÓVIL / CELULAR (Pantallas < 640px) */
 .hero-3d-bg,
 #yamiki-hero-root {
-  background-image: url('img/hero-bg-mobile-light.png') !important;
+  background-image: url('img/hero-bg-mobile-light.webp') !important;
   background-size: cover !important;
   background-position: center top !important;
   background-repeat: no-repeat !important;
@@ -211,21 +211,21 @@ html.dark #inicio {
 
 html.dark .hero-3d-bg,
 html.dark #yamiki-hero-root {
-  background-image: url('img/hero-bg-mobile-dark.png') !important;
+  background-image: url('img/hero-bg-mobile-dark.webp') !important;
 }
 
 /* 2. PC / ESCRITORIO Y TABLETS (Pantallas >= 640px) */
 @media (min-width: 640px) {
   .hero-3d-bg,
   #yamiki-hero-root {
-    background-image: url('img/hero-bg-pc-light.png') !important;
+    background-image: url('img/hero-bg-pc-light.webp') !important;
     background-size: cover !important;
     background-position: center center !important;
   }
 
   html.dark .hero-3d-bg,
   html.dark #yamiki-hero-root {
-    background-image: url('img/hero-bg-pc-dark.png') !important;
+    background-image: url('img/hero-bg-pc-dark.webp') !important;
   }
 }
 

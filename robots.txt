@@ -1,0 +1,9 @@
+# Robots.txt oficial para Yamiki Joyería S925
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /api/admin/
+
+# Sitemaps oficiales
+Sitemap: https://yamiki-joyeria.pages.dev/sitemap.xml
+Sitemap: https://yamikijoyeria.com/sitemap.xml

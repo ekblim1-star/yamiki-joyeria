@@ -1165,6 +1165,8 @@ function navigateTo(viewName, options = {}) {
     targetView = "guia-tallas";
   } else if (v === "nosotros") {
     targetView = "nosotros";
+  } else if (v === "politicas" || v === "privacidad" || v === "envios" || v === "cambios" || v === "devoluciones") {
+    targetView = "politicas";
   }
   state.currentView = targetView;
 
@@ -1174,7 +1176,8 @@ function navigateTo(viewName, options = {}) {
     producto: document.getElementById("view-producto"),
     garantia: document.getElementById("view-garantia"),
     "guia-tallas": document.getElementById("view-guia-tallas"),
-    nosotros: document.getElementById("view-nosotros")
+    nosotros: document.getElementById("view-nosotros"),
+    politicas: document.getElementById("view-politicas")
   };
 
   Object.entries(views).forEach(([name, el]) => {
@@ -1289,11 +1292,66 @@ function navigateTo(viewName, options = {}) {
       history.pushState(null, "", "/nosotros");
     }
     window.scrollTo({ top: 0, behavior: "smooth" });
+
+  } else if (targetView === "politicas") {
+    if (typeof stopHeroAutoPlay === "function") stopHeroAutoPlay();
+    if (typeof stopCarouselAutoPlay === "function") stopCarouselAutoPlay();
+    const subTab = options.subTab || (v === "privacidad" ? "privacidad" : v === "envios" ? "envios" : (v === "cambios" || v === "devoluciones") ? "cambios" : v === "terminos" ? "terminos" : v === "garantia" ? "garantia" : "envios");
+    switchPolicyTab(subTab);
+    if (options.pushState !== false) {
+      const urlPath = (subTab === "privacidad") ? "/privacidad" :
+                      (subTab === "envios") ? "/envios" :
+                      (subTab === "cambios") ? "/cambios" :
+                      (subTab === "terminos") ? "/terminos" :
+                      (subTab === "garantia") ? "/garantia" : "/politicas";
+      history.pushState(null, "", urlPath);
+    }
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
   updateNavTabsHighlight();
   safeCreateIcons();
 }
+
+/**
+ * Cambia la pestaña activa en la vista de Políticas y Envíos
+ * @param {string} tabId - "envios" | "cambios" | "garantia" | "terminos" | "privacidad"
+ */
+function switchPolicyTab(tabId) {
+  const validTabs = ["envios", "cambios", "garantia", "terminos", "privacidad"];
+  const activeTab = validTabs.includes(tabId) ? tabId : "envios";
+
+  validTabs.forEach(id => {
+    const btn = document.getElementById(`policy-tab-btn-${id}`);
+    const panel = document.getElementById(`policy-panel-${id}`);
+    if (panel) {
+      if (id === activeTab) {
+        panel.classList.remove("hidden");
+      } else {
+        panel.classList.add("hidden");
+      }
+    }
+    if (btn) {
+      if (id === activeTab) {
+        btn.className = "policy-tab-btn flex-1 min-w-[110px] py-2.5 px-3 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 bg-[#e72380] text-white shadow-xs shrink-0";
+      } else {
+        btn.className = "policy-tab-btn flex-1 min-w-[110px] py-2.5 px-3 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 text-gray-500 dark:text-gray-400 hover:text-white hover:bg-white/5 shrink-0";
+      }
+    }
+  });
+
+  const titles = {
+    envios: "Disponibilidad, Entregas y Envíos | Yamiki Joyería",
+    cambios: "Cambios y Devoluciones | Yamiki Joyería",
+    garantia: "Garantía de Autenticidad Plata S925 | Yamiki Joyería",
+    terminos: "Términos y Condiciones de Compra | Yamiki Joyería",
+    privacidad: "Aviso de Privacidad (LFPDPPP) | Yamiki Joyería Tacotalpa"
+  };
+  document.title = titles[activeTab] || "Políticas Comerciales y Envíos | Yamiki Joyería";
+
+  if (typeof safeCreateIcons === "function") safeCreateIcons();
+}
+window.switchPolicyTab = switchPolicyTab;
 
 /**
  * Escucha cambios en la URL (subpáginas limpias, popstate, hash de compatibilidad y botones Atrás/Adelante)
@@ -1394,6 +1452,19 @@ function handleUrlRouting(event) {
   // Subpágina /nosotros
   if (pathname === "/nosotros" || pathname === "/sobre-nosotros" || hash === "#/nosotros" || hash === "#nosotros") {
     navigateTo("nosotros", { pushState: false });
+    return;
+  }
+
+  // Subpágina /politicas, /privacidad, /envios, /cambios, /devoluciones, /terminos
+  if (pathname === "/politicas" || pathname === "/privacidad" || pathname === "/envios" || pathname === "/cambios" || pathname === "/devoluciones" || pathname === "/terminos" ||
+      hash.startsWith("#/politicas") || hash.startsWith("#/privacidad") || hash.startsWith("#/envios") || hash.startsWith("#/cambios") || hash.startsWith("#/devoluciones") || hash.startsWith("#/terminos") ||
+      hash === "#politicas" || hash === "#privacidad" || hash === "#envios" || hash === "#cambios" || hash === "#devoluciones" || hash === "#terminos") {
+    let subTab = "envios";
+    if (pathname === "/privacidad" || hash.includes("privacidad")) subTab = "privacidad";
+    else if (pathname === "/cambios" || pathname === "/devoluciones" || hash.includes("cambios") || hash.includes("devoluciones")) subTab = "cambios";
+    else if (pathname === "/envios" || hash.includes("envios")) subTab = "envios";
+    else if (pathname === "/terminos" || hash.includes("terminos")) subTab = "terminos";
+    navigateTo("politicas", { subTab: subTab, pushState: false });
     return;
   }
 
@@ -2431,7 +2502,7 @@ function sendOrderToWhatsApp() {
   message += `────────────────────\n`;
   message += `• *Total de piezas:* ${totalPieces}\n`;
   message += `• *TOTAL GENERAL:* *${formatCurrency(totalAmount)} ${BUSINESS_CONFIG.currencyCode}*\n`;
-  message += `• *GARANTÍA INCLUIDA:* 30 días contra cualquier defecto de fábrica en Plata Ley S925\n\n`;
+  message += `• *GARANTÍA:* 30 días por defectos de fabricación en Plata Ley S925 (92.5% plata)\n\n`;
 
   message += `*DATOS DEL CLIENTE:*\n`;
   message += `• *Nombre:* ${customerName ? customerName : "Por acordar"}\n`;
@@ -3015,11 +3086,13 @@ function navigateToProduct(productId, defaultSize = null, defaultVariantId = nul
   // Renderizar la joya en view-producto
   renderProductPage(prod, defaultSize, defaultVariantId);
 
-  // Actualizar título de la pestaña del navegador
+  // Actualizar metadatos dinámicos SEO, Open Graph y Schema.org
   try {
-    const cleanT = cleanOrderTitle(prod.name);
-    document.title = `${cleanT} | Yamiki Joyería S925`;
-  } catch (e) {}
+    const slug = encodeURIComponent(prod.groupId || prod.code || prod.id);
+    updateProductPageMetadata(prod, slug);
+  } catch (e) {
+    console.warn("Fallo al actualizar metadatos del producto:", e);
+  }
 
   // Actualizar URL limpia para compartir
   if (options.pushState !== false) {
@@ -3031,10 +3104,112 @@ function navigateToProduct(productId, defaultSize = null, defaultVariantId = nul
 }
 
 /**
+ * Actualiza dinámicamente los metadatos SEO, Open Graph y Schema.org al visualizar una joya
+ */
+function updateProductPageMetadata(prod, slug) {
+  if (!prod) return;
+  const cleanT = cleanOrderTitle(prod.name);
+  const title = `${cleanT} | Yamiki Joyería S925`;
+  const price = prod.price ? `$${Math.round(prod.price)} MXN` : "Plata Ley S925";
+  const desc = prod.description
+    ? prod.description.substring(0, 160).trim()
+    : `Joya auténtica en Plata Esterlina Ley S925. ${price}. Envíos protegidos y garantía de autenticidad.`;
+  const photo = prod.image || "https://yamiki-joyeria.pages.dev/img/hero-bg-pc-dark.webp";
+  const url = `https://yamiki-joyeria.pages.dev/joya/${slug}`;
+
+  // Título y descripción
+  document.title = title;
+  const descMeta = document.querySelector('meta[name="description"]');
+  if (descMeta) descMeta.setAttribute("content", desc);
+
+  // Canonical
+  let canonicalEl = document.querySelector('link[rel="canonical"]');
+  if (canonicalEl) canonicalEl.setAttribute("href", url);
+
+  // Open Graph
+  const setMeta = (prop, val) => {
+    let el = document.querySelector(`meta[property="${prop}"]`);
+    if (el) el.setAttribute("content", val);
+  };
+  setMeta("og:title", title);
+  setMeta("og:description", desc);
+  setMeta("og:image", photo);
+  setMeta("og:image:secure_url", photo);
+  setMeta("og:url", url);
+  setMeta("og:type", "product");
+
+  // Twitter
+  const setTwitter = (name, val) => {
+    let el = document.querySelector(`meta[name="${name}"]`);
+    if (el) el.setAttribute("content", val);
+  };
+  setTwitter("twitter:title", title);
+  setTwitter("twitter:description", desc);
+  setTwitter("twitter:image", photo);
+
+  // Schema.org Product JSON-LD dinámico
+  let schemaScript = document.getElementById("schema-product-ld");
+  if (!schemaScript) {
+    schemaScript = document.createElement("script");
+    schemaScript.type = "application/ld+json";
+    schemaScript.id = "schema-product-ld";
+    document.head.appendChild(schemaScript);
+  }
+  schemaScript.textContent = JSON.stringify({
+    "@context": "https://schema.org/",
+    "@type": "Product",
+    "name": prod.name,
+    "image": [photo],
+    "description": desc,
+    "sku": prod.code || slug,
+    "material": "Plata Esterlina Ley S925",
+    "brand": {
+      "@type": "Brand",
+      "name": "Yamiki Joyería"
+    },
+    "offers": {
+      "@type": "Offer",
+      "url": url,
+      "priceCurrency": "MXN",
+      "price": String(Math.round(prod.price || 350)),
+      "itemCondition": "https://schema.org/NewCondition",
+      "availability": prod.stock ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+      "seller": {
+        "@type": "Organization",
+        "name": "Yamiki Joyería"
+      }
+    }
+  });
+}
+
+function restoreDefaultMetadata() {
+  document.title = "Yamiki | Joyería en Plata Ley S925 - Catálogo Oficial";
+  const descMeta = document.querySelector('meta[name="description"]');
+  if (descMeta) {
+    descMeta.setAttribute("content", "Joyería de plata única y elegante hecha para ti. Catálogo exclusivo de piezas en auténtica Plata Ley S925: collares, anillos con medidas, aretes y pulseras. Envíos protegidos a todo México y garantía de autenticidad S925.");
+  }
+  const canonicalEl = document.querySelector('link[rel="canonical"]');
+  if (canonicalEl) canonicalEl.setAttribute("href", "https://yamiki-joyeria.pages.dev/");
+
+  const setMeta = (prop, val) => {
+    let el = document.querySelector(`meta[property="${prop}"]`);
+    if (el) el.setAttribute("content", val);
+  };
+  setMeta("og:title", "Yamiki | Joyería en Plata Ley S925 - Catálogo Oficial");
+  setMeta("og:description", "Catálogo exclusivo de joyería en auténtica Plata Esterlina Ley S925 en México: anillos con medidas, collares, aretes y pulseras. Envíos protegidos y garantía de autenticidad S925.");
+  setMeta("og:image", "https://yamiki-joyeria.pages.dev/img/hero-bg-pc-dark.webp");
+  setMeta("og:url", "https://yamiki-joyeria.pages.dev/");
+  setMeta("og:type", "website");
+
+  const schemaScript = document.getElementById("schema-product-ld");
+  if (schemaScript) schemaScript.remove();
+}
+
+/**
  * Regresa suavemente al catálogo o a la vista de origen restaurando la posición de scroll
  */
 function returnToCatalog() {
-  document.title = "Yamiki Joyería | Plata Esterlina Ley S925";
+  restoreDefaultMetadata();
   const target = state.sourceViewBeforeProduct || "catalogo";
   const savedY = state.catalogScrollPosition || 0;
 
