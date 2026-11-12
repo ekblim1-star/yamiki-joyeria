@@ -3145,12 +3145,18 @@ function initAdminTurnstile() {
           size: "flexible",
           callback: function(token) {
             adminTurnstileToken = token;
+            const errorMsg = document.getElementById("pin-error-msg");
+            if (errorMsg && errorMsg.textContent.includes("seguridad")) {
+              errorMsg.classList.add("hidden");
+              errorMsg.textContent = "";
+            }
           },
           "expired-callback": function() {
             adminTurnstileToken = null;
           },
           "error-callback": function() {
-            adminTurnstileToken = "bypassed_network_fallback";
+            adminTurnstileToken = null;
+            console.warn("[Turnstile Admin] El widget reportó un error al verificar.");
           }
         });
       } catch (err) {
@@ -3314,10 +3320,23 @@ async function handlePinSubmit(e) {
     return;
   }
 
-  if (TURNSTILE_CONFIG.enabled && typeof turnstile !== "undefined" && !adminTurnstileToken) {
+  let currentTurnstileToken = adminTurnstileToken;
+  if (!currentTurnstileToken && typeof turnstile !== "undefined" && adminTurnstileWidgetId !== null) {
+    try {
+      currentTurnstileToken = turnstile.getResponse(adminTurnstileWidgetId);
+    } catch (e) {}
+  }
+  if (!currentTurnstileToken && typeof document !== "undefined") {
+    const hiddenInput = document.querySelector('[name="cf-turnstile-response"]');
+    if (hiddenInput && hiddenInput.value) {
+      currentTurnstileToken = hiddenInput.value;
+    }
+  }
+
+  if (TURNSTILE_CONFIG.enabled && typeof turnstile !== "undefined" && !currentTurnstileToken) {
     const errorMsg = document.getElementById("pin-error-msg");
     if (errorMsg) {
-      errorMsg.textContent = "Por favor completa la verificación de seguridad antes de continuar.";
+      errorMsg.textContent = "Verificando seguridad con Cloudflare... Por favor espera a que aparezca la palomita verde.";
       errorMsg.classList.remove("hidden");
     }
     initAdminTurnstile();
@@ -3329,8 +3348,8 @@ async function handlePinSubmit(e) {
   const val = input ? input.value.trim() : "";
   if (!val) return;
 
-  const submitBtn = document.getElementById("admin-pin-submit");
-  const origBtnText = submitBtn ? submitBtn.innerHTML : "Acceder";
+  const submitBtn = document.getElementById("pin-submit-btn") || document.getElementById("admin-pin-submit");
+  const origBtnText = submitBtn ? submitBtn.innerHTML : "Desbloquear Panel";
   if (submitBtn) {
     submitBtn.disabled = true;
     submitBtn.innerHTML = `<i data-lucide="loader" class="w-4 h-4 animate-spin inline mr-1"></i> Verificando...`;
@@ -3347,7 +3366,7 @@ async function handlePinSubmit(e) {
       credentials: "same-origin",
       body: JSON.stringify({
         password: val,
-        turnstileToken: adminTurnstileToken || "dummy_dev_token"
+        turnstileToken: currentTurnstileToken || "dummy_dev_token"
       })
     });
 

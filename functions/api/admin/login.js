@@ -35,9 +35,8 @@ async function verifyTurnstileToken(token, secretKey, remoteIp, isDevEnvironment
     const formData = new FormData();
     formData.append("secret", secretKey);
     formData.append("response", token);
-    if (remoteIp && remoteIp !== "127.0.0.1") {
-      formData.append("remoteip", remoteIp);
-    }
+    // Nota de seguridad Cloudflare: no se envía remoteip para evitar falsos rechazos (invalid-remoteip)
+    // causados por conexiones móviles, NAT de operadores o diferencias IPv4/IPv6 entre el iframe y la función.
 
     const res = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
       method: "POST",
@@ -51,6 +50,7 @@ async function verifyTurnstileToken(token, secretKey, remoteIp, isDevEnvironment
 
     const outcome = await res.json();
     if (outcome.success !== true) {
+      console.error("[SEGURIDAD]: Cloudflare Turnstile Siteverify denegó el token:", outcome["error-codes"] || outcome);
       return false;
     }
 
@@ -61,6 +61,8 @@ async function verifyTurnstileToken(token, secretKey, remoteIp, isDevEnvironment
       const isAllowedHost = normIssued === normExpected ||
         normExpected.endsWith("." + normIssued) ||
         normIssued.endsWith("." + normExpected) ||
+        normIssued.includes("yamiki-joyeria.pages.dev") ||
+        normIssued.includes("yamikijoyeria.com") ||
         (normExpected === "localhost" && normIssued === "127.0.0.1") ||
         (normExpected === "127.0.0.1" && normIssued === "localhost");
 
