@@ -63,6 +63,9 @@ async function verifyTurnstileToken(token, secretKey, remoteIp, isDevEnvironment
         normIssued.endsWith("." + normExpected) ||
         normIssued.includes("yamiki-joyeria.pages.dev") ||
         normIssued.includes("yamikijoyeria.com") ||
+        normIssued.endsWith(".pages.dev") ||
+        normIssued === "pages.dev" ||
+        normExpected.endsWith(".pages.dev") ||
         (normExpected === "localhost" && normIssued === "127.0.0.1") ||
         (normExpected === "127.0.0.1" && normIssued === "localhost");
 

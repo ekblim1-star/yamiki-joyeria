@@ -3146,13 +3146,18 @@ function initAdminTurnstile() {
           callback: function(token) {
             adminTurnstileToken = token;
             const errorMsg = document.getElementById("pin-error-msg");
-            if (errorMsg && errorMsg.textContent.includes("seguridad")) {
+            if (errorMsg && (errorMsg.textContent.includes("seguridad") || errorMsg.textContent.includes("Cloudflare"))) {
               errorMsg.classList.add("hidden");
               errorMsg.textContent = "";
             }
           },
           "expired-callback": function() {
             adminTurnstileToken = null;
+            const errorMsg = document.getElementById("pin-error-msg");
+            if (errorMsg) {
+              errorMsg.textContent = "La verificación de seguridad caducó. Por favor vuelve a verificar.";
+              errorMsg.classList.remove("hidden");
+            }
           },
           "error-callback": function() {
             adminTurnstileToken = null;
@@ -3163,7 +3168,7 @@ function initAdminTurnstile() {
         console.warn("[Turnstile Admin] Error:", err);
       }
     }
-  } else if (adminTurnstileRetries < 5) {
+  } else if (adminTurnstileRetries < 8) {
     adminTurnstileRetries++;
     setTimeout(initAdminTurnstile, 500);
   }
@@ -3336,10 +3341,15 @@ async function handlePinSubmit(e) {
     }
   }
 
-  if (TURNSTILE_CONFIG.enabled && typeof turnstile !== "undefined" && !currentTurnstileToken) {
+  // Si Turnstile está habilitado y no hay token listo, guiar al usuario sin enviar peticiones inválidas
+  if (TURNSTILE_CONFIG.enabled && !currentTurnstileToken) {
     const errorMsg = document.getElementById("pin-error-msg");
     if (errorMsg) {
-      errorMsg.textContent = "Verificando seguridad con Cloudflare... Por favor espera a que aparezca la palomita verde.";
+      if (typeof turnstile === "undefined") {
+        errorMsg.textContent = "El sistema de seguridad de Cloudflare se está iniciando. Por favor espera un momento...";
+      } else {
+        errorMsg.textContent = "Por favor espera a que Cloudflare termine de verificar (aparecerá la palomita verde).";
+      }
       errorMsg.classList.remove("hidden");
     }
     initAdminTurnstile();
@@ -3350,6 +3360,12 @@ async function handlePinSubmit(e) {
   const errorMsg = document.getElementById("pin-error-msg");
   const val = input ? input.value.trim() : "";
   if (!val) return;
+
+  // Consumir token de un solo uso inmediatamente para evitar reenvíos duplicados
+  const tokenToSend = currentTurnstileToken;
+  adminTurnstileToken = null;
+  const hiddenInput = document.querySelector('[name="cf-turnstile-response"]');
+  if (hiddenInput) hiddenInput.value = "";
 
   const submitBtn = document.getElementById("pin-submit-btn") || document.getElementById("admin-pin-submit");
   const origBtnText = submitBtn ? submitBtn.innerHTML : "Desbloquear Panel";
@@ -3369,7 +3385,7 @@ async function handlePinSubmit(e) {
       credentials: "same-origin",
       body: JSON.stringify({
         password: val,
-        turnstileToken: currentTurnstileToken || "dummy_dev_token"
+        turnstileToken: tokenToSend || ""
       })
     });
 
@@ -3388,6 +3404,10 @@ async function handlePinSubmit(e) {
         errorMsg.textContent = data.error || "Demasiados intentos fallidos. Panel bloqueado temporalmente.";
         errorMsg.classList.remove("hidden");
       }
+      adminTurnstileToken = null;
+      if (typeof turnstile !== "undefined" && adminTurnstileWidgetId !== null) {
+        try { turnstile.reset(adminTurnstileWidgetId); } catch (e) {}
+      }
     } else {
       let failCount = parseInt(localStorage.getItem(STORAGE_FAIL_COUNT_KEY) || "0", 10) + 1;
       localStorage.setItem(STORAGE_FAIL_COUNT_KEY, String(failCount));
@@ -3402,12 +3422,18 @@ async function handlePinSubmit(e) {
         input.value = "";
         input.focus();
       }
+      // Resetear siempre el token local y reiniciar Turnstile para generar un nuevo token
+      adminTurnstileToken = null;
       if (typeof turnstile !== "undefined" && adminTurnstileWidgetId !== null) {
         try { turnstile.reset(adminTurnstileWidgetId); } catch (e) {}
       }
     }
   } catch (err) {
     console.warn("Fallo login vía backend, evaluando fallback:", err);
+    adminTurnstileToken = null;
+    if (typeof turnstile !== "undefined" && adminTurnstileWidgetId !== null) {
+      try { turnstile.reset(adminTurnstileWidgetId); } catch (e) {}
+    }
     const isValid = await verifyPin(val);
     if (isValid) {
       sessionStorage.setItem(STORAGE_AUTH_KEY, "true");
