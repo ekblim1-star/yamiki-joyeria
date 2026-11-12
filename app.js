@@ -2612,6 +2612,7 @@ function openRingSizeGuideModal() {
     modal.style.display = "flex";
     modal.classList.remove("hidden");
     document.body.classList.add("overflow-hidden");
+    switchGuideModalTab("tabla");
     requestAnimationFrame(() => {
       modal.classList.add("modal-active");
     });
@@ -2648,13 +2649,13 @@ function closeRingSizeGuideModal(triggerHistoryBack = true) {
 // GESTIÓN DE TABS Y LIGHTBOX PARA LA GUÍA OFICIAL DE MEDIDAS YAMIKI
 // ==============================================================================
 function switchGuideModalTab(tabName) {
-  const tabs = ["infografias", "tabla", "pasos"];
+  const tabs = ["tabla", "pasos"];
   tabs.forEach(t => {
     const btn = document.getElementById(`guide-tab-btn-${t}`);
     const content = document.getElementById(`guide-tab-content-${t}`);
     if (btn && content) {
       if (t === tabName) {
-        btn.className = "flex-1 py-2 px-3 rounded-xl text-xs font-bold transition bg-rose-500 text-white shadow-xs btn-press flex items-center justify-center gap-1";
+        btn.className = "flex-1 py-2 px-3 rounded-xl text-xs font-bold transition bg-[#e72380] text-white shadow-xs btn-press flex items-center justify-center gap-1";
         content.classList.remove("hidden");
       } else {
         btn.className = "flex-1 py-2 px-3 rounded-xl text-xs font-semibold transition bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-white/5 dark:text-gray-300 dark:hover:bg-white/10 btn-press flex items-center justify-center gap-1";
