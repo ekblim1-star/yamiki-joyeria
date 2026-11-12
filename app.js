@@ -3057,7 +3057,7 @@ function returnToCatalog() {
 function renderProductPage(prod, defaultSize = null, defaultVariantId = null) {
   if (!prod) return;
 
-  // 1. Recopilar y consolidar fotos garantizando que foto_01 esté primero (#1)
+  // 1. Recopilar y consolidar fotos: la foto de portada (prod.image) SIEMPRE debe estar en la posición #1
   const photos = [];
   if (prod.image) photos.push(prod.image);
   if (Array.isArray(prod.gallery)) {
@@ -3071,11 +3071,15 @@ function renderProductPage(prod, defaultSize = null, defaultVariantId = null) {
     });
   }
 
-  // Foto 01 como portada si existe
-  const f01Idx = photos.findIndex(u => u && (u.includes("foto_01") || u.includes("foto_1.")));
-  if (f01Idx > 0) {
-    const [f01] = photos.splice(f01Idx, 1);
-    photos.unshift(f01);
+  // Fallback: solo si el producto carecía de imagen de portada (prod.image), buscar foto_01 inicial
+  if (photos.length === 0) {
+    photos.push(YAMIKI_FALLBACK_SVG);
+  } else if (!prod.image) {
+    const f01Idx = photos.findIndex(u => u && (u.includes("foto_01") || u.includes("foto_1.")));
+    if (f01Idx > 0) {
+      const [f01] = photos.splice(f01Idx, 1);
+      photos.unshift(f01);
+    }
   }
 
   // Variante seleccionada inicialmente:
@@ -3134,8 +3138,16 @@ function renderProductPage(prod, defaultSize = null, defaultVariantId = null) {
   // Precios
   updateProductPagePrice();
 
-  // Galería y Miniaturas
-  setProductPagePhoto(0);
+  // Galería y Miniaturas: foto de portada (índice 0) por defecto, o la foto del modelo si se especificó
+  let startPhotoIdx = 0;
+  if (defaultVariantId && activeVariant && activeVariant.photo) {
+    const vBase = activeVariant.photo.split("/").pop().split("?")[0];
+    const matchIdx = photos.findIndex(u => u === activeVariant.photo || u.split("/").pop().split("?")[0] === vBase);
+    if (matchIdx !== -1) {
+      startPhotoIdx = matchIdx;
+    }
+  }
+  setProductPagePhoto(startPhotoIdx);
   renderProductPageThumbnails();
 
   // Variantes
