@@ -25,7 +25,14 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
-    <script>
+  <script>
+    function handleProductImageError(img) {
+      if (!img) return;
+      img.onerror = null;
+      img.src = "data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 400'%3E%3Crect width='400' height='400' fill='%23141C18'/%3E%3Ctext x='50%25' y='50%25' fill='%236ee7b7' font-size='16' text-anchor='middle' dy='.3em'%3EYamiki Joyer%C3%ADa S925%3C/text%3E%3C/svg%3E";
+    }
+    window.handleProductImageError = handleProductImageError;
+
     (function() {
       try {
         var saved = localStorage.getItem('yamiki_theme');
@@ -2671,6 +2678,7 @@
 
   <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/config.js"></script>
   <script src="/products.js"></script>
   <script src="/app.js"></script>
 </body>

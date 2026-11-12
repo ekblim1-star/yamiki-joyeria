@@ -1,7 +1,10 @@
 # Backups & Temporary files
+backups/
 *.bak
 scratch/
 .tmp/
+.temp/
+supabase/.temp/
 
 # OS generated files
 Thumbs.db
@@ -14,4 +17,13 @@ $RECYCLE.BIN/
 .agent/
 .agents/
 
+# Environment secrets (Strictly ignored)
+.env
+.env.*
+*.env
+.env.staging
+.env.local
+
 .wrangler/
+node_modules/
+package-lock.json

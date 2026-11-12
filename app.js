@@ -76,7 +76,7 @@ window.CART_LIMITS = CART_LIMITS;
 // ==============================================================================
 const TURNSTILE_CONFIG = {
   // Clave Managed Challenge oficial de Cloudflare (Verificación invisible para humanos)
-  siteKey: "1x00000000000000000000AA",
+  siteKey: window.__TURNSTILE_SITEKEY__ || "0x4AAAAAAF9gfgvKUxWuBR2p",
   enabled: true
 };
 window.TURNSTILE_CONFIG = TURNSTILE_CONFIG;
@@ -124,7 +124,7 @@ window.initCheckoutTurnstile = initCheckoutTurnstile;
 // ==============================================================================
 // SINCRONIZACIÓN EN VIVO CON SUPABASE (CATÁLOGO DINÁMICO PROTEGIDO)
 // ==============================================================================
-const SUPABASE_STORE_CONFIG = {
+const SUPABASE_STORE_CONFIG = window.__SUPABASE_CONFIG__ || {
   url: "https://nlpsvjweybdmkmrkfkyy.supabase.co",
   anonKey: "sb_publishable_EYkY5I4lzoh0i1gNOE_1GA_1BBHmw8P"
 };
@@ -651,11 +651,11 @@ function initCarousel() {
             <span class="text-[9px] sm:text-[10px] font-bold uppercase tracking-widest text-rose-500 block mb-0.5 truncate">
               ${getCategoryLabel(prod.category)}
             </span>
-            <h4 class="font-sans font-bold text-xs sm:text-sm text-gray-900 group-hover:text-sage-700 transition line-clamp-1 leading-snug" title="${prod.name}">
-              ${cleanOrderTitle(prod.name)}
+            <h4 class="font-sans font-bold text-xs sm:text-sm text-gray-900 group-hover:text-sage-700 transition line-clamp-1 leading-snug" title="${escapeHtml(prod.name)}">
+              ${escapeHtml(cleanOrderTitle(prod.name))}
             </h4>
-            ${prod.displaySizes ? `<p class="text-[9px] sm:text-[11px] text-gray-500 mt-1 truncate">📏 <span class="size-pill-tag font-bold px-1.5 py-0.5 rounded">${prod.displaySizes}</span></p>` : ""}
-            ${prod.notes ? `<p class="text-[9px] sm:text-[10px] text-rose-600 italic mt-0.5 line-clamp-1">✨ ${prod.notes}</p>` : ""}
+            ${prod.displaySizes ? `<p class="text-[9px] sm:text-[11px] text-gray-500 mt-1 truncate">📏 <span class="size-pill-tag font-bold px-1.5 py-0.5 rounded">${escapeHtml(prod.displaySizes)}</span></p>` : ""}
+            ${prod.notes ? `<p class="text-[9px] sm:text-[10px] text-rose-600 italic mt-0.5 line-clamp-1">✨ ${escapeHtml(prod.notes)}</p>` : ""}
           </div>
 
           <div class="pt-2 sm:pt-3 border-t border-gray-100 mt-2 flex items-center justify-between gap-1">
@@ -3569,7 +3569,7 @@ function renderProductPageRelated() {
         <div class="aspect-square w-full overflow-hidden bg-sage-50 dark:bg-black/30 relative">
           <img 
             src="${prod.image}" 
-            alt="${prod.name}" 
+            alt="${escapeHtml(prod.name)}" 
             loading="lazy"
             decoding="async"
             class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" 

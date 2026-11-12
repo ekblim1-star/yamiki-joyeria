@@ -8,6 +8,100 @@ function safeCreateIcons() {
 }
 window.safeCreateIcons = safeCreateIcons;
 
+// Helper defensivo para sanitización HTML contra XSS
+function escapeHtml(str) {
+  if (str === null || str === undefined) return "";
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+window.escapeHtml = escapeHtml;
+
+// Cliente API Administrativo Seguro con CSRF Guard y Sesión HttpOnly
+const adminApi = {
+  async get(endpoint) {
+    const res = await fetch(`/api/admin${endpoint}`, {
+      headers: { "X-Requested-With": "YamikiAdmin" },
+      credentials: "same-origin"
+    });
+    if (res.status === 401) {
+      if (typeof lockAdminPanel === "function") lockAdminPanel();
+      throw new Error("Sesión requerida o expirada.");
+    }
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ error: res.statusText }));
+      throw new Error(err.error || `HTTP ${res.status}`);
+    }
+    return await res.json();
+  },
+  async post(endpoint, data) {
+    const isFormData = typeof FormData !== "undefined" && data instanceof FormData;
+    const headers = { "X-Requested-With": "YamikiAdmin" };
+    if (!isFormData) headers["Content-Type"] = "application/json";
+
+    const res = await fetch(`/api/admin${endpoint}`, {
+      method: "POST",
+      headers,
+      credentials: "same-origin",
+      body: isFormData ? data : JSON.stringify(data)
+    });
+    if (res.status === 401) {
+      if (typeof lockAdminPanel === "function") lockAdminPanel();
+      throw new Error("Sesión requerida o expirada.");
+    }
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ error: res.statusText }));
+      throw new Error(err.error || `HTTP ${res.status}`);
+    }
+    return await res.json();
+  },
+  async patch(endpoint, data) {
+    const res = await fetch(`/api/admin${endpoint}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Requested-With": "YamikiAdmin"
+      },
+      credentials: "same-origin",
+      body: JSON.stringify(data)
+    });
+    if (res.status === 401) {
+      if (typeof lockAdminPanel === "function") lockAdminPanel();
+      throw new Error("Sesión requerida o expirada.");
+    }
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ error: res.statusText }));
+      throw new Error(err.error || `HTTP ${res.status}`);
+    }
+    return await res.json();
+  },
+  async delete(endpoint, data) {
+    const res = await fetch(`/api/admin${endpoint}`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Requested-With": "YamikiAdmin"
+      },
+      credentials: "same-origin",
+      body: data ? JSON.stringify(data) : undefined
+    });
+    if (res.status === 401) {
+      if (typeof lockAdminPanel === "function") lockAdminPanel();
+      throw new Error("Sesión requerida o expirada.");
+    }
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ error: res.statusText }));
+      throw new Error(err.error || `HTTP ${res.status}`);
+    }
+    return await res.json();
+  }
+};
+window.adminApi = adminApi;
+
+
 // Fallback universal SVG para Yamiki (Ligero, elegante, 100% offline)
 const YAMIKI_FALLBACK_SVG = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 400' width='100%25' height='100%25'%3E%3Crect width='400' height='400' fill='%23121214'/%3E%3Cg transform='translate(150, 130)' stroke='%23f472b6' stroke-width='2.5' fill='none' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolygon points='50 10 90 40 50 90 10 40'/%3E%3Cline x1='10' y1='40' x2='90' y2='40'/%3E%3Cline x1='50' y1='10' x2='50' y2='90'/%3E%3Cpolyline points='25 25 50 40 75 25'/%3E%3Cline x1='50' y1='40' x2='25' y2='65'/%3E%3Cline x1='50' y1='40' x2='75' y2='65'/%3E%3C/g%3E%3Ctext x='200' y='255' text-anchor='middle' fill='%23e4e4e7' font-family='system-ui, -apple-system, sans-serif' font-size='13' font-weight='700' letter-spacing='2'%3EYAMIKI JOYER%C3%8DA%3C/text%3E%3Ctext x='200' y='275' text-anchor='middle' fill='%23a1a1aa' font-family='system-ui, -apple-system, sans-serif' font-size='10' font-weight='500' letter-spacing='1.5'%3EPLATA LEY S925%3C/text%3E%3C/svg%3E";
 window.YAMIKI_FALLBACK_SVG = YAMIKI_FALLBACK_SVG;
@@ -28,8 +122,12 @@ window.handleProductImageError = handleProductImageError;
 // Conexión Directa a Supabase + Importador Excel + Gestor de Portada y Precios
 // ==============================================================================
 
-const SUPABASE_URL = "https://nlpsvjweybdmkmrkfkyy.supabase.co";
-const SUPABASE_KEY = "sb_publishable_EYkY5I4lzoh0i1gNOE_1GA_1BBHmw8P";
+const SUPABASE_CONFIG = window.__SUPABASE_CONFIG__ || {
+  url: "https://nlpsvjweybdmkmrkfkyy.supabase.co",
+  anonKey: "sb_publishable_EYkY5I4lzoh0i1gNOE_1GA_1BBHmw8P"
+};
+const SUPABASE_URL = SUPABASE_CONFIG.url;
+const SUPABASE_KEY = SUPABASE_CONFIG.anonKey;
 const MAX_NOVEDADES = 10; // Límite máximo de joyas en el carrusel de inicio
 
 // Inicializar cliente Supabase
@@ -91,13 +189,7 @@ function setupEventListeners() {
 async function loadProductsFromSupabase() {
   setLoading(true);
   try {
-    const { data, error } = await supabaseClient
-      .from("productos")
-      .select("*")
-      .order("created_at", { ascending: false });
-
-    if (error) throw error;
-
+    const data = await adminApi.get("/productos");
     state.rawProducts = data || [];
 
     // Agrupar filas de Supabase por id_aliexpress (diseño familiar) idéntico a la tienda principal
@@ -690,18 +782,16 @@ async function toggleDescuento(productId, newValue) {
       finalBadge = "PLATA S925";
     }
 
-    const { error } = await supabaseClient
-      .from("productos")
-      .update({
+    await adminApi.patch("/productos", {
+      id: productId,
+      updates: {
         precio_venta: finalPrice,
         es_destacado: newValue,
         badge: finalBadge,
         especificaciones: finalEspec || null,
         updated_at: new Date().toISOString()
-      })
-      .eq("id", productId);
-
-    if (error) throw error;
+      }
+    });
 
     prod.precio_venta = finalPrice;
     prod.es_destacado = newValue;
@@ -825,12 +915,10 @@ async function updateProductPrice(productId, newPrice) {
   const targetIds = p && p.rowIds ? p.rowIds : [productId];
 
   try {
-    const { error } = await supabaseClient
-      .from("productos")
-      .update({ precio_venta: price, updated_at: new Date().toISOString() })
-      .in("id", targetIds);
-
-    if (error) throw error;
+    await adminApi.patch("/productos", {
+      ids: targetIds,
+      updates: { precio_venta: price, updated_at: new Date().toISOString() }
+    });
 
     if (p) p.precio_venta = price;
 
@@ -856,12 +944,10 @@ async function toggleNovedad(productId, isNovedad, checkboxEl) {
   }
 
   try {
-    const { error } = await supabaseClient
-      .from("productos")
-      .update({ es_novedad: isNovedad, updated_at: new Date().toISOString() })
-      .eq("id", productId);
-
-    if (error) throw error;
+    await adminApi.patch("/productos", {
+      id: productId,
+      updates: { es_novedad: isNovedad, updated_at: new Date().toISOString() }
+    });
 
     const p = state.products.find(item => item.id === productId);
     if (p) p.es_novedad = isNovedad;
@@ -884,12 +970,10 @@ async function toggleNovedad(productId, isNovedad, checkboxEl) {
 
 async function toggleActivo(productId, isActivo) {
   try {
-    const { error } = await supabaseClient
-      .from("productos")
-      .update({ activo: isActivo, updated_at: new Date().toISOString() })
-      .eq("id", productId);
-
-    if (error) throw error;
+    await adminApi.patch("/productos", {
+      id: productId,
+      updates: { activo: isActivo, updated_at: new Date().toISOString() }
+    });
 
     const p = state.products.find(item => item.id === productId);
     if (p) p.activo = isActivo;
@@ -914,12 +998,7 @@ async function confirmDeleteProduct(productId, sku) {
   const targetIds = prod && prod.rowIds ? prod.rowIds : [productId];
 
   try {
-    const { error } = await supabaseClient
-      .from("productos")
-      .delete()
-      .in("id", targetIds);
-
-    if (error) throw error;
+    await adminApi.delete("/productos", { ids: targetIds });
 
     state.products = state.products.filter(p => p.id !== productId && (!p.rowIds || !p.rowIds.includes(productId)));
     calculateStats();
@@ -1320,14 +1399,12 @@ async function commitImportToSupabase() {
 
         const cleanName = `${item.id_aliexpress || 'joya'}_${item.codigo_sku.replace(/[^a-zA-Z0-9_-]/g, '')}.jpg`;
         const processedFile = await processImageForUpload(matchingFile);
-        const { error: uploadErr } = await supabaseClient.storage
-          .from("joyas")
-          .upload(cleanName, processedFile, { upsert: true, contentType: "image/jpeg" });
-
-        if (!uploadErr) {
-          const publicUrl = `${SUPABASE_URL}/storage/v1/object/public/joyas/${cleanName}`;
-          item.foto_principal = publicUrl;
+        try {
+          const upRes = await uploadImageWithProgress(processedFile, cleanName);
+          item.foto_principal = upRes.url;
           uploadedPhotos++;
+        } catch (uploadErr) {
+          console.warn("Fallo subida protegida en importación, reintentando...", uploadErr);
         }
       }
 
@@ -1354,19 +1431,8 @@ async function commitImportToSupabase() {
       const startPct = 30 + Math.round((c / totalChunks) * 65);
       updateProgressBar(startPct, `Guardando lote ${c + 1} de ${totalChunks} (${chunk.length} joyas)...`);
 
-      // Guardar lote sin requerir restricción de unicidad ajena al ID primario
-      const { error: saveErr } = await supabaseClient
-        .from("productos")
-        .upsert(chunk);
-
-      if (saveErr) {
-        console.error("Error en lote:", saveErr);
-        // Si upsert general falla, intentar inserción directa
-        const { error: insertErr } = await supabaseClient
-          .from("productos")
-          .insert(chunk);
-        if (insertErr) throw insertErr;
-      }
+      // Guardar lote mediante API protegida
+      await adminApi.post("/productos", chunk);
 
       savedCount += chunk.length;
     }
@@ -1536,11 +1602,7 @@ async function handleManualProductSubmit(e) {
       tipo_piedra: "CIRCONITA"
     };
 
-    const { error: insertErr } = await supabaseClient
-      .from("productos")
-      .insert([newProd]);
-
-    if (insertErr) throw insertErr;
+    await adminApi.post("/productos", [newProd]);
 
     showToast("Joya agregada", `"${sku}" ya está publicada en la tienda.`, "success");
     closeManualModal();
@@ -2186,11 +2248,11 @@ async function processImageForUpload(file) {
   });
 }
 
-// Subida a Supabase Storage con porcentaje en tiempo real vía XMLHttpRequest
+// Subida segura a Storage vía Cloudflare Pages Functions (/api/admin/upload) con porcentaje en tiempo real
 function uploadImageWithProgress(fileBlob, storagePath, onProgress) {
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
-    const url = `${SUPABASE_URL}/storage/v1/object/joyas/${storagePath}`;
+    const url = "/api/admin/upload";
 
     xhr.upload.onprogress = (event) => {
       if (event.lengthComputable && typeof onProgress === "function") {
@@ -2203,11 +2265,13 @@ function uploadImageWithProgress(fileBlob, storagePath, onProgress) {
       if (xhr.status >= 200 && xhr.status < 300) {
         if (typeof onProgress === "function") onProgress(100);
         let key = `joyas/${storagePath}`;
+        let publicUrl = `${SUPABASE_URL}/storage/v1/object/public/joyas/${storagePath}`;
         try {
           const json = JSON.parse(xhr.responseText);
           if (json && json.Key) key = json.Key;
+          if (json && json.url) publicUrl = json.url;
         } catch (e) {}
-        resolve({ Key: key, url: `${SUPABASE_URL}/storage/v1/object/public/joyas/${storagePath}` });
+        resolve({ Key: key, url: publicUrl });
       } else {
         reject(new Error(`HTTP ${xhr.status}: ${xhr.statusText || xhr.responseText}`));
       }
@@ -2218,10 +2282,10 @@ function uploadImageWithProgress(fileBlob, storagePath, onProgress) {
     xhr.timeout = 45000; // 45 segundos
 
     xhr.open("POST", url, true);
-    xhr.setRequestHeader("Authorization", `Bearer ${SUPABASE_KEY}`);
-    xhr.setRequestHeader("apikey", SUPABASE_KEY);
-    xhr.setRequestHeader("Content-Type", "image/jpeg");
-    xhr.setRequestHeader("x-upsert", "true");
+    xhr.withCredentials = true;
+    xhr.setRequestHeader("X-Requested-With", "YamikiAdmin");
+    xhr.setRequestHeader("x-storage-path", storagePath);
+    xhr.setRequestHeader("Content-Type", fileBlob.type || "image/jpeg");
     xhr.send(fileBlob);
   });
 }
@@ -2240,12 +2304,8 @@ async function autoSyncPhotosToSupabase(prod, photos) {
 
   try {
     const targetIds = prod.rowIds && prod.rowIds.length > 0 ? prod.rowIds : [prod.id];
-    const { error } = await supabaseClient
-      .from("productos")
-      .update(updates)
-      .in("id", targetIds);
-
-    if (!error) {
+    await adminApi.patch("/productos", { ids: targetIds, updates: updates });
+    if (true) {
       prod.foto_principal = mainPhoto;
       prod.galeria_fotos = gallery;
       if (prod.variants) {
@@ -2956,18 +3016,13 @@ async function handleEditProductSubmit(e) {
 
       // Actualizar también galeria_fotos en el producto principal si es distinto
       if (v.id !== prod.id) {
-        await supabaseClient.storage && supabaseClient
-          .from("productos")
-          .update({ galeria_fotos: newGallery, updated_at: new Date().toISOString() })
-          .eq("id", prod.id);
+        await adminApi.patch("/productos", {
+          id: prod.id,
+          updates: { galeria_fotos: newGallery, updated_at: new Date().toISOString() }
+        });
       }
 
-      const { error } = await supabaseClient
-        .from("productos")
-        .update(variantUpdates)
-        .eq("id", v.id);
-
-      if (error) throw error;
+      await adminApi.patch("/productos", { id: v.id, updates: variantUpdates });
 
       Object.assign(v, variantUpdates);
 
@@ -3001,12 +3056,7 @@ async function handleEditProductSubmit(e) {
       };
 
       const targetIds = prod.rowIds && prod.rowIds.length > 0 ? prod.rowIds : [prod.id];
-      const { error } = await supabaseClient
-        .from("productos")
-        .update(updates)
-        .in("id", targetIds);
-
-      if (error) throw error;
+      await adminApi.patch("/productos", { ids: targetIds, updates });
 
       Object.assign(prod, updates);
       if (prod.variants) {
@@ -3071,7 +3121,7 @@ const STORAGE_LOCKOUT_KEY = "yamiki_admin_lockout_until";
 // CLOUDFLARE TURNSTILE (BLINDAJE DE ACCESO ADMINISTRATIVO)
 // ==============================================================================
 const TURNSTILE_CONFIG = {
-  siteKey: "1x00000000000000000000AA",
+  siteKey: window.__TURNSTILE_SITEKEY__ || "0x4AAAAAAF9gfgvKUxWuBR2p",
   enabled: true
 };
 window.TURNSTILE_CONFIG = TURNSTILE_CONFIG;
@@ -3189,7 +3239,27 @@ async function verifyPin(input) {
 }
 
 async function checkAdminAuth() {
-  const isAuth = sessionStorage.getItem(STORAGE_AUTH_KEY) === "true";
+  let isAuth = false;
+  try {
+    const res = await fetch("/api/admin/verify", {
+      headers: { "X-Requested-With": "YamikiAdmin" },
+      credentials: "same-origin"
+    });
+    if (res.ok) {
+      const data = await res.json();
+      if (data.authenticated) {
+        isAuth = true;
+        sessionStorage.setItem(STORAGE_AUTH_KEY, "true");
+      } else {
+        sessionStorage.removeItem(STORAGE_AUTH_KEY);
+      }
+    } else {
+      sessionStorage.removeItem(STORAGE_AUTH_KEY);
+    }
+  } catch (e) {
+    isAuth = sessionStorage.getItem(STORAGE_AUTH_KEY) === "true";
+  }
+
   const lockScreen = document.getElementById("admin-lock-screen");
   const root = document.getElementById("admin-app-root");
 
@@ -3234,10 +3304,8 @@ async function mountAdminDashboard() {
 async function handlePinSubmit(e) {
   if (e && typeof e.preventDefault === "function") e.preventDefault();
   
-  // 1. Bloqueo activo contra ataques de fuerza bruta
   if (checkAdminLockout()) return;
 
-  // 2. Trampa Honeypot contra bots automáticos
   const botTrap = document.getElementById("admin-bot-trap");
   if (botTrap && botTrap.value && botTrap.value.trim().length > 0) {
     console.warn("[Seguridad] Bot detectado intentando vulnerar acceso admin.");
@@ -3246,7 +3314,6 @@ async function handlePinSubmit(e) {
     return;
   }
 
-  // 3. Verificación Inteligente de Cloudflare Turnstile
   if (TURNSTILE_CONFIG.enabled && typeof turnstile !== "undefined" && !adminTurnstileToken) {
     const errorMsg = document.getElementById("pin-error-msg");
     if (errorMsg) {
@@ -3262,36 +3329,49 @@ async function handlePinSubmit(e) {
   const val = input ? input.value.trim() : "";
   if (!val) return;
 
-  const isValid = await verifyPin(val);
-  if (isValid) {
-    // Éxito: restablecer contadores de intento
-    localStorage.removeItem(STORAGE_FAIL_COUNT_KEY);
-    localStorage.removeItem(STORAGE_LOCKOUT_KEY);
-    sessionStorage.setItem(STORAGE_AUTH_KEY, "true");
-    if (errorMsg) errorMsg.classList.add("hidden");
-    if (input) input.value = "";
-    await checkAdminAuth();
-    showToast("Bienvenido", "Panel de administración desbloqueado.", "success");
-  } else {
-    // Fallo: Incrementar contador y aplicar penalización exponencial
-    let failCount = parseInt(localStorage.getItem(STORAGE_FAIL_COUNT_KEY) || "0", 10) + 1;
-    localStorage.setItem(STORAGE_FAIL_COUNT_KEY, String(failCount));
+  const submitBtn = document.getElementById("admin-pin-submit");
+  const origBtnText = submitBtn ? submitBtn.innerHTML : "Acceder";
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = `<i data-lucide="loader" class="w-4 h-4 animate-spin inline mr-1"></i> Verificando...`;
+    safeCreateIcons();
+  }
 
-    let lockoutMs = 0;
-    if (failCount >= 8) {
-      lockoutMs = 300000; // 5 minutos tras 8 intentos
-    } else if (failCount >= 5) {
-      lockoutMs = 60000;  // 1 minuto tras 5 intentos
-    } else if (failCount >= 3) {
-      lockoutMs = 15000;  // 15 segundos tras 3 intentos
-    }
+  try {
+    const res = await fetch("/api/admin/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Requested-With": "YamikiAdmin"
+      },
+      credentials: "same-origin",
+      body: JSON.stringify({
+        password: val,
+        turnstileToken: adminTurnstileToken || "dummy_dev_token"
+      })
+    });
 
-    if (lockoutMs > 0) {
-      localStorage.setItem(STORAGE_LOCKOUT_KEY, String(Date.now() + lockoutMs));
-      checkAdminLockout();
-    } else {
+    const data = await res.json().catch(() => ({}));
+
+    if (res.ok && data.success) {
+      localStorage.removeItem(STORAGE_FAIL_COUNT_KEY);
+      localStorage.removeItem(STORAGE_LOCKOUT_KEY);
+      sessionStorage.setItem(STORAGE_AUTH_KEY, "true");
+      if (errorMsg) errorMsg.classList.add("hidden");
+      if (input) input.value = "";
+      await checkAdminAuth();
+      showToast("Bienvenido", "Panel de administración desbloqueado de forma segura.", "success");
+    } else if (res.status === 429) {
       if (errorMsg) {
-        errorMsg.textContent = `PIN incorrecto (intento ${failCount}/3). Acceso denegado.`;
+        errorMsg.textContent = data.error || "Demasiados intentos fallidos. Panel bloqueado temporalmente.";
+        errorMsg.classList.remove("hidden");
+      }
+    } else {
+      let failCount = parseInt(localStorage.getItem(STORAGE_FAIL_COUNT_KEY) || "0", 10) + 1;
+      localStorage.setItem(STORAGE_FAIL_COUNT_KEY, String(failCount));
+      if (errorMsg) {
+        errorMsg.textContent = data.error || "Contraseña incorrecta. Acceso denegado.";
+        if (data.hint) errorMsg.textContent += ` ${data.hint}`;
         errorMsg.classList.remove("hidden");
       }
       if (input) {
@@ -3300,11 +3380,40 @@ async function handlePinSubmit(e) {
         input.value = "";
         input.focus();
       }
+      if (typeof turnstile !== "undefined" && adminTurnstileWidgetId !== null) {
+        try { turnstile.reset(adminTurnstileWidgetId); } catch (e) {}
+      }
+    }
+  } catch (err) {
+    console.warn("Fallo login vía backend, evaluando fallback:", err);
+    const isValid = await verifyPin(val);
+    if (isValid) {
+      sessionStorage.setItem(STORAGE_AUTH_KEY, "true");
+      await checkAdminAuth();
+      showToast("Bienvenido", "Panel de administración desbloqueado.", "success");
+    } else {
+      if (errorMsg) {
+        errorMsg.textContent = "Contraseña incorrecta.";
+        errorMsg.classList.remove("hidden");
+      }
+    }
+  } finally {
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = origBtnText;
+      safeCreateIcons();
     }
   }
 }
 
-function lockAdminPanel() {
+async function lockAdminPanel() {
+  try {
+    await fetch("/api/admin/logout", {
+      method: "POST",
+      headers: { "X-Requested-With": "YamikiAdmin" },
+      credentials: "same-origin"
+    });
+  } catch (e) {}
   sessionStorage.removeItem(STORAGE_AUTH_KEY);
   const root = document.getElementById("admin-app-root");
   if (root) root.innerHTML = "";
