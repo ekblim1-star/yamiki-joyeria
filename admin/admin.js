@@ -1484,28 +1484,55 @@ async function commitImportToSupabase() {
 }
 
 // ==============================================================================
-// CÁLCULO INTELIGENTE DE PRECIO, COSTO Y GANANCIA (AUTO-CALCULATOR)
+// CÁLCULO INTELIGENTE DE PRECIO Y MARGEN (ESCALA OFICIAL YAMIKI JOYERÍA)
 // ==============================================================================
+// Escala oficial confirmada para cotización de compras:
+//   $1   – $150 MXN -> +70% de aumento
+//   $151 – $250 MXN -> +55% de aumento
+//   $251 – $350 MXN -> +45% de aumento
+//   $351 – $450 MXN -> +40% de aumento
+//   $451 – $600 MXN -> +35% de aumento
+//   $601 en adelante -> +30% de aumento
+function getYamikiTieredMarkup(cost) {
+  const c = parseFloat(cost) || 0;
+  if (c <= 0) return { pct: 0, range: "Sin costo" };
+  if (c <= 150) return { pct: 70, range: "$1 – $150" };
+  if (c <= 250) return { pct: 55, range: "$151 – $250" };
+  if (c <= 350) return { pct: 45, range: "$251 – $350" };
+  if (c <= 450) return { pct: 40, range: "$351 – $450" };
+  if (c <= 600) return { pct: 35, range: "$451 – $600" };
+  return { pct: 30, range: "$601+" };
+}
+
+function calculateYamikiSuggestedPrice(cost) {
+  const c = parseFloat(cost) || 0;
+  if (c <= 0) return 0;
+  const { pct } = getYamikiTieredMarkup(c);
+  const profit = c * (pct / 100);
+  return Math.round(c + profit);
+}
+
 function calculateProfitAndMargin(cost, price) {
   const c = parseFloat(cost) || 0;
   const p = parseFloat(price) || 0;
   if (c <= 0 || p <= 0) {
-    return { profit: 0, marginPct: 0, isWarning: false, isValid: false };
+    return { profit: 0, marginPct: 0, isWarning: false, isValid: false, tier: null };
   }
   const profit = p - c;
   const marginPct = Math.round((profit / c) * 100);
   const isWarning = p < c;
-  return { profit, marginPct, isWarning, isValid: true };
+  const tier = getYamikiTieredMarkup(c);
+  return { profit, marginPct, isWarning, isValid: true, tier };
 }
 
 // 1. Calculadora para "Crear Joya Manual"
-let manualActiveMultiplier = 2.5;
+let manualPricingMode = 'yamiki';
 
-function applyManualMultiplier(mult) {
-  manualActiveMultiplier = parseFloat(mult) || 2.5;
+function applyManualMode(mode) {
+  manualPricingMode = mode;
   document.querySelectorAll(".manual-mult-btn").forEach(btn => {
-    const bMult = parseFloat(btn.getAttribute("data-mult"));
-    if (Math.abs(bMult - manualActiveMultiplier) < 0.05) {
+    const bMode = btn.getAttribute("data-mode");
+    if (bMode === String(mode)) {
       btn.className = "manual-mult-btn active px-2.5 py-1 rounded-lg bg-[#e72380]/20 text-[#e72380] text-[11px] font-bold border border-[#e72380]/40 transition";
     } else {
       btn.className = "manual-mult-btn px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-gray-300 text-[11px] font-bold border border-white/10 transition";
@@ -1517,16 +1544,30 @@ function applyManualMultiplier(mult) {
   const cost = parseFloat(costInput?.value || 0);
 
   if (cost > 0 && priceInput) {
-    priceInput.value = Math.round(cost * manualActiveMultiplier);
+    if (manualPricingMode === 'yamiki') {
+      priceInput.value = calculateYamikiSuggestedPrice(cost);
+    } else {
+      const mult = parseFloat(manualPricingMode) || 2.0;
+      priceInput.value = Math.round(cost * mult);
+    }
   }
   updateManualProfitBadge();
+}
+
+function applyManualMultiplier(mult) {
+  applyManualMode(mult);
 }
 
 function handleManualCostChange(val) {
   const cost = parseFloat(val) || 0;
   const priceInput = document.getElementById("manual-precio");
   if (cost > 0 && priceInput) {
-    priceInput.value = Math.round(cost * manualActiveMultiplier);
+    if (manualPricingMode === 'yamiki') {
+      priceInput.value = calculateYamikiSuggestedPrice(cost);
+    } else {
+      const mult = parseFloat(manualPricingMode) || 2.0;
+      priceInput.value = Math.round(cost * mult);
+    }
   }
   updateManualProfitBadge();
 }
@@ -1545,7 +1586,7 @@ function updateManualProfitBadge() {
 
   const cost = parseFloat(costInput?.value || 0);
   const price = parseFloat(priceInput?.value || 0);
-  const { profit, marginPct, isWarning, isValid } = calculateProfitAndMargin(cost, price);
+  const { profit, marginPct, isWarning, isValid, tier } = calculateProfitAndMargin(cost, price);
 
   if (!isValid) {
     badge.className = "p-2 rounded-xl bg-white/[0.03] border border-white/10 flex items-center justify-between text-[11px] transition-all";
@@ -1562,7 +1603,8 @@ function updateManualProfitBadge() {
   } else {
     badge.className = "p-2 rounded-xl bg-emerald-950/30 border border-emerald-500/25 flex items-center justify-between text-[11px] transition-all";
     textEl.className = "text-emerald-300 font-bold flex items-center gap-1.5";
-    textEl.innerHTML = `<i data-lucide="trending-up" class="w-3.5 h-3.5 text-emerald-400"></i><span>Tu ganancia neta: <strong class="text-white">$${Math.round(profit)} MXN</strong></span>`;
+    const tierNotice = tier && manualPricingMode === 'yamiki' ? `[Escala Yamiki +${tier.pct}%]: ` : '';
+    textEl.innerHTML = `<i data-lucide="trending-up" class="w-3.5 h-3.5 text-emerald-400"></i><span>${tierNotice}Ganancia: <strong class="text-white">$${Math.round(profit)} MXN</strong></span>`;
     pillEl.className = "px-2 py-0.5 rounded-full font-mono font-extrabold text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30";
     pillEl.textContent = `+${marginPct}% margen`;
     pillEl.classList.remove("hidden");
@@ -1650,7 +1692,12 @@ function updateManualVariantCost(tempId, val) {
   v.costo = val;
   const cost = parseFloat(val) || 0;
   if (cost > 0) {
-    v.precio = Math.round(cost * manualActiveMultiplier);
+    if (manualPricingMode === 'yamiki') {
+      v.precio = calculateYamikiSuggestedPrice(cost);
+    } else {
+      const mult = parseFloat(manualPricingMode) || 2.0;
+      v.precio = Math.round(cost * mult);
+    }
     const priceInput = document.querySelector(`input[data-price-tempid='${tempId}']`);
     if (priceInput) priceInput.value = v.precio;
   }
@@ -1786,7 +1833,7 @@ function openManualModal() {
     const varContainer = document.getElementById("manual-variants-container");
     if (varContainer) varContainer.classList.add("hidden");
     clearManualPhotoSelection();
-    applyManualMultiplier(2.5);
+    applyManualMode('yamiki');
     updateManualProfitBadge();
 
     modal.classList.remove("hidden");
@@ -3514,14 +3561,14 @@ function toggleVariantsPreview(productId) {
 // ==============================================================================
 // AUTO-CALCULADORA DE PRECIOS Y COSTOS EN EDICIÓN DE JOYA
 // ==============================================================================
-let editActiveMultiplier = 2.5;
+let editPricingMode = 'yamiki';
 
-function applyEditMultiplier(mult) {
-  editActiveMultiplier = parseFloat(mult) || 2.5;
+function applyEditMode(mode) {
+  editPricingMode = mode;
   document.querySelectorAll(".edit-mult-btn").forEach(btn => {
-    const text = btn.textContent || "";
-    if (text.includes(`x${editActiveMultiplier.toFixed(1)}`) || text.includes(`x${editActiveMultiplier}`)) {
-      btn.className = "edit-mult-btn px-2 py-0.5 rounded-lg bg-[#e72380]/20 text-[#e72380] text-[10px] font-bold border border-[#e72380]/40 transition";
+    const bMode = btn.getAttribute("data-mode");
+    if (bMode === String(mode)) {
+      btn.className = "edit-mult-btn active px-2 py-0.5 rounded-lg bg-[#e72380]/20 text-[#e72380] text-[10px] font-bold border border-[#e72380]/40 transition";
     } else {
       btn.className = "edit-mult-btn px-2 py-0.5 rounded-lg bg-white/5 hover:bg-white/10 text-gray-300 text-[10px] font-bold border border-white/10 transition";
     }
@@ -3532,7 +3579,12 @@ function applyEditMultiplier(mult) {
   const cost = parseFloat(costInput?.value || 0);
 
   if (cost > 0 && priceInput) {
-    priceInput.value = Math.round(cost * editActiveMultiplier);
+    if (editPricingMode === 'yamiki') {
+      priceInput.value = calculateYamikiSuggestedPrice(cost);
+    } else {
+      const mult = parseFloat(editPricingMode) || 2.0;
+      priceInput.value = Math.round(cost * mult);
+    }
     if (typeof updateEditDiscountNotice === "function") {
       updateEditDiscountNotice();
     }
@@ -3540,7 +3592,19 @@ function applyEditMultiplier(mult) {
   updateEditProfitBadge();
 }
 
-function handleEditCostChange() {
+function applyEditMultiplier(mult) {
+  applyEditMode(mult);
+}
+
+function handleEditCostChange(val) {
+  const cost = parseFloat(val) || 0;
+  const priceInput = document.getElementById("edit-precio");
+  if (cost > 0 && priceInput && editPricingMode === 'yamiki') {
+    priceInput.value = calculateYamikiSuggestedPrice(cost);
+    if (typeof updateEditDiscountNotice === "function") {
+      updateEditDiscountNotice();
+    }
+  }
   updateEditProfitBadge();
 }
 
@@ -3561,7 +3625,7 @@ function updateEditProfitBadge() {
 
   const cost = parseFloat(costInput?.value || 0);
   const price = parseFloat(priceInput?.value || 0);
-  const { profit, marginPct, isWarning, isValid } = calculateProfitAndMargin(cost, price);
+  const { profit, marginPct, isWarning, isValid, tier } = calculateProfitAndMargin(cost, price);
 
   if (!isValid) {
     badge.className = "p-2 rounded-xl bg-white/[0.03] border border-white/10 flex items-center justify-between text-[11px] transition-all";
@@ -3578,7 +3642,8 @@ function updateEditProfitBadge() {
   } else {
     badge.className = "p-2 rounded-xl bg-emerald-950/30 border border-emerald-500/25 flex items-center justify-between text-[11px] transition-all";
     textEl.className = "text-emerald-300 font-bold flex items-center gap-1.5";
-    textEl.innerHTML = `<i data-lucide="trending-up" class="w-3.5 h-3.5 text-emerald-400"></i><span>Tu ganancia neta: <strong class="text-white">$${Math.round(profit)} MXN</strong></span>`;
+    const tierNotice = tier && editPricingMode === 'yamiki' ? `[Escala Yamiki +${tier.pct}%]: ` : '';
+    textEl.innerHTML = `<i data-lucide="trending-up" class="w-3.5 h-3.5 text-emerald-400"></i><span>${tierNotice}Ganancia: <strong class="text-white">$${Math.round(profit)} MXN</strong></span>`;
     pillEl.className = "px-2 py-0.5 rounded-full font-mono font-extrabold text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30";
     pillEl.textContent = `+${marginPct}% margen`;
     pillEl.classList.remove("hidden");
@@ -3589,13 +3654,13 @@ function updateEditProfitBadge() {
 // ==============================================================================
 // MODAL PARA AGREGAR NUEVAS VARIANTES A PRODUCTOS EXISTENTES
 // ==============================================================================
-let newVarActiveMultiplier = 2.5;
+let newVarPricingMode = 'yamiki';
 
-function applyNewVarMultiplier(mult) {
-  newVarActiveMultiplier = parseFloat(mult) || 2.5;
+function applyNewVarMode(mode) {
+  newVarPricingMode = mode;
   document.querySelectorAll(".newvar-mult-btn").forEach(btn => {
-    const text = btn.textContent || "";
-    if (text.includes(`x${newVarActiveMultiplier.toFixed(1)}`) || text.includes(`x${newVarActiveMultiplier}`)) {
+    const bMode = btn.getAttribute("data-mode");
+    if (bMode === String(mode)) {
       btn.className = "newvar-mult-btn active px-2 py-0.5 rounded-lg bg-[#e72380]/20 text-[#e72380] text-[10px] font-bold border border-[#e72380]/40";
     } else {
       btn.className = "newvar-mult-btn px-2 py-0.5 rounded-lg bg-white/5 hover:bg-white/10 text-gray-300 text-[10px] font-bold border border-white/10";
@@ -3607,16 +3672,30 @@ function applyNewVarMultiplier(mult) {
   const cost = parseFloat(costInput?.value || 0);
 
   if (cost > 0 && priceInput) {
-    priceInput.value = Math.round(cost * newVarActiveMultiplier);
+    if (newVarPricingMode === 'yamiki') {
+      priceInput.value = calculateYamikiSuggestedPrice(cost);
+    } else {
+      const mult = parseFloat(newVarPricingMode) || 2.0;
+      priceInput.value = Math.round(cost * mult);
+    }
   }
   updateNewVarProfitBadge();
+}
+
+function applyNewVarMultiplier(mult) {
+  applyNewVarMode(mult);
 }
 
 function handleNewVarCostChange(val) {
   const cost = parseFloat(val) || 0;
   const priceInput = document.getElementById("newvar-precio");
   if (cost > 0 && priceInput) {
-    priceInput.value = Math.round(cost * newVarActiveMultiplier);
+    if (newVarPricingMode === 'yamiki') {
+      priceInput.value = calculateYamikiSuggestedPrice(cost);
+    } else {
+      const mult = parseFloat(newVarPricingMode) || 2.0;
+      priceInput.value = Math.round(cost * mult);
+    }
   }
   updateNewVarProfitBadge();
 }
@@ -3635,7 +3714,7 @@ function updateNewVarProfitBadge() {
 
   const cost = parseFloat(costInput?.value || 0);
   const price = parseFloat(priceInput?.value || 0);
-  const { profit, marginPct, isWarning, isValid } = calculateProfitAndMargin(cost, price);
+  const { profit, marginPct, isWarning, isValid, tier } = calculateProfitAndMargin(cost, price);
 
   if (!isValid) {
     badge.className = "p-1.5 rounded-xl bg-white/[0.03] border border-white/10 flex items-center justify-between text-[10px]";
@@ -3652,7 +3731,8 @@ function updateNewVarProfitBadge() {
   } else {
     badge.className = "p-1.5 rounded-xl bg-emerald-950/30 border border-emerald-500/25 flex items-center justify-between text-[10px]";
     textEl.className = "text-emerald-300 font-bold";
-    textEl.textContent = `Ganancia: $${Math.round(profit)} MXN`;
+    const tierNotice = tier && newVarPricingMode === 'yamiki' ? `[Escala +${tier.pct}%]: ` : '';
+    textEl.textContent = `${tierNotice}Ganancia: $${Math.round(profit)} MXN`;
     pillEl.className = "px-2 py-0.5 rounded-full font-mono font-extrabold text-[9px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30";
     pillEl.textContent = `+${marginPct}% margen`;
     pillEl.classList.remove("hidden");
@@ -3685,7 +3765,7 @@ function openAddVariantModal() {
   if (precioInput) precioInput.value = prod.precio_venta ? Math.round(prod.precio_venta) : "";
 
   clearNewVarPhotoSelection();
-  applyNewVarMultiplier(2.5);
+  applyNewVarMode('yamiki');
   updateNewVarProfitBadge();
 
   modal.classList.remove("hidden");
@@ -4271,7 +4351,11 @@ function togglePinVisibility() {
 // ==============================================================================
 // EXPORTACIÓN DE CONTROLADORES AL SCOPE GLOBAL WINDOW (HTML EVENT BINDINGS)
 // ==============================================================================
+window.getYamikiTieredMarkup = getYamikiTieredMarkup;
+window.calculateYamikiSuggestedPrice = calculateYamikiSuggestedPrice;
 window.calculateProfitAndMargin = calculateProfitAndMargin;
+
+window.applyManualMode = applyManualMode;
 window.applyManualMultiplier = applyManualMultiplier;
 window.handleManualCostChange = handleManualCostChange;
 window.handleManualPriceChange = handleManualPriceChange;
@@ -4283,6 +4367,7 @@ window.updateManualVariantField = updateManualVariantField;
 window.updateManualVariantCost = updateManualVariantCost;
 window.handleManualVariantFile = handleManualVariantFile;
 
+window.applyEditMode = applyEditMode;
 window.applyEditMultiplier = applyEditMultiplier;
 window.handleEditCostChange = handleEditCostChange;
 window.handleEditPriceChange = handleEditPriceChange;
@@ -4293,6 +4378,7 @@ window.closeAddVariantModal = closeAddVariantModal;
 window.handleNewVarPhotoChange = handleNewVarPhotoChange;
 window.clearNewVarPhotoSelection = clearNewVarPhotoSelection;
 window.handleNewVarColorChange = handleNewVarColorChange;
+window.applyNewVarMode = applyNewVarMode;
 window.applyNewVarMultiplier = applyNewVarMultiplier;
 window.handleNewVarCostChange = handleNewVarCostChange;
 window.handleNewVarPriceChange = handleNewVarPriceChange;

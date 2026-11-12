@@ -633,12 +633,12 @@
             </div>
           </div>
 
-          <!-- Botones de Multiplicadores Rápidos -->
-          <div class="flex items-center gap-1.5 pt-0.5">
-            <span class="text-[10px] text-gray-400 font-bold shrink-0">Multiplicador:</span>
-            <button type="button" onclick="applyManualMultiplier(2.0)" class="manual-mult-btn px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-gray-300 text-[11px] font-bold border border-white/10 transition" data-mult="2.0">x2.0 (+100%)</button>
-            <button type="button" onclick="applyManualMultiplier(2.5)" class="manual-mult-btn active px-2.5 py-1 rounded-lg bg-[#e72380]/20 text-[#e72380] text-[11px] font-bold border border-[#e72380]/40 transition" data-mult="2.5">x2.5 (+150%) ⭐</button>
-            <button type="button" onclick="applyManualMultiplier(3.0)" class="manual-mult-btn px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-gray-300 text-[11px] font-bold border border-white/10 transition" data-mult="3.0">x3.0 (+200%)</button>
+          <!-- Botones de Cálculo: Escala Oficial Yamiki y Multiplicadores -->
+          <div class="flex flex-wrap items-center gap-1.5 pt-0.5">
+            <span class="text-[10px] text-gray-400 font-bold shrink-0">Cálculo:</span>
+            <button type="button" onclick="applyManualMode('yamiki')" class="manual-mult-btn active px-2.5 py-1 rounded-lg bg-[#e72380]/20 text-[#e72380] text-[11px] font-bold border border-[#e72380]/40 transition" data-mode="yamiki">✨ Escala Oficial Yamiki</button>
+            <button type="button" onclick="applyManualMode(2.0)" class="manual-mult-btn px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-gray-300 text-[11px] font-bold border border-white/10 transition" data-mode="2.0">x2.0 (+100%)</button>
+            <button type="button" onclick="applyManualMode(2.5)" class="manual-mult-btn px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-gray-300 text-[11px] font-bold border border-white/10 transition" data-mode="2.5">x2.5 (+150%)</button>
           </div>
 
           <!-- Badge Dinámico de Ganancia y Margen -->
@@ -957,11 +957,11 @@
                   <i data-lucide="calculator" class="w-3.5 h-3.5 text-[#e72380]"></i>
                   <span>Cálculo de Costo, Precio y Ganancia</span>
                 </label>
-                <div class="flex items-center gap-1">
-                  <span class="text-[10px] text-gray-400 font-bold hidden sm:inline">Calcular:</span>
-                  <button type="button" onclick="applyEditMultiplier(2.0)" class="edit-mult-btn px-2 py-0.5 rounded-lg bg-white/5 hover:bg-white/10 text-gray-300 text-[10px] font-bold border border-white/10 transition">x2.0</button>
-                  <button type="button" onclick="applyEditMultiplier(2.5)" class="edit-mult-btn px-2 py-0.5 rounded-lg bg-[#e72380]/20 text-[#e72380] text-[10px] font-bold border border-[#e72380]/40 transition">x2.5 ⭐</button>
-                  <button type="button" onclick="applyEditMultiplier(3.0)" class="edit-mult-btn px-2 py-0.5 rounded-lg bg-white/5 hover:bg-white/10 text-gray-300 text-[10px] font-bold border border-white/10 transition">x3.0</button>
+                <div class="flex flex-wrap items-center gap-1">
+                  <span class="text-[10px] text-gray-400 font-bold hidden sm:inline">Cálculo:</span>
+                  <button type="button" onclick="applyEditMode('yamiki')" class="edit-mult-btn active px-2 py-0.5 rounded-lg bg-[#e72380]/20 text-[#e72380] text-[10px] font-bold border border-[#e72380]/40 transition" data-mode="yamiki">✨ Escala Yamiki</button>
+                  <button type="button" onclick="applyEditMode(2.0)" class="edit-mult-btn px-2 py-0.5 rounded-lg bg-white/5 hover:bg-white/10 text-gray-300 text-[10px] font-bold border border-white/10 transition" data-mode="2.0">x2.0</button>
+                  <button type="button" onclick="applyEditMode(2.5)" class="edit-mult-btn px-2 py-0.5 rounded-lg bg-white/5 hover:bg-white/10 text-gray-300 text-[10px] font-bold border border-white/10 transition" data-mode="2.5">x2.5</button>
                 </div>
               </div>
 
@@ -1146,10 +1146,10 @@
               <i data-lucide="calculator" class="w-3.5 h-3.5 text-[#e72380]"></i>
               <span>Costo y Precio de la Variante</span>
             </label>
-            <div class="flex items-center gap-1">
-              <button type="button" onclick="applyNewVarMultiplier(2.0)" class="newvar-mult-btn px-2 py-0.5 rounded-lg bg-white/5 hover:bg-white/10 text-gray-300 text-[10px] font-bold border border-white/10">x2.0</button>
-              <button type="button" onclick="applyNewVarMultiplier(2.5)" class="newvar-mult-btn active px-2 py-0.5 rounded-lg bg-[#e72380]/20 text-[#e72380] text-[10px] font-bold border border-[#e72380]/40">x2.5 ⭐</button>
-              <button type="button" onclick="applyNewVarMultiplier(3.0)" class="newvar-mult-btn px-2 py-0.5 rounded-lg bg-white/5 hover:bg-white/10 text-gray-300 text-[10px] font-bold border border-white/10">x3.0</button>
+            <div class="flex flex-wrap items-center gap-1">
+              <button type="button" onclick="applyNewVarMode('yamiki')" class="newvar-mult-btn active px-2 py-0.5 rounded-lg bg-[#e72380]/20 text-[#e72380] text-[10px] font-bold border border-[#e72380]/40" data-mode="yamiki">✨ Escala Yamiki</button>
+              <button type="button" onclick="applyNewVarMode(2.0)" class="newvar-mult-btn px-2 py-0.5 rounded-lg bg-white/5 hover:bg-white/10 text-gray-300 text-[10px] font-bold border border-white/10" data-mode="2.0">x2.0</button>
+              <button type="button" onclick="applyNewVarMode(2.5)" class="newvar-mult-btn px-2 py-0.5 rounded-lg bg-white/5 hover:bg-white/10 text-gray-300 text-[10px] font-bold border border-white/10" data-mode="2.5">x2.5</button>
             </div>
           </div>
 
