@@ -545,16 +545,16 @@
   <!-- ========================================================================
        MODAL: CREAR JOYA MANUAL (PARA PIEZAS EXCLUSIVAS)
        ======================================================================== -->
-  <div id="manual-product-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4">
-    <div class="modal-overlay fixed inset-0 bg-black/70 backdrop-blur-xs" onclick="closeManualModal()"></div>
-    <div class="modal-dialog bg-[#141C18] border border-white/10 rounded-3xl max-w-lg w-full p-6 shadow-2xl relative z-10 space-y-4">
+  <div id="manual-product-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-3 sm:p-5">
+    <div class="modal-overlay fixed inset-0 bg-black/80 backdrop-blur-xs" onclick="closeManualModal()"></div>
+    <div class="modal-dialog bg-[#141C18] border border-white/10 rounded-3xl max-w-lg sm:max-w-xl w-full p-5 sm:p-6 shadow-2xl relative z-10 space-y-4 max-h-[92vh] overflow-y-auto">
       
       <div class="flex items-center justify-between pb-3 border-b border-white/10">
         <h3 class="text-base font-extrabold text-white flex items-center gap-2">
           <i data-lucide="sparkles" class="w-4 h-4 text-[#e72380]"></i>
           <span>Crear Nueva Joya Manual</span>
         </h3>
-        <button type="button" onclick="closeManualModal()" class="text-gray-400 hover:text-white">
+        <button type="button" onclick="closeManualModal()" class="text-gray-400 hover:text-white p-1 rounded-lg">
           <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
@@ -584,14 +584,72 @@
           <input type="text" name="titulo" required placeholder="Ej. Anillo Corazón Zirconia Rosa Plata S925" class="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-xl text-white focus:outline-none focus:border-[#e72380]" />
         </div>
 
-        <div class="grid grid-cols-2 gap-3">
-          <div>
-            <label class="block font-bold text-gray-300 mb-1">Precio Venta (MXN) *</label>
-            <input type="number" step="1" name="precio" required placeholder="Ej. 450" class="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-xl text-white focus:outline-none focus:border-[#e72380]" />
+        <!-- Calculadora Inteligente de Costo y Precio de Venta -->
+        <div class="p-3.5 rounded-2xl bg-black/40 border border-[#e72380]/20 space-y-2.5">
+          <div class="flex items-center justify-between">
+            <label class="font-bold text-white text-xs flex items-center gap-1.5">
+              <i data-lucide="calculator" class="w-3.5 h-3.5 text-[#e72380]"></i>
+              <span>Cálculo de Costo y Precio de Venta</span>
+            </label>
+            <span class="text-[10px] text-gray-400 font-medium">Margen sugerido: x2.5</span>
           </div>
-          <div>
-            <label class="block font-bold text-gray-400 mb-1">Costo Proveedor (Opcional)</label>
-            <input type="number" step="0.01" name="costo" placeholder="Ej. 180" class="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-xl text-white focus:outline-none focus:border-[#e72380]" />
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            <div>
+              <label class="block font-bold text-gray-300 text-[11px] mb-1">
+                Costo que te sale a ti (MXN)
+              </label>
+              <div class="relative">
+                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs">$</span>
+                <input 
+                  type="number" 
+                  step="0.01" 
+                  id="manual-costo" 
+                  name="costo" 
+                  placeholder="Ej. 180" 
+                  oninput="handleManualCostChange(this.value)"
+                  class="w-full pl-7 pr-3 py-2 bg-black/60 border border-white/10 rounded-xl text-white text-xs font-bold focus:outline-none focus:border-[#e72380]" 
+                />
+              </div>
+            </div>
+
+            <div>
+              <label class="block font-bold text-white text-[11px] mb-1 flex items-center justify-between">
+                <span>Precio Venta (MXN) *</span>
+              </label>
+              <div class="relative">
+                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs">$</span>
+                <input 
+                  type="number" 
+                  step="1" 
+                  id="manual-precio" 
+                  name="precio" 
+                  required 
+                  placeholder="Ej. 450" 
+                  oninput="handleManualPriceChange(this.value)"
+                  class="w-full pl-7 pr-3 py-2 bg-black/60 border border-white/10 rounded-xl text-white text-xs font-bold focus:outline-none focus:border-[#e72380]" 
+                />
+              </div>
+            </div>
+          </div>
+
+          <!-- Botones de Multiplicadores Rápidos -->
+          <div class="flex items-center gap-1.5 pt-0.5">
+            <span class="text-[10px] text-gray-400 font-bold shrink-0">Multiplicador:</span>
+            <button type="button" onclick="applyManualMultiplier(2.0)" class="manual-mult-btn px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-gray-300 text-[11px] font-bold border border-white/10 transition" data-mult="2.0">x2.0 (+100%)</button>
+            <button type="button" onclick="applyManualMultiplier(2.5)" class="manual-mult-btn active px-2.5 py-1 rounded-lg bg-[#e72380]/20 text-[#e72380] text-[11px] font-bold border border-[#e72380]/40 transition" data-mult="2.5">x2.5 (+150%) ⭐</button>
+            <button type="button" onclick="applyManualMultiplier(3.0)" class="manual-mult-btn px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-gray-300 text-[11px] font-bold border border-white/10 transition" data-mult="3.0">x3.0 (+200%)</button>
+          </div>
+
+          <!-- Badge Dinámico de Ganancia y Margen -->
+          <div id="manual-profit-badge" class="p-2 rounded-xl bg-emerald-950/30 border border-emerald-500/25 flex items-center justify-between text-[11px] transition-all">
+            <span class="text-emerald-300 font-bold flex items-center gap-1.5">
+              <i data-lucide="trending-up" class="w-3.5 h-3.5 text-emerald-400"></i>
+              <span id="manual-profit-text">Ingresa tu costo para calcular tu ganancia</span>
+            </span>
+            <span id="manual-margin-pill" class="hidden px-2 py-0.5 rounded-full font-mono font-extrabold text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+              +0% margen
+            </span>
           </div>
         </div>
 
@@ -600,13 +658,44 @@
           <input type="text" name="tallas" placeholder="Ej. 5, 6, 7, 8 o Ajustable" class="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-xl text-white focus:outline-none focus:border-[#e72380]" />
         </div>
 
+        <!-- Sección: Opciones / Variantes de Producto (Colores, Gemas, Modelos) -->
+        <div class="p-3.5 rounded-2xl bg-white/[0.02] border border-white/10 space-y-3">
+          <div class="flex items-center justify-between">
+            <div>
+              <label class="text-xs font-bold text-white flex items-center gap-2 cursor-pointer select-none">
+                <input type="checkbox" id="manual-has-variants" onchange="toggleManualVariants(this.checked)" class="rounded text-[#e72380] focus:ring-0 cursor-pointer" />
+                <span>✨ Esta joya tiene variantes (colores, gemas o modelos)</span>
+              </label>
+              <p class="text-[10px] text-gray-400 mt-0.5">Actívalo para ofrecer diferentes colores o acabados bajo la misma publicación.</p>
+            </div>
+          </div>
+
+          <div id="manual-variants-container" class="hidden space-y-3 pt-2 border-t border-white/10">
+            <div class="flex items-center justify-between">
+              <span class="text-[11px] font-bold text-gray-300 flex items-center gap-1">
+                <i data-lucide="layers" class="w-3.5 h-3.5 text-[#e72380]"></i>
+                <span>Modelos / Variantes a Crear</span>
+              </span>
+              <button type="button" onclick="addManualVariantRow()" class="px-2.5 py-1 rounded-xl bg-[#e72380]/20 hover:bg-[#e72380] text-[#e72380] hover:text-white font-bold text-[11px] transition border border-[#e72380]/40 flex items-center gap-1">
+                <i data-lucide="plus" class="w-3 h-3"></i>
+                <span>+ Agregar otra variante</span>
+              </button>
+            </div>
+
+            <!-- Lista de Variantes Dinámicas -->
+            <div id="manual-variants-list" class="space-y-2.5 max-h-[300px] overflow-y-auto pr-1">
+              <!-- Se inyectan filas de variantes dinámicamente -->
+            </div>
+          </div>
+        </div>
+
         <div>
           <label class="block font-bold text-gray-400 mb-1">Link de Compra / Proveedor (Privado)</label>
           <input type="url" name="enlace" placeholder="https://es.aliexpress.com/item/..." class="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-xl text-white focus:outline-none focus:border-[#e72380]" />
         </div>
 
         <div>
-          <label class="block font-bold text-gray-300 mb-1">Subir Foto de la Joya</label>
+          <label class="block font-bold text-gray-300 mb-1">Subir Foto de Portada</label>
           <input 
             type="file" 
             name="foto_file" 
@@ -683,23 +772,46 @@
       <form id="edit-product-form" onsubmit="handleEditProductSubmit(event)" class="space-y-5 text-xs">
         <input type="hidden" id="edit-product-id" />
 
-        <!-- Selector de Variantes / Modelos (Visible cuando la joya tiene más de 1 modelo) -->
-        <div id="edit-variant-selector-wrapper" class="hidden space-y-2 p-3.5 bg-black/40 border border-[#e72380]/30 rounded-2xl">
+        <!-- Selector de Variantes / Modelos -->
+        <div id="edit-variant-selector-wrapper" class="space-y-2 p-3.5 bg-black/40 border border-[#e72380]/30 rounded-2xl">
           <div class="flex items-center justify-between">
             <span class="text-[11px] font-bold text-white flex items-center gap-1.5">
               <i data-lucide="layers" class="w-3.5 h-3.5 text-[#e72380]"></i>
-              <span>¿Qué deseas modificar?</span>
+              <span>Variantes y Modelos de la Joya</span>
             </span>
-            <span id="edit-variant-mode-badge" class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-[#e72380]/20 text-[#e72380] border border-[#e72380]/30">
-              🌟 Todo el Grupo
-            </span>
+            <div class="flex items-center gap-2">
+              <span id="edit-variant-mode-badge" class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-[#e72380]/20 text-[#e72380] border border-[#e72380]/30">
+                🌟 Todo el Grupo
+              </span>
+              <button 
+                type="button" 
+                onclick="openAddVariantModal()" 
+                class="px-2.5 py-1 rounded-xl bg-[#e72380]/20 hover:bg-[#e72380] text-[#e72380] hover:text-white font-bold text-xs transition border border-[#e72380]/40 flex items-center gap-1 shadow-sm"
+                title="Agregar otra variante (color, gema, modelo) a esta joya"
+              >
+                <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                <span>+ Agregar Variante</span>
+              </button>
+            </div>
           </div>
           <div id="edit-variant-pills-list" class="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
             <!-- Píldoras de variantes generadas dinámicamente -->
           </div>
-          <p id="edit-variant-tip" class="text-[10px] text-gray-400">
-            Toca una variante para editar exclusivamente su foto, tallas y precio. O selecciona "Todo el Grupo" para ajustes generales.
-          </p>
+          <div class="flex items-center justify-between pt-0.5">
+            <p id="edit-variant-tip" class="text-[10px] text-gray-400">
+              Toca una variante para editar exclusivamente su foto, tallas y precio. O selecciona "Todo el Grupo" para ajustes generales.
+            </p>
+            <button 
+              type="button" 
+              id="edit-delete-variant-btn" 
+              onclick="handleDeleteCurrentVariant()" 
+              class="hidden text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 px-2 py-1 rounded-lg text-[10px] font-bold transition flex items-center gap-1 shrink-0 border border-rose-500/20"
+              title="Eliminar esta variante específica"
+            >
+              <i data-lucide="trash-2" class="w-3 h-3"></i>
+              <span>Eliminar variante</span>
+            </button>
+          </div>
         </div>
 
         <!-- Estructura Adaptada: 2 Columnas en Desktop (PC) y 1 Columna en Celular -->
@@ -838,25 +950,77 @@
               </div>
             </div>
 
-            <!-- Precios y Stock -->
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <div>
-                <label class="block font-bold text-white mb-1 flex items-center justify-between">
-                  <span>Precio Normal / Habitual (MXN) *</span>
+            <!-- Precios y Calculadora de Costo / Ganancia -->
+            <div class="p-3.5 rounded-2xl bg-black/40 border border-[#e72380]/20 space-y-3">
+              <div class="flex items-center justify-between">
+                <label class="font-bold text-white text-xs flex items-center gap-1.5">
+                  <i data-lucide="calculator" class="w-3.5 h-3.5 text-[#e72380]"></i>
+                  <span>Cálculo de Costo, Precio y Ganancia</span>
                 </label>
-                <input type="number" step="1" id="edit-precio" oninput="updateEditDiscountNotice()" required placeholder="Ej. 396" class="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-xl text-white text-xs font-bold focus:outline-none focus:border-[#e72380]" />
-                <span class="text-[10px] text-gray-400 mt-0.5 block">Precio regular de la joya</span>
+                <div class="flex items-center gap-1">
+                  <span class="text-[10px] text-gray-400 font-bold hidden sm:inline">Calcular:</span>
+                  <button type="button" onclick="applyEditMultiplier(2.0)" class="edit-mult-btn px-2 py-0.5 rounded-lg bg-white/5 hover:bg-white/10 text-gray-300 text-[10px] font-bold border border-white/10 transition">x2.0</button>
+                  <button type="button" onclick="applyEditMultiplier(2.5)" class="edit-mult-btn px-2 py-0.5 rounded-lg bg-[#e72380]/20 text-[#e72380] text-[10px] font-bold border border-[#e72380]/40 transition">x2.5 ⭐</button>
+                  <button type="button" onclick="applyEditMultiplier(3.0)" class="edit-mult-btn px-2 py-0.5 rounded-lg bg-white/5 hover:bg-white/10 text-gray-300 text-[10px] font-bold border border-white/10 transition">x3.0</button>
+                </div>
               </div>
-              <div>
-                <label class="block font-bold text-gray-400 mb-1">Costo Real (Privado)</label>
-                <input type="number" step="0.01" id="edit-costo" class="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-xl text-gray-300 text-xs focus:outline-none focus:border-[#e72380]" />
+
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div>
+                  <label class="block font-bold text-gray-300 mb-1 text-[11px]">
+                    Costo que te sale a ti (Privado)
+                  </label>
+                  <div class="relative">
+                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs">$</span>
+                    <input 
+                      type="number" 
+                      step="0.01" 
+                      id="edit-costo" 
+                      placeholder="Ej. 180" 
+                      oninput="handleEditCostChange(this.value)"
+                      class="w-full pl-7 pr-3 py-2 bg-black/60 border border-white/10 rounded-xl text-white text-xs font-bold focus:outline-none focus:border-[#e72380]" 
+                    />
+                  </div>
+                  <span class="text-[10px] text-gray-500 mt-0.5 block">Lo que pagas a tu proveedor</span>
+                </div>
+
+                <div>
+                  <label class="block font-bold text-white mb-1 text-[11px] flex items-center justify-between">
+                    <span>Precio Venta Habitual (MXN) *</span>
+                  </label>
+                  <div class="relative">
+                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs">$</span>
+                    <input 
+                      type="number" 
+                      step="1" 
+                      id="edit-precio" 
+                      required 
+                      placeholder="Ej. 450" 
+                      oninput="handleEditPriceChange(this.value)"
+                      class="w-full pl-7 pr-3 py-2 bg-black/60 border border-white/10 rounded-xl text-white text-xs font-bold focus:outline-none focus:border-[#e72380]" 
+                    />
+                  </div>
+                  <span class="text-[10px] text-gray-400 mt-0.5 block">Precio público de la joya</span>
+                </div>
+
+                <div>
+                  <label class="block font-bold text-gray-300 mb-1 text-[11px]">Estado de Stock</label>
+                  <select id="edit-stock" class="w-full px-3 py-2 bg-black/60 border border-white/10 rounded-xl text-white text-xs focus:outline-none focus:border-[#e72380]">
+                    <option value="Disponible">Disponible</option>
+                    <option value="Agotada">Agotada</option>
+                  </select>
+                </div>
               </div>
-              <div>
-                <label class="block font-bold text-gray-300 mb-1">Estado de Stock</label>
-                <select id="edit-stock" class="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-xl text-white text-xs focus:outline-none focus:border-[#e72380]">
-                  <option value="Disponible">Disponible</option>
-                  <option value="Agotada">Agotada</option>
-                </select>
+
+              <!-- Badge Dinámico de Ganancia y Margen en Edición -->
+              <div id="edit-profit-badge" class="p-2 rounded-xl bg-emerald-950/30 border border-emerald-500/25 flex items-center justify-between text-[11px] transition-all">
+                <span class="text-emerald-300 font-bold flex items-center gap-1.5">
+                  <i data-lucide="trending-up" class="w-3.5 h-3.5 text-emerald-400"></i>
+                  <span id="edit-profit-text">Ganancia: $0 MXN</span>
+                </span>
+                <span id="edit-margin-pill" class="px-2 py-0.5 rounded-full font-mono font-extrabold text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                  +0% margen
+                </span>
               </div>
             </div>
 
@@ -915,6 +1079,155 @@
     </div>
   </div>
 
+
+  <!-- ========================================================================
+       MODAL: AGREGAR NUEVA VARIANTE A PRODUCTO EXISTENTE
+       ======================================================================== -->
+  <div id="modal-add-variant" class="fixed inset-0 z-[60] hidden flex items-center justify-center p-3 sm:p-5">
+    <div class="modal-overlay fixed inset-0 bg-black/80 backdrop-blur-sm" onclick="closeAddVariantModal()"></div>
+    <div class="modal-dialog bg-[#141C18] border border-white/10 rounded-3xl max-w-lg w-full p-5 sm:p-6 shadow-2xl relative z-10 space-y-4 max-h-[92vh] overflow-y-auto">
+      
+      <div class="flex items-center justify-between pb-3 border-b border-white/10">
+        <div class="flex items-center gap-2.5">
+          <div class="w-9 h-9 rounded-xl bg-[#e72380]/20 text-[#e72380] flex items-center justify-center">
+            <i data-lucide="layers" class="w-4 h-4"></i>
+          </div>
+          <div>
+            <h3 class="text-sm sm:text-base font-extrabold text-white">Agregar Nueva Variante</h3>
+            <p id="add-variant-parent-title" class="text-[11px] text-gray-400 truncate max-w-[240px] sm:max-w-sm"></p>
+          </div>
+        </div>
+        <button type="button" onclick="closeAddVariantModal()" class="text-gray-400 hover:text-white p-1 rounded-lg">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <form id="form-add-variant" onsubmit="handleAddVariantSubmit(event)" class="space-y-3.5 text-xs">
+        
+        <div>
+          <label class="block font-bold text-gray-300 mb-1">Nombre / Color del Modelo *</label>
+          <input 
+            type="text" 
+            id="newvar-color" 
+            required 
+            placeholder="Ej. Rosa Zirconia, Azul Zafiro, Acabado Dorado 18K" 
+            oninput="handleNewVarColorChange(this.value)"
+            class="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-xl text-white focus:outline-none focus:border-[#e72380]" 
+          />
+          <span class="text-[10px] text-gray-500 mt-0.5 block">Este nombre aparecerá en los botones de color que ve el cliente en la tienda.</span>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold text-gray-300 mb-1">SKU de la Variante *</label>
+            <input 
+              type="text" 
+              id="newvar-sku" 
+              required 
+              placeholder="Ej. A-12-ROSA" 
+              class="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-xl text-white uppercase focus:outline-none focus:border-[#e72380]" 
+            />
+          </div>
+          <div>
+            <label class="block font-bold text-gray-300 mb-1">Tallas Disponibles</label>
+            <input 
+              type="text" 
+              id="newvar-tallas" 
+              placeholder="Ej. 5, 6, 7, 8 o Ajustable" 
+              class="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-xl text-white focus:outline-none focus:border-[#e72380]" 
+            />
+          </div>
+        </div>
+
+        <!-- Calculadora de Costo y Precio de la Variante -->
+        <div class="p-3 rounded-2xl bg-black/40 border border-[#e72380]/20 space-y-2">
+          <div class="flex items-center justify-between">
+            <label class="font-bold text-white text-[11px] flex items-center gap-1">
+              <i data-lucide="calculator" class="w-3.5 h-3.5 text-[#e72380]"></i>
+              <span>Costo y Precio de la Variante</span>
+            </label>
+            <div class="flex items-center gap-1">
+              <button type="button" onclick="applyNewVarMultiplier(2.0)" class="newvar-mult-btn px-2 py-0.5 rounded-lg bg-white/5 hover:bg-white/10 text-gray-300 text-[10px] font-bold border border-white/10">x2.0</button>
+              <button type="button" onclick="applyNewVarMultiplier(2.5)" class="newvar-mult-btn active px-2 py-0.5 rounded-lg bg-[#e72380]/20 text-[#e72380] text-[10px] font-bold border border-[#e72380]/40">x2.5 ⭐</button>
+              <button type="button" onclick="applyNewVarMultiplier(3.0)" class="newvar-mult-btn px-2 py-0.5 rounded-lg bg-white/5 hover:bg-white/10 text-gray-300 text-[10px] font-bold border border-white/10">x3.0</button>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2.5">
+            <div>
+              <label class="block font-bold text-gray-300 text-[10px] mb-1">Costo que te sale (MXN)</label>
+              <div class="relative">
+                <span class="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400 text-xs">$</span>
+                <input 
+                  type="number" 
+                  step="0.01" 
+                  id="newvar-costo" 
+                  placeholder="Ej. 180" 
+                  oninput="handleNewVarCostChange(this.value)"
+                  class="w-full pl-6 pr-2.5 py-1.5 bg-black/60 border border-white/10 rounded-xl text-white text-xs font-bold focus:outline-none focus:border-[#e72380]" 
+                />
+              </div>
+            </div>
+            <div>
+              <label class="block font-bold text-white text-[10px] mb-1">Precio Venta (MXN) *</label>
+              <div class="relative">
+                <span class="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400 text-xs">$</span>
+                <input 
+                  type="number" 
+                  step="1" 
+                  id="newvar-precio" 
+                  required 
+                  placeholder="Ej. 450" 
+                  oninput="handleNewVarPriceChange(this.value)"
+                  class="w-full pl-6 pr-2.5 py-1.5 bg-black/60 border border-white/10 rounded-xl text-white text-xs font-bold focus:outline-none focus:border-[#e72380]" 
+                />
+              </div>
+            </div>
+          </div>
+
+          <div id="newvar-profit-badge" class="p-1.5 rounded-xl bg-emerald-950/30 border border-emerald-500/25 flex items-center justify-between text-[10px]">
+            <span class="text-emerald-300 font-bold" id="newvar-profit-text">Ingresa costo para calcular</span>
+            <span id="newvar-margin-pill" class="px-2 py-0.5 rounded-full font-mono font-extrabold text-[9px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">+0% margen</span>
+          </div>
+        </div>
+
+        <!-- Foto de la Variante -->
+        <div>
+          <label class="block font-bold text-gray-300 mb-1">Foto Específica de esta Variante</label>
+          <input 
+            type="file" 
+            id="newvar-foto-input" 
+            accept="image/jpeg,image/png,image/webp,image/*" 
+            onchange="handleNewVarPhotoChange(this)"
+            class="w-full text-xs text-gray-400 file:mr-2 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-[11px] file:font-bold file:bg-[#e72380]/20 file:text-[#e72380] hover:file:bg-[#e72380]/30 cursor-pointer" 
+          />
+          <div id="newvar-preview-box" class="hidden mt-2 p-2 rounded-xl bg-white/[0.04] border border-white/10 flex items-center gap-3">
+            <div class="w-10 h-10 rounded-lg overflow-hidden bg-black/40 border border-white/10 shrink-0">
+              <img id="newvar-preview-img" src="" alt="Vista previa" class="w-full h-full object-cover" />
+            </div>
+            <div class="flex-1 min-w-0">
+              <p id="newvar-preview-name" class="text-xs font-bold text-white truncate"></p>
+              <span class="text-[10px] text-emerald-400 font-bold flex items-center gap-1"><i data-lucide="check" class="w-3 h-3"></i> Lista para subir</span>
+            </div>
+            <button type="button" onclick="clearNewVarPhotoSelection()" class="p-1 text-gray-400 hover:text-rose-400">
+              <i data-lucide="x" class="w-4 h-4"></i>
+            </button>
+          </div>
+          <span class="text-[10px] text-gray-500 mt-1 block">Si no seleccionas foto, se usará la foto de portada del producto.</span>
+        </div>
+
+        <div class="pt-3 border-t border-white/10 flex items-center justify-end gap-2">
+          <button type="button" onclick="closeAddVariantModal()" class="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-gray-300 font-bold">Cancelar</button>
+          <button type="submit" id="newvar-submit-btn" class="px-5 py-2 rounded-xl bg-[#e72380] hover:bg-[#d41c73] text-white font-bold shadow-md shadow-[#e72380]/20 flex items-center gap-1.5">
+            <i data-lucide="check" class="w-4 h-4"></i>
+            <span>Guardar Variante</span>
+          </button>
+        </div>
+
+      </form>
+
+    </div>
+  </div>
 
   <!-- ========================================================================
        MODAL: REGISTRO DE ERRORES Y DIAGNÓSTICO TÉCNICO (ERROR CODES)

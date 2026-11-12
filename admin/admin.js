@@ -1484,11 +1484,311 @@ async function commitImportToSupabase() {
 }
 
 // ==============================================================================
+// CÁLCULO INTELIGENTE DE PRECIO, COSTO Y GANANCIA (AUTO-CALCULATOR)
+// ==============================================================================
+function calculateProfitAndMargin(cost, price) {
+  const c = parseFloat(cost) || 0;
+  const p = parseFloat(price) || 0;
+  if (c <= 0 || p <= 0) {
+    return { profit: 0, marginPct: 0, isWarning: false, isValid: false };
+  }
+  const profit = p - c;
+  const marginPct = Math.round((profit / c) * 100);
+  const isWarning = p < c;
+  return { profit, marginPct, isWarning, isValid: true };
+}
+
+// 1. Calculadora para "Crear Joya Manual"
+let manualActiveMultiplier = 2.5;
+
+function applyManualMultiplier(mult) {
+  manualActiveMultiplier = parseFloat(mult) || 2.5;
+  document.querySelectorAll(".manual-mult-btn").forEach(btn => {
+    const bMult = parseFloat(btn.getAttribute("data-mult"));
+    if (Math.abs(bMult - manualActiveMultiplier) < 0.05) {
+      btn.className = "manual-mult-btn active px-2.5 py-1 rounded-lg bg-[#e72380]/20 text-[#e72380] text-[11px] font-bold border border-[#e72380]/40 transition";
+    } else {
+      btn.className = "manual-mult-btn px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-gray-300 text-[11px] font-bold border border-white/10 transition";
+    }
+  });
+
+  const costInput = document.getElementById("manual-costo");
+  const priceInput = document.getElementById("manual-precio");
+  const cost = parseFloat(costInput?.value || 0);
+
+  if (cost > 0 && priceInput) {
+    priceInput.value = Math.round(cost * manualActiveMultiplier);
+  }
+  updateManualProfitBadge();
+}
+
+function handleManualCostChange(val) {
+  const cost = parseFloat(val) || 0;
+  const priceInput = document.getElementById("manual-precio");
+  if (cost > 0 && priceInput) {
+    priceInput.value = Math.round(cost * manualActiveMultiplier);
+  }
+  updateManualProfitBadge();
+}
+
+function handleManualPriceChange() {
+  updateManualProfitBadge();
+}
+
+function updateManualProfitBadge() {
+  const costInput = document.getElementById("manual-costo");
+  const priceInput = document.getElementById("manual-precio");
+  const badge = document.getElementById("manual-profit-badge");
+  const textEl = document.getElementById("manual-profit-text");
+  const pillEl = document.getElementById("manual-margin-pill");
+  if (!badge || !textEl || !pillEl) return;
+
+  const cost = parseFloat(costInput?.value || 0);
+  const price = parseFloat(priceInput?.value || 0);
+  const { profit, marginPct, isWarning, isValid } = calculateProfitAndMargin(cost, price);
+
+  if (!isValid) {
+    badge.className = "p-2 rounded-xl bg-white/[0.03] border border-white/10 flex items-center justify-between text-[11px] transition-all";
+    textEl.className = "text-gray-400 font-bold flex items-center gap-1.5";
+    textEl.innerHTML = `<i data-lucide="calculator" class="w-3.5 h-3.5 text-gray-400"></i><span>Ingresa tu costo para calcular tu ganancia</span>`;
+    pillEl.classList.add("hidden");
+  } else if (isWarning) {
+    badge.className = "p-2 rounded-xl bg-rose-950/40 border border-rose-500/40 flex items-center justify-between text-[11px] transition-all";
+    textEl.className = "text-rose-300 font-bold flex items-center gap-1.5";
+    textEl.innerHTML = `<i data-lucide="alert-triangle" class="w-3.5 h-3.5 text-rose-400"></i><span>⚠️ Pérdida: -$${Math.abs(Math.round(profit))} MXN (Precio menor al costo)</span>`;
+    pillEl.className = "px-2 py-0.5 rounded-full font-mono font-extrabold text-[10px] bg-rose-500/20 text-rose-300 border border-rose-500/30";
+    pillEl.textContent = `${marginPct}% margen`;
+    pillEl.classList.remove("hidden");
+  } else {
+    badge.className = "p-2 rounded-xl bg-emerald-950/30 border border-emerald-500/25 flex items-center justify-between text-[11px] transition-all";
+    textEl.className = "text-emerald-300 font-bold flex items-center gap-1.5";
+    textEl.innerHTML = `<i data-lucide="trending-up" class="w-3.5 h-3.5 text-emerald-400"></i><span>Tu ganancia neta: <strong class="text-white">$${Math.round(profit)} MXN</strong></span>`;
+    pillEl.className = "px-2 py-0.5 rounded-full font-mono font-extrabold text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30";
+    pillEl.textContent = `+${marginPct}% margen`;
+    pillEl.classList.remove("hidden");
+  }
+  safeCreateIcons();
+}
+
+// 2. Gestión de Variantes Dinámicas en Modal Manual
+let manualVariantsState = [];
+
+function toggleManualVariants(hasVariants) {
+  const container = document.getElementById("manual-variants-container");
+  if (!container) return;
+
+  if (hasVariants) {
+    container.classList.remove("hidden");
+    if (manualVariantsState.length === 0) {
+      addManualVariantRow("Modelo A");
+      addManualVariantRow("Modelo B");
+    } else {
+      renderManualVariantsList();
+    }
+  } else {
+    container.classList.add("hidden");
+  }
+  safeCreateIcons();
+}
+
+function addManualVariantRow(defaultName) {
+  const form = document.getElementById("manual-product-form");
+  const parentSku = (form?.sku?.value || "A").trim().toUpperCase();
+  const parentTallas = (form?.tallas?.value || "Ajustable").trim();
+  const parentCost = form?.costo?.value || "";
+  const parentPrice = form?.precio?.value || "";
+
+  const tempId = 'mv_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6);
+  const count = manualVariantsState.length + 1;
+  const colorName = defaultName || `Modelo ${count}`;
+  const skuSuffix = colorName.replace(/[^A-Za-z0-9]/g, "-").toUpperCase();
+
+  manualVariantsState.push({
+    tempId,
+    color: colorName,
+    sku: parentSku ? `${parentSku}-${skuSuffix}` : skuSuffix,
+    tallas: parentTallas,
+    costo: parentCost,
+    precio: parentPrice,
+    file: null,
+    previewUrl: ''
+  });
+
+  renderManualVariantsList();
+}
+
+function removeManualVariantRow(tempId) {
+  if (manualVariantsState.length <= 1) {
+    showToast("Aviso", "Debes tener al menos 1 variante si activaste esta opción.", "info");
+    return;
+  }
+  manualVariantsState = manualVariantsState.filter(v => v.tempId !== tempId);
+  renderManualVariantsList();
+}
+
+function updateManualVariantField(tempId, field, val) {
+  const v = manualVariantsState.find(x => x.tempId === tempId);
+  if (!v) return;
+  v[field] = val;
+  if (field === 'color') {
+    const form = document.getElementById("manual-product-form");
+    const parentSku = (form?.sku?.value || "").trim().toUpperCase();
+    if (parentSku) {
+      const cleanCol = (val || "").trim().toUpperCase().replace(/[^A-Z0-9]/g, "-");
+      v.sku = cleanCol ? `${parentSku}-${cleanCol}` : parentSku;
+      const skuInput = document.querySelector(`input[data-sku-tempid='${tempId}']`);
+      if (skuInput) skuInput.value = v.sku;
+    }
+    const titleEl = document.querySelector(`span[data-title-tempid='${tempId}']`);
+    if (titleEl) titleEl.textContent = val || "Nueva Variante";
+  }
+}
+
+function updateManualVariantCost(tempId, val) {
+  const v = manualVariantsState.find(x => x.tempId === tempId);
+  if (!v) return;
+  v.costo = val;
+  const cost = parseFloat(val) || 0;
+  if (cost > 0) {
+    v.precio = Math.round(cost * manualActiveMultiplier);
+    const priceInput = document.querySelector(`input[data-price-tempid='${tempId}']`);
+    if (priceInput) priceInput.value = v.precio;
+  }
+}
+
+function handleManualVariantFile(tempId, input) {
+  const v = manualVariantsState.find(x => x.tempId === tempId);
+  if (!v || !input || !input.files || !input.files[0]) return;
+  v.file = input.files[0];
+  try {
+    v.previewUrl = URL.createObjectURL(input.files[0]);
+  } catch (e) {
+    v.previewUrl = '';
+  }
+  renderManualVariantsList();
+}
+
+function renderManualVariantsList() {
+  const list = document.getElementById("manual-variants-list");
+  if (!list) return;
+
+  if (manualVariantsState.length === 0) {
+    list.innerHTML = `<p class="text-xs text-gray-400 italic text-center py-2">No has agregado variantes todavía.</p>`;
+    return;
+  }
+
+  let html = '';
+  manualVariantsState.forEach((v, idx) => {
+    html += `
+      <div class="p-3 rounded-2xl bg-black/50 border border-white/10 space-y-2 relative">
+        <div class="flex items-center justify-between pb-1.5 border-b border-white/5">
+          <span class="font-bold text-white text-[11px] flex items-center gap-1.5">
+            <span class="w-5 h-5 rounded-full bg-[#e72380]/20 text-[#e72380] flex items-center justify-center text-[10px] font-mono font-bold">${idx + 1}</span>
+            <span data-title-tempid="${v.tempId}">${escapeHtml(v.color) || `Variante ${idx + 1}`}</span>
+          </span>
+          <button type="button" onclick="removeManualVariantRow('${v.tempId}')" class="text-gray-400 hover:text-rose-400 p-1 transition" title="Eliminar variante">
+            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+          </button>
+        </div>
+
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+          <div>
+            <label class="block text-[10px] font-bold text-gray-300 mb-0.5">Color / Modelo *</label>
+            <input 
+              type="text" 
+              placeholder="Ej. Rosa Zirconia" 
+              value="${escapeHtml(v.color)}" 
+              oninput="updateManualVariantField('${v.tempId}', 'color', this.value)" 
+              class="w-full px-2.5 py-1.5 bg-black/60 border border-white/10 rounded-xl text-white text-xs focus:outline-none focus:border-[#e72380]" 
+              required 
+            />
+          </div>
+          <div>
+            <label class="block text-[10px] font-bold text-gray-300 mb-0.5">SKU Variante *</label>
+            <input 
+              type="text" 
+              data-sku-tempid="${v.tempId}"
+              placeholder="Ej. A-12-ROSA" 
+              value="${escapeHtml(v.sku)}" 
+              oninput="updateManualVariantField('${v.tempId}', 'sku', this.value.toUpperCase())" 
+              class="w-full px-2.5 py-1.5 bg-black/60 border border-white/10 rounded-xl text-white text-xs uppercase focus:outline-none focus:border-[#e72380]" 
+              required
+            />
+          </div>
+          <div class="col-span-2 sm:col-span-1">
+            <label class="block text-[10px] font-bold text-gray-300 mb-0.5">Tallas</label>
+            <input 
+              type="text" 
+              placeholder="Ej. 5, 6, 7" 
+              value="${escapeHtml(v.tallas)}" 
+              oninput="updateManualVariantField('${v.tempId}', 'tallas', this.value)" 
+              class="w-full px-2.5 py-1.5 bg-black/60 border border-white/10 rounded-xl text-white text-xs focus:outline-none focus:border-[#e72380]" 
+            />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block text-[10px] font-bold text-gray-400 mb-0.5">Costo que te sale (MXN)</label>
+            <input 
+              type="number" 
+              step="0.01" 
+              placeholder="Ej. 180" 
+              value="${v.costo || ''}" 
+              oninput="updateManualVariantCost('${v.tempId}', this.value)" 
+              class="w-full px-2.5 py-1.5 bg-black/60 border border-white/10 rounded-xl text-white text-xs focus:outline-none focus:border-[#e72380]" 
+            />
+          </div>
+          <div>
+            <label class="block text-[10px] font-bold text-white mb-0.5">Precio Venta (MXN) *</label>
+            <input 
+              type="number" 
+              step="1" 
+              data-price-tempid="${v.tempId}"
+              placeholder="Ej. 450" 
+              value="${v.precio || ''}" 
+              oninput="updateManualVariantField('${v.tempId}', 'precio', this.value)" 
+              class="w-full px-2.5 py-1.5 bg-black/60 border border-white/10 rounded-xl text-white text-xs font-bold focus:outline-none focus:border-[#e72380]" 
+              required 
+            />
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-[10px] font-bold text-gray-300 mb-0.5">Foto de esta variante</label>
+          <div class="flex items-center gap-2">
+            <input 
+              type="file" 
+              accept="image/jpeg,image/png,image/webp,image/*" 
+              onchange="handleManualVariantFile('${v.tempId}', this)" 
+              class="w-full text-[10px] text-gray-400 file:mr-2 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-[10px] file:font-bold file:bg-[#e72380]/20 file:text-[#e72380] cursor-pointer" 
+            />
+            ${v.previewUrl ? `<img src="${v.previewUrl}" class="w-8 h-8 rounded-lg object-cover border border-white/20 shrink-0" />` : ''}
+          </div>
+        </div>
+      </div>
+    `;
+  });
+
+  list.innerHTML = html;
+  safeCreateIcons();
+}
+
+// ==============================================================================
 // MODAL DE CREACIÓN MANUAL DE JOYAS
 // ==============================================================================
 function openManualModal() {
   const modal = document.getElementById("manual-product-modal");
   if (modal) {
+    manualVariantsState = [];
+    const hasVariantsCheck = document.getElementById("manual-has-variants");
+    if (hasVariantsCheck) hasVariantsCheck.checked = false;
+    const varContainer = document.getElementById("manual-variants-container");
+    if (varContainer) varContainer.classList.add("hidden");
+    clearManualPhotoSelection();
+    applyManualMultiplier(2.5);
+    updateManualProfitBadge();
+
     modal.classList.remove("hidden");
     requestAnimationFrame(() => modal.classList.add("modal-active"));
   }
@@ -1498,7 +1798,15 @@ function closeManualModal() {
   const modal = document.getElementById("manual-product-modal");
   if (modal) {
     modal.classList.remove("modal-active");
-    setTimeout(() => modal.classList.add("hidden"), 200);
+    setTimeout(() => {
+      modal.classList.add("hidden");
+      manualVariantsState = [];
+      const hasVariantsCheck = document.getElementById("manual-has-variants");
+      if (hasVariantsCheck) hasVariantsCheck.checked = false;
+      const varContainer = document.getElementById("manual-variants-container");
+      if (varContainer) varContainer.classList.add("hidden");
+      clearManualPhotoSelection();
+    }, 200);
   }
 }
 
@@ -1550,10 +1858,25 @@ async function handleManualProductSubmit(e) {
   const enlace = form.enlace.value.trim();
   const esNovedad = form.es_novedad.checked;
   const fotoInput = form.foto_file;
+  const hasVariants = document.getElementById("manual-has-variants")?.checked;
 
   if (!sku || !titulo || isNaN(precio)) {
     showToast("Campos incompletos", "SKU, Título y Precio son obligatorios.", "error");
     return;
+  }
+
+  // 1. Validaciones si tiene variantes
+  if (hasVariants && manualVariantsState.length > 0) {
+    for (const v of manualVariantsState) {
+      if (!v.color || !v.color.trim()) {
+        showToast("Variante incompleta", "Todas las variantes deben tener un Color o Modelo.", "error");
+        return;
+      }
+      if (!v.precio || isNaN(parseFloat(v.precio))) {
+        showToast("Precio inválido", `La variante "${v.color}" requiere un precio de venta válido.`, "error");
+        return;
+      }
+    }
   }
 
   btn.disabled = true;
@@ -1562,7 +1885,7 @@ async function handleManualProductSubmit(e) {
   try {
     let fotoUrl = null;
 
-    // Subir foto si se seleccionó archivo (comprimido y con barra de porcentaje en botón)
+    // Subir foto de portada si se seleccionó
     if (fotoInput.files && fotoInput.files[0]) {
       const rawFile = fotoInput.files[0];
       btn.innerHTML = `<i data-lucide="loader" class="w-4 h-4 animate-spin inline mr-1"></i><span>Optimizando foto...</span>`;
@@ -1588,28 +1911,92 @@ async function handleManualProductSubmit(e) {
       }
     }
 
-    const newProd = {
-      codigo_sku: sku,
-      titulo: titulo,
-      categoria: categoria,
-      precio_venta: precio,
-      costo_real: costo || null,
-      tallas: tallas,
-      enlace_aliexpress: enlace || null,
-      foto_principal: fotoUrl,
-      es_novedad: esNovedad,
-      activo: true,
-      metal_material: "Plata esterlina 925",
-      tipo_piedra: "CIRCONITA"
-    };
+    if (hasVariants && manualVariantsState.length > 0) {
+      // Subir fotos individuales de variantes y crear lote agrupado
+      const variantsPayload = [];
+      const sharedGroupId = `MANUAL-${sku}-${Date.now()}`;
 
-    await adminApi.post("/productos", [newProd]);
+      for (let i = 0; i < manualVariantsState.length; i++) {
+        const v = manualVariantsState[i];
+        let varPhotoUrl = null;
 
-    showToast("Joya agregada", `"${sku}" ya está publicada en la tienda.`, "success");
+        if (v.file) {
+          btn.innerHTML = `<i data-lucide="loader" class="w-4 h-4 animate-spin inline mr-1"></i><span>Subiendo foto variante ${i + 1}/${manualVariantsState.length}...</span>`;
+          safeCreateIcons();
+          try {
+            const pBlob = await processImageForUpload(v.file);
+            const varFilename = `var_${sku}_${i + 1}_${Date.now()}.jpg`;
+            const res = await uploadImageWithProgress(pBlob, varFilename, () => {});
+            varPhotoUrl = res.url;
+          } catch (vErr) {
+            console.warn("Fallo subida de variante:", vErr);
+          }
+        }
+
+        const finalVarPhoto = varPhotoUrl || fotoUrl;
+        const varPrice = parseFloat(v.precio) || precio;
+        const varCost = parseFloat(v.costo) || (costo > 0 ? costo : null);
+        const varSku = (v.sku && v.sku.trim()) ? v.sku.trim().toUpperCase() : `${sku}-${(v.color || `V${i+1}`).replace(/\s+/g, '-').toUpperCase()}`;
+        const varTallas = (v.tallas && v.tallas.trim()) ? v.tallas.trim() : tallas;
+
+        variantsPayload.push({
+          id_aliexpress: sharedGroupId,
+          codigo_sku: varSku,
+          color_modelo: v.color.trim(),
+          titulo: titulo,
+          descripcion: titulo,
+          categoria: categoria,
+          tallas: varTallas,
+          precio_venta: varPrice,
+          costo_real: varCost,
+          ganancia_estimada: (varCost && varPrice > varCost) ? (varPrice - varCost) : null,
+          porcentaje_aumento: varCost ? Math.round(((varPrice - varCost) / varCost) * 100) : null,
+          foto_principal: finalVarPhoto,
+          galeria_fotos: fotoUrl ? [fotoUrl] : [],
+          enlace_aliexpress: enlace || null,
+          es_novedad: esNovedad,
+          activo: true,
+          estado_stock: "Disponible",
+          metal_material: "Plata esterlina 925",
+          tipo_piedra: "CIRCONITA"
+        });
+      }
+
+      // Si no había foto de portada pero la primera variante tiene foto, usarla como principal
+      if (!fotoUrl && variantsPayload[0]?.foto_principal) {
+        fotoUrl = variantsPayload[0].foto_principal;
+      }
+
+      await adminApi.post("/productos", variantsPayload);
+      showToast("Joya y Variantes Creadas", `"${sku}" con ${variantsPayload.length} modelos fue publicada con éxito.`, "success");
+
+    } else {
+      // Joya simple sin variantes múltiples
+      const newProd = {
+        codigo_sku: sku,
+        titulo: titulo,
+        categoria: categoria,
+        precio_venta: precio,
+        costo_real: costo || null,
+        ganancia_estimada: (costo > 0 && precio > costo) ? (precio - costo) : null,
+        porcentaje_aumento: costo > 0 ? Math.round(((precio - costo) / costo) * 100) : null,
+        tallas: tallas,
+        enlace_aliexpress: enlace || null,
+        foto_principal: fotoUrl,
+        es_novedad: esNovedad,
+        activo: true,
+        metal_material: "Plata esterlina 925",
+        tipo_piedra: "CIRCONITA"
+      };
+
+      await adminApi.post("/productos", [newProd]);
+      showToast("Joya agregada", `"${sku}" ya está publicada en la tienda.`, "success");
+    }
+
     closeManualModal();
     form.reset();
     await checkAdminAuth();
-  loadProductsFromSupabase();
+    await loadProductsFromSupabase();
 
   } catch (err) {
     logAndShowError("ERR_DB_CREATE_PRODUCTO", "No se pudo guardar la nueva joya.", err);
@@ -2752,12 +3139,17 @@ function renderEditVariantPills() {
   if (!wrapper || !list) return;
 
   const prod = state.currentEditingProduct;
-  if (!prod || !prod.variants || prod.variants.length <= 1) {
+  if (!prod) {
     wrapper.classList.add("hidden");
     return;
   }
 
   wrapper.classList.remove("hidden");
+
+  // Si prod no tiene lista de variantes o tiene 1, aseguramos un array uniforme
+  const variants = (prod.variants && prod.variants.length > 0)
+    ? prod.variants
+    : [{ id: prod.id, codigo_sku: prod.codigo_sku, color_modelo: "Modelo Principal", precio_venta: prod.precio_venta, costo_real: prod.costo_real, foto_principal: prod.foto_principal, tallas: prod.tallas }];
 
   let pillsHtml = `
     <button 
@@ -2770,10 +3162,10 @@ function renderEditVariantPills() {
     </button>
   `;
 
-  prod.variants.forEach((v, idx) => {
+  variants.forEach((v, idx) => {
     const isSelected = state.currentEditingVariantId === v.id;
     const vPhoto = v.foto_principal || prod.foto_principal || '';
-    const vName = cleanVariantName(v.codigo_sku || v.color_modelo) || `Modelo ${idx + 1}`;
+    const vName = cleanVariantName(v.color_modelo || v.codigo_sku) || `Modelo ${idx + 1}`;
     const vPrice = Math.round(v.precio_venta || prod.precio_venta || 0);
 
     pillsHtml += `
@@ -2782,7 +3174,7 @@ function renderEditVariantPills() {
         onclick="selectEditVariant('${v.id}')" 
         class="variant-pill-btn px-2.5 py-1.5 rounded-xl font-bold text-xs flex items-center gap-2 shrink-0 border ${isSelected ? 'active' : 'bg-white/5 border-white/10 text-gray-300 hover:bg-white/10'}"
       >
-        <img src="${vPhoto}" class="w-6 h-6 rounded-lg object-cover border border-white/10 shrink-0" onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='8' fill='%231f2923'/%3E%3Ctext x='20' y='26' font-size='18' text-anchor='middle'%3E💎%3C/text%3E%3C/svg%3E';" />
+        <img src="${vPhoto}" class="w-6 h-6 rounded-lg object-cover border border-white/10 shrink-0" onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg xmlns=\\'http://www.w3.org/2000/svg\\' viewBox=\\'0 0 40 40\\'%3E%3Crect width=\\'40\\' height=\\'40\\' rx=\\'8\\' fill=\\'%231f2923\\'/%3E%3Ctext x=\\'20\\' y=\\'26\\' font-size=\\'18\\' text-anchor=\\'middle\\'%3E💎%3C/text%3E%3C/svg%3E';" />
         <span class="truncate max-w-[120px]">${vName}</span>
         <span class="px-1.5 py-0.2 rounded text-[10px] ${isSelected ? 'bg-white/20 text-white' : 'bg-black/50 text-emerald-400 font-mono'}">$${vPrice}</span>
       </button>
@@ -2791,6 +3183,16 @@ function renderEditVariantPills() {
 
   list.innerHTML = pillsHtml;
   safeCreateIcons();
+
+  // Controlar visibilidad del botón de eliminar variante
+  const delBtn = document.getElementById("edit-delete-variant-btn");
+  if (delBtn) {
+    if (state.currentEditingVariantId !== "all" && variants.length > 1) {
+      delBtn.classList.remove("hidden");
+    } else {
+      delBtn.classList.add("hidden");
+    }
+  }
 }
 
 function selectEditVariant(variantId) {
@@ -2922,6 +3324,7 @@ function selectEditVariant(variantId) {
   renderEditPhotosGrid();
   renderEditVariantPills();
   updateEditDiscountNotice();
+  updateEditProfitBadge();
   safeCreateIcons();
 }
 
@@ -3005,6 +3408,8 @@ async function handleEditProductSubmit(e) {
         tallas: tallas,
         precio_venta: finalSellingPrice,
         costo_real: costo > 0 ? costo : null,
+        ganancia_estimada: (costo > 0 && finalSellingPrice > costo) ? (finalSellingPrice - costo) : null,
+        porcentaje_aumento: costo > 0 ? Math.round(((finalSellingPrice - costo) / costo) * 100) : null,
         estado_stock: stock,
         enlace_aliexpress: enlace || null,
         foto_principal: variantPhoto,
@@ -3044,6 +3449,8 @@ async function handleEditProductSubmit(e) {
         tallas: tallas,
         precio_venta: finalSellingPrice,
         costo_real: costo > 0 ? costo : null,
+        ganancia_estimada: (costo > 0 && finalSellingPrice > costo) ? (finalSellingPrice - costo) : null,
+        porcentaje_aumento: costo > 0 ? Math.round(((finalSellingPrice - costo) / costo) * 100) : null,
         estado_stock: stock,
         enlace_aliexpress: enlace || null,
         foto_principal: mainPhotoUrl,
@@ -3101,6 +3508,375 @@ function toggleVariantsPreview(productId) {
   } else {
     list.classList.add("hidden");
     if (arrow) arrow.textContent = "Ver ▾";
+  }
+}
+
+// ==============================================================================
+// AUTO-CALCULADORA DE PRECIOS Y COSTOS EN EDICIÓN DE JOYA
+// ==============================================================================
+let editActiveMultiplier = 2.5;
+
+function applyEditMultiplier(mult) {
+  editActiveMultiplier = parseFloat(mult) || 2.5;
+  document.querySelectorAll(".edit-mult-btn").forEach(btn => {
+    const text = btn.textContent || "";
+    if (text.includes(`x${editActiveMultiplier.toFixed(1)}`) || text.includes(`x${editActiveMultiplier}`)) {
+      btn.className = "edit-mult-btn px-2 py-0.5 rounded-lg bg-[#e72380]/20 text-[#e72380] text-[10px] font-bold border border-[#e72380]/40 transition";
+    } else {
+      btn.className = "edit-mult-btn px-2 py-0.5 rounded-lg bg-white/5 hover:bg-white/10 text-gray-300 text-[10px] font-bold border border-white/10 transition";
+    }
+  });
+
+  const costInput = document.getElementById("edit-costo");
+  const priceInput = document.getElementById("edit-precio");
+  const cost = parseFloat(costInput?.value || 0);
+
+  if (cost > 0 && priceInput) {
+    priceInput.value = Math.round(cost * editActiveMultiplier);
+    if (typeof updateEditDiscountNotice === "function") {
+      updateEditDiscountNotice();
+    }
+  }
+  updateEditProfitBadge();
+}
+
+function handleEditCostChange() {
+  updateEditProfitBadge();
+}
+
+function handleEditPriceChange() {
+  updateEditProfitBadge();
+  if (typeof updateEditDiscountNotice === "function") {
+    updateEditDiscountNotice();
+  }
+}
+
+function updateEditProfitBadge() {
+  const costInput = document.getElementById("edit-costo");
+  const priceInput = document.getElementById("edit-precio");
+  const badge = document.getElementById("edit-profit-badge");
+  const textEl = document.getElementById("edit-profit-text");
+  const pillEl = document.getElementById("edit-margin-pill");
+  if (!badge || !textEl || !pillEl) return;
+
+  const cost = parseFloat(costInput?.value || 0);
+  const price = parseFloat(priceInput?.value || 0);
+  const { profit, marginPct, isWarning, isValid } = calculateProfitAndMargin(cost, price);
+
+  if (!isValid) {
+    badge.className = "p-2 rounded-xl bg-white/[0.03] border border-white/10 flex items-center justify-between text-[11px] transition-all";
+    textEl.className = "text-gray-400 font-bold flex items-center gap-1.5";
+    textEl.innerHTML = `<i data-lucide="calculator" class="w-3.5 h-3.5 text-gray-400"></i><span>Sin costo de compra registrado</span>`;
+    pillEl.classList.add("hidden");
+  } else if (isWarning) {
+    badge.className = "p-2 rounded-xl bg-rose-950/40 border border-rose-500/40 flex items-center justify-between text-[11px] transition-all";
+    textEl.className = "text-rose-300 font-bold flex items-center gap-1.5";
+    textEl.innerHTML = `<i data-lucide="alert-triangle" class="w-3.5 h-3.5 text-rose-400"></i><span>⚠️ Pérdida: -$${Math.abs(Math.round(profit))} MXN (Venta menor al costo)</span>`;
+    pillEl.className = "px-2 py-0.5 rounded-full font-mono font-extrabold text-[10px] bg-rose-500/20 text-rose-300 border border-rose-500/30";
+    pillEl.textContent = `${marginPct}% margen`;
+    pillEl.classList.remove("hidden");
+  } else {
+    badge.className = "p-2 rounded-xl bg-emerald-950/30 border border-emerald-500/25 flex items-center justify-between text-[11px] transition-all";
+    textEl.className = "text-emerald-300 font-bold flex items-center gap-1.5";
+    textEl.innerHTML = `<i data-lucide="trending-up" class="w-3.5 h-3.5 text-emerald-400"></i><span>Tu ganancia neta: <strong class="text-white">$${Math.round(profit)} MXN</strong></span>`;
+    pillEl.className = "px-2 py-0.5 rounded-full font-mono font-extrabold text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30";
+    pillEl.textContent = `+${marginPct}% margen`;
+    pillEl.classList.remove("hidden");
+  }
+  safeCreateIcons();
+}
+
+// ==============================================================================
+// MODAL PARA AGREGAR NUEVAS VARIANTES A PRODUCTOS EXISTENTES
+// ==============================================================================
+let newVarActiveMultiplier = 2.5;
+
+function applyNewVarMultiplier(mult) {
+  newVarActiveMultiplier = parseFloat(mult) || 2.5;
+  document.querySelectorAll(".newvar-mult-btn").forEach(btn => {
+    const text = btn.textContent || "";
+    if (text.includes(`x${newVarActiveMultiplier.toFixed(1)}`) || text.includes(`x${newVarActiveMultiplier}`)) {
+      btn.className = "newvar-mult-btn active px-2 py-0.5 rounded-lg bg-[#e72380]/20 text-[#e72380] text-[10px] font-bold border border-[#e72380]/40";
+    } else {
+      btn.className = "newvar-mult-btn px-2 py-0.5 rounded-lg bg-white/5 hover:bg-white/10 text-gray-300 text-[10px] font-bold border border-white/10";
+    }
+  });
+
+  const costInput = document.getElementById("newvar-costo");
+  const priceInput = document.getElementById("newvar-precio");
+  const cost = parseFloat(costInput?.value || 0);
+
+  if (cost > 0 && priceInput) {
+    priceInput.value = Math.round(cost * newVarActiveMultiplier);
+  }
+  updateNewVarProfitBadge();
+}
+
+function handleNewVarCostChange(val) {
+  const cost = parseFloat(val) || 0;
+  const priceInput = document.getElementById("newvar-precio");
+  if (cost > 0 && priceInput) {
+    priceInput.value = Math.round(cost * newVarActiveMultiplier);
+  }
+  updateNewVarProfitBadge();
+}
+
+function handleNewVarPriceChange() {
+  updateNewVarProfitBadge();
+}
+
+function updateNewVarProfitBadge() {
+  const costInput = document.getElementById("newvar-costo");
+  const priceInput = document.getElementById("newvar-precio");
+  const badge = document.getElementById("newvar-profit-badge");
+  const textEl = document.getElementById("newvar-profit-text");
+  const pillEl = document.getElementById("newvar-margin-pill");
+  if (!badge || !textEl || !pillEl) return;
+
+  const cost = parseFloat(costInput?.value || 0);
+  const price = parseFloat(priceInput?.value || 0);
+  const { profit, marginPct, isWarning, isValid } = calculateProfitAndMargin(cost, price);
+
+  if (!isValid) {
+    badge.className = "p-1.5 rounded-xl bg-white/[0.03] border border-white/10 flex items-center justify-between text-[10px]";
+    textEl.className = "text-gray-400 font-bold";
+    textEl.textContent = "Ingresa costo para calcular";
+    pillEl.classList.add("hidden");
+  } else if (isWarning) {
+    badge.className = "p-1.5 rounded-xl bg-rose-950/40 border border-rose-500/40 flex items-center justify-between text-[10px]";
+    textEl.className = "text-rose-300 font-bold";
+    textEl.textContent = `⚠️ Pérdida: -$${Math.abs(Math.round(profit))} MXN`;
+    pillEl.className = "px-2 py-0.5 rounded-full font-mono font-extrabold text-[9px] bg-rose-500/20 text-rose-300 border border-rose-500/30";
+    pillEl.textContent = `${marginPct}% margen`;
+    pillEl.classList.remove("hidden");
+  } else {
+    badge.className = "p-1.5 rounded-xl bg-emerald-950/30 border border-emerald-500/25 flex items-center justify-between text-[10px]";
+    textEl.className = "text-emerald-300 font-bold";
+    textEl.textContent = `Ganancia: $${Math.round(profit)} MXN`;
+    pillEl.className = "px-2 py-0.5 rounded-full font-mono font-extrabold text-[9px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30";
+    pillEl.textContent = `+${marginPct}% margen`;
+    pillEl.classList.remove("hidden");
+  }
+}
+
+function openAddVariantModal() {
+  const prod = state.currentEditingProduct;
+  if (!prod) {
+    showToast("Error", "Primero abre una joya para agregarle variantes.", "error");
+    return;
+  }
+
+  const modal = document.getElementById("modal-add-variant");
+  if (!modal) return;
+
+  const titleEl = document.getElementById("add-variant-parent-title");
+  if (titleEl) titleEl.textContent = `${prod.titulo || 'Joya'} • SKU: ${prod.codigo_sku || 'S/C'}`;
+
+  const colorInput = document.getElementById("newvar-color");
+  const skuInput = document.getElementById("newvar-sku");
+  const tallasInput = document.getElementById("newvar-tallas");
+  const costoInput = document.getElementById("newvar-costo");
+  const precioInput = document.getElementById("newvar-precio");
+
+  if (colorInput) colorInput.value = "";
+  if (skuInput) skuInput.value = `${(prod.codigo_sku || 'JOY').trim()}-`;
+  if (tallasInput) tallasInput.value = (prod.tallas || "Ajustable").replace(/\(.*?agotad.*?\)/gi, "").trim();
+  if (costoInput) costoInput.value = prod.costo_real ? Math.round(prod.costo_real) : "";
+  if (precioInput) precioInput.value = prod.precio_venta ? Math.round(prod.precio_venta) : "";
+
+  clearNewVarPhotoSelection();
+  applyNewVarMultiplier(2.5);
+  updateNewVarProfitBadge();
+
+  modal.classList.remove("hidden");
+  requestAnimationFrame(() => modal.classList.add("modal-active"));
+  safeCreateIcons();
+}
+
+function closeAddVariantModal() {
+  const modal = document.getElementById("modal-add-variant");
+  if (modal) {
+    modal.classList.remove("modal-active");
+    setTimeout(() => {
+      modal.classList.add("hidden");
+      clearNewVarPhotoSelection();
+    }, 200);
+  }
+}
+
+function handleNewVarPhotoChange(input) {
+  const previewBox = document.getElementById("newvar-preview-box");
+  const previewImg = document.getElementById("newvar-preview-img");
+  const previewName = document.getElementById("newvar-preview-name");
+
+  if (!input || !input.files || !input.files[0]) {
+    if (previewBox) previewBox.classList.add("hidden");
+    return;
+  }
+
+  const file = input.files[0];
+  if (previewImg) {
+    try {
+      previewImg.src = URL.createObjectURL(file);
+    } catch (e) {
+      previewImg.src = "";
+    }
+  }
+  if (previewName) previewName.textContent = file.name || "foto.jpg";
+  if (previewBox) previewBox.classList.remove("hidden");
+  safeCreateIcons();
+}
+
+function clearNewVarPhotoSelection() {
+  const input = document.getElementById("newvar-foto-input");
+  const previewBox = document.getElementById("newvar-preview-box");
+  if (input) input.value = "";
+  if (previewBox) previewBox.classList.add("hidden");
+}
+
+function handleNewVarColorChange(colorVal) {
+  const prod = state.currentEditingProduct;
+  const skuInput = document.getElementById("newvar-sku");
+  if (!skuInput || !prod) return;
+
+  const parentSku = (prod.codigo_sku || "JOY").trim();
+  const cleanColor = (colorVal || "").trim().toUpperCase().replace(/[^A-Z0-9]/g, "-").replace(/-+/g, "-");
+  skuInput.value = cleanColor ? `${parentSku}-${cleanColor}` : `${parentSku}-`;
+}
+
+async function handleAddVariantSubmit(e) {
+  e.preventDefault();
+  const prod = state.currentEditingProduct;
+  if (!prod) return;
+
+  const btn = document.getElementById("newvar-submit-btn");
+  const origBtnContent = btn.innerHTML;
+
+  const color = document.getElementById("newvar-color").value.trim();
+  const sku = document.getElementById("newvar-sku").value.trim().toUpperCase();
+  const tallas = document.getElementById("newvar-tallas").value.trim() || "Ajustable";
+  const costo = parseFloat(document.getElementById("newvar-costo").value || 0);
+  const precio = parseFloat(document.getElementById("newvar-precio").value);
+  const fotoInput = document.getElementById("newvar-foto-input");
+
+  if (!color || !sku || isNaN(precio) || precio <= 0) {
+    showToast("Campos incompletos", "El color, SKU y precio de venta son obligatorios.", "error");
+    return;
+  }
+
+  btn.disabled = true;
+  btn.innerHTML = `<i data-lucide="loader" class="w-4 h-4 animate-spin inline mr-1"></i><span>Guardando...</span>`;
+  safeCreateIcons();
+
+  try {
+    let photoUrl = null;
+
+    if (fotoInput.files && fotoInput.files[0]) {
+      btn.innerHTML = `<i data-lucide="loader" class="w-4 h-4 animate-spin inline mr-1"></i><span>Optimizando foto...</span>`;
+      safeCreateIcons();
+
+      const processedBlob = await processImageForUpload(fotoInput.files[0]);
+      const filename = `var_${sku}_${Date.now()}.jpg`;
+
+      try {
+        const res = await uploadImageWithProgress(processedBlob, filename, (pct) => {
+          btn.innerHTML = `<i data-lucide="loader" class="w-4 h-4 animate-spin inline mr-1"></i><span>Subiendo (${pct}%)...</span>`;
+          safeCreateIcons();
+        });
+        photoUrl = res.url;
+      } catch (uploadErr) {
+        console.warn("Fallo subida con progress, probando fallback directo:", uploadErr);
+        const { error: directErr } = await supabaseClient.storage
+          .from("joyas")
+          .upload(filename, processedBlob, { upsert: true, contentType: "image/jpeg" });
+        if (!directErr) {
+          photoUrl = `${SUPABASE_URL}/storage/v1/object/public/joyas/${filename}`;
+        }
+      }
+    }
+
+    if (!photoUrl) {
+      photoUrl = prod.foto_principal;
+    }
+
+    let sharedGroupId = prod.id_aliexpress;
+    if (!sharedGroupId) {
+      sharedGroupId = `MANUAL-${prod.codigo_sku || prod.id}-${Date.now()}`;
+      await adminApi.patch("/productos", {
+        id: prod.id,
+        updates: { id_aliexpress: sharedGroupId }
+      });
+      prod.id_aliexpress = sharedGroupId;
+    }
+
+    const newVariantRow = {
+      id_aliexpress: sharedGroupId,
+      codigo_sku: sku,
+      color_modelo: color,
+      titulo: prod.titulo,
+      descripcion: prod.descripcion,
+      categoria: prod.categoria,
+      tallas: tallas,
+      precio_venta: precio,
+      costo_real: costo > 0 ? costo : null,
+      ganancia_estimada: (costo > 0 && precio > costo) ? (precio - costo) : null,
+      porcentaje_aumento: costo > 0 ? Math.round(((precio - costo) / costo) * 100) : null,
+      foto_principal: photoUrl,
+      galeria_fotos: prod.galeria_fotos || [],
+      enlace_aliexpress: prod.enlace_aliexpress || null,
+      es_novedad: prod.es_novedad === true,
+      activo: true,
+      estado_stock: "Disponible",
+      metal_material: prod.metal_material || "Plata esterlina 925",
+      tipo_piedra: prod.tipo_piedra || "CIRCONITA"
+    };
+
+    await adminApi.post("/productos", [newVariantRow]);
+    showToast("Variante agregada", `Modelo "${color}" agregado al catálogo con éxito.`, "success");
+    closeAddVariantModal();
+
+    await loadProductsFromSupabase();
+
+    const refreshedProd = state.products.find(p => p.id === prod.id || p.groupId === sharedGroupId || (p.variants && p.variants.some(v => v.codigo_sku === sku)));
+    if (refreshedProd) {
+      const addedVar = (refreshedProd.variants || []).find(v => v.codigo_sku === sku);
+      openEditProductModal(refreshedProd.id, addedVar ? addedVar.id : "all");
+    }
+
+  } catch (err) {
+    logAndShowError("ERR_ADD_VARIANTE", "No se pudo agregar la nueva variante.", err);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = origBtnContent;
+    safeCreateIcons();
+  }
+}
+
+async function handleDeleteCurrentVariant() {
+  const prod = state.currentEditingProduct;
+  if (!prod || !state.currentEditingVariantId || state.currentEditingVariantId === "all") return;
+
+  const v = (prod.variants || []).find(x => x.id === state.currentEditingVariantId);
+  if (!v) return;
+
+  const vName = v.color_modelo || v.codigo_sku || "esta variante";
+  const ok = confirm(`¿Estás seguro de que deseas eliminar permanentemente la variante "${vName}"?\n\nEsta acción no se puede deshacer.`);
+  if (!ok) return;
+
+  try {
+    await adminApi.delete("/productos", { ids: [v.id] });
+    showToast("Variante eliminada", `La variante "${vName}" fue eliminada del catálogo.`, "success");
+
+    await loadProductsFromSupabase();
+
+    const refreshedProd = state.products.find(p => p.id === prod.id || p.groupId === prod.groupId);
+    if (refreshedProd) {
+      openEditProductModal(refreshedProd.id, "all");
+    } else {
+      closeEditProductModal();
+    }
+  } catch (err) {
+    logAndShowError("ERR_DELETE_VARIANTE", "No se pudo eliminar la variante.", err);
   }
 }
 // ==============================================================================
@@ -3491,3 +4267,35 @@ function togglePinVisibility() {
     safeCreateIcons();
   }
 }
+
+// ==============================================================================
+// EXPORTACIÓN DE CONTROLADORES AL SCOPE GLOBAL WINDOW (HTML EVENT BINDINGS)
+// ==============================================================================
+window.calculateProfitAndMargin = calculateProfitAndMargin;
+window.applyManualMultiplier = applyManualMultiplier;
+window.handleManualCostChange = handleManualCostChange;
+window.handleManualPriceChange = handleManualPriceChange;
+window.updateManualProfitBadge = updateManualProfitBadge;
+window.toggleManualVariants = toggleManualVariants;
+window.addManualVariantRow = addManualVariantRow;
+window.removeManualVariantRow = removeManualVariantRow;
+window.updateManualVariantField = updateManualVariantField;
+window.updateManualVariantCost = updateManualVariantCost;
+window.handleManualVariantFile = handleManualVariantFile;
+
+window.applyEditMultiplier = applyEditMultiplier;
+window.handleEditCostChange = handleEditCostChange;
+window.handleEditPriceChange = handleEditPriceChange;
+window.updateEditProfitBadge = updateEditProfitBadge;
+
+window.openAddVariantModal = openAddVariantModal;
+window.closeAddVariantModal = closeAddVariantModal;
+window.handleNewVarPhotoChange = handleNewVarPhotoChange;
+window.clearNewVarPhotoSelection = clearNewVarPhotoSelection;
+window.handleNewVarColorChange = handleNewVarColorChange;
+window.applyNewVarMultiplier = applyNewVarMultiplier;
+window.handleNewVarCostChange = handleNewVarCostChange;
+window.handleNewVarPriceChange = handleNewVarPriceChange;
+window.updateNewVarProfitBadge = updateNewVarProfitBadge;
+window.handleAddVariantSubmit = handleAddVariantSubmit;
+window.handleDeleteCurrentVariant = handleDeleteCurrentVariant;
