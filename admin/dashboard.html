@@ -912,10 +912,152 @@
           <!-- COLUMNA DERECHA: DATOS, PRECIOS, DESCUENTOS Y TALLAS (lg:col-span-7) -->
           <div class="lg:col-span-7 space-y-4">
 
-            <!-- Fila de SKU / Código de la Variante (Visible cuando se edita variante específica) -->
-            <div id="edit-variant-sku-row" class="hidden p-2.5 rounded-xl bg-rose-950/30 border border-rose-500/20">
-              <label class="block font-bold text-rose-300 text-[11px] mb-1">Modelo / SKU de esta Variante</label>
-              <input type="text" id="edit-variant-sku" class="w-full px-3 py-1.5 bg-black/50 border border-rose-500/30 rounded-xl text-white text-xs font-mono font-bold focus:outline-none focus:border-[#e72380]" />
+            <!-- INFORMACIÓN Y RESUMEN DE GRUPO (Visible cuando se selecciona '🌟 Todo el Grupo') -->
+            <div id="edit-group-info-row" class="space-y-3">
+              <div class="p-3 rounded-2xl bg-amber-950/20 border border-amber-500/30 space-y-2">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs font-bold text-amber-300 flex items-center gap-1.5">
+                    <i data-lucide="layers" class="w-4 h-4 text-amber-400"></i>
+                    <span>ID de Grupo / Joya Principal (AliExpress o Interno)</span>
+                  </span>
+                  <span id="edit-group-variants-count-badge" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                    1 modelo
+                  </span>
+                </div>
+                <div class="flex gap-2">
+                  <input 
+                    type="text" 
+                    id="edit-group-id" 
+                    placeholder="Ej: 1005006456789 o YMK-SET-01" 
+                    class="flex-1 px-3 py-1.5 bg-black/60 border border-amber-500/30 rounded-xl text-white text-xs font-mono font-bold focus:outline-none focus:border-amber-400" 
+                  />
+                  <button 
+                    type="button" 
+                    onclick="copyGroupIdToClipboard()" 
+                    class="px-2.5 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-gray-300 hover:text-white text-[11px] font-bold transition flex items-center gap-1 shrink-0 border border-white/10" 
+                    title="Copiar ID de Grupo"
+                  >
+                    <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                    <span class="hidden sm:inline">Copiar</span>
+                  </button>
+                </div>
+                <p class="text-[10px] text-gray-400">
+                  Este ID agrupa todos los colores o variantes de esta misma joya en una sola tarjeta del catálogo.
+                </p>
+              </div>
+
+              <!-- Resumen dinámico de variantes del grupo -->
+              <div id="edit-group-variants-summary" class="hidden"></div>
+            </div>
+
+            <!-- FICHA DEDICADA DE IDENTIFICACIÓN Y FOTO DE VARIANTE (Visible al seleccionar variante específica) -->
+            <div id="edit-variant-details-card" class="hidden p-3.5 rounded-2xl bg-gradient-to-br from-rose-950/30 via-black/40 to-black/60 border border-[#e72380]/40 space-y-3.5">
+              <div class="flex items-center justify-between border-b border-white/10 pb-2">
+                <div class="flex items-center gap-2">
+                  <div class="w-7 h-7 rounded-lg bg-[#e72380]/20 flex items-center justify-center text-[#e72380]">
+                    <i data-lucide="tag" class="w-4 h-4"></i>
+                  </div>
+                  <div>
+                    <h5 class="text-xs font-extrabold text-white flex items-center gap-1.5">
+                      <span>Identificación y Foto del Modelo</span>
+                    </h5>
+                    <p class="text-[10px] text-rose-300">Configura el nombre visible, su código interno y su foto vinculada.</p>
+                  </div>
+                </div>
+                <span id="edit-variant-active-indicator" class="px-2 py-0.5 rounded-full text-[9px] font-extrabold bg-[#e72380]/20 text-[#e72380] border border-[#e72380]/30 font-mono">
+                  Modelo activo
+                </span>
+              </div>
+
+              <!-- Campos de Identificación: Nombre vs SKU -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label class="block font-bold text-white text-[11px] mb-1 flex items-center gap-1">
+                    <i data-lucide="type" class="w-3 h-3 text-[#e72380]"></i>
+                    <span>Nombre / Color (Visible en Tienda) *</span>
+                  </label>
+                  <input 
+                    type="text" 
+                    id="edit-variant-color" 
+                    placeholder="Ej. Rosa Zirconia, Azul Zafiro..." 
+                    oninput="handleEditVariantNameInput(this.value)"
+                    class="w-full px-3 py-2 bg-black/60 border border-white/15 rounded-xl text-white text-xs font-bold focus:outline-none focus:border-[#e72380]" 
+                  />
+                  <span class="text-[10px] text-gray-400 mt-0.5 block">Nombre que ve el cliente en los botones de la joya</span>
+                </div>
+
+                <div>
+                  <label class="block font-bold text-gray-300 text-[11px] mb-1 flex items-center gap-1">
+                    <i data-lucide="hash" class="w-3 h-3 text-rose-400"></i>
+                    <span>Código / SKU / ID de Variante</span>
+                  </label>
+                  <input 
+                    type="text" 
+                    id="edit-variant-sku" 
+                    placeholder="Ej. SCR066-B o A-12-ROSA" 
+                    oninput="handleEditVariantSkuInput(this.value)"
+                    class="w-full px-3 py-2 bg-black/60 border border-white/15 rounded-xl text-white text-xs font-mono font-bold focus:outline-none focus:border-[#e72380]" 
+                  />
+                  <span class="text-[10px] text-gray-400 mt-0.5 block">Código interno de inventario y pedidos</span>
+                </div>
+              </div>
+
+              <!-- Conexión Directa con Foto -->
+              <div class="pt-2 border-t border-white/10 space-y-2">
+                <div class="flex items-center justify-between">
+                  <label class="block font-bold text-white text-[11px] flex items-center gap-1.5">
+                    <i data-lucide="camera" class="w-3.5 h-3.5 text-[#e72380]"></i>
+                    <span>Foto conectada a este modelo:</span>
+                  </label>
+                  <span id="edit-variant-photo-status" class="text-[10px] text-emerald-400 font-bold flex items-center gap-1">
+                    <i data-lucide="check" class="w-3 h-3"></i> Foto asignada
+                  </span>
+                </div>
+
+                <div class="p-2.5 rounded-xl bg-black/50 border border-white/10 flex flex-col sm:flex-row gap-3 items-start sm:items-center">
+                  <!-- Foto asignada actual grande -->
+                  <div class="relative shrink-0 w-16 h-16 rounded-xl overflow-hidden border-2 border-[#e72380] shadow-md shadow-rose-950/40 bg-black/60">
+                    <img 
+                      id="edit-variant-current-photo-img" 
+                      src="" 
+                      alt="Foto del modelo" 
+                      class="w-full h-full object-cover" 
+                      onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 40 40\'%3E%3Crect width=\'40\' height=\'40\' rx=\'8\' fill=\'%231f2923\'/%3E%3Ctext x=\'20\' y=\'26\' font-size=\'18\' text-anchor=\'middle\'%3E💎%3C/text%3E%3C/svg%3E';"
+                    />
+                    <div class="absolute bottom-0 inset-x-0 bg-black/85 text-[8px] text-center text-rose-300 py-0.5 font-bold">
+                      ✓ Activa
+                    </div>
+                  </div>
+
+                  <!-- Selector rápido de fotos existentes de la galería -->
+                  <div class="flex-1 min-w-0 space-y-1">
+                    <div class="text-[10px] text-gray-300 font-medium">
+                      Toca cualquier foto de la galería para vincularla a este modelo:
+                    </div>
+                    <div id="edit-variant-photo-picker-list" class="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+                      <!-- Miniaturas de fotos generadas dinámicamente -->
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Subir Foto Exclusiva para este Modelo -->
+                <div class="flex items-center justify-between pt-1">
+                  <label class="cursor-pointer px-3 py-1.5 rounded-xl bg-white/5 hover:bg-[#e72380]/20 text-gray-300 hover:text-white text-[11px] font-bold transition flex items-center gap-1.5 border border-white/10 hover:border-[#e72380]/40">
+                    <i data-lucide="upload" class="w-3.5 h-3.5 text-[#e72380]"></i>
+                    <span>Subir foto exclusiva para este modelo</span>
+                    <input 
+                      type="file" 
+                      id="edit-variant-upload-input" 
+                      accept="image/jpeg,image/png,image/webp,image/*" 
+                      onchange="handleVariantPhotoUpload(this.files)" 
+                      class="hidden" 
+                    />
+                  </label>
+                  <span id="edit-variant-upload-spinner" class="hidden text-[10px] text-rose-300 font-bold flex items-center gap-1">
+                    <i data-lucide="loader" class="w-3 h-3 animate-spin"></i> Subiendo foto...
+                  </span>
+                </div>
+              </div>
             </div>
 
             <!-- Nombre / Título -->

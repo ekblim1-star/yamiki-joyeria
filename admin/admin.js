@@ -2546,12 +2546,16 @@ function handleSetMainEditPhoto(idx) {
 
 function handleAssignPhotoToVariant(photoUrl) {
   if (!state.currentEditingProduct || !state.currentEditingVariantId || state.currentEditingVariantId === "all") return;
-  const v = state.currentEditingProduct.variants.find(x => x.id === state.currentEditingVariantId);
+  const v = (state.currentEditingProduct.variants || []).find(x => x.id === state.currentEditingVariantId);
   if (!v) return;
   v.foto_principal = photoUrl;
   renderEditPhotosGrid();
   renderEditVariantPills();
-  showToast("Foto Asignada", `Foto vinculada al modelo "${v.codigo_sku || v.color_modelo}".`, "success");
+  if (typeof renderEditVariantPhotoPicker === "function") {
+    renderEditVariantPhotoPicker();
+  }
+  const vName = cleanVariantName(v.color_modelo || v.codigo_sku) || "este modelo";
+  showToast("Foto Conectada", `Foto vinculada con éxito al modelo "${vName}".`, "success");
 }
 
 function handleDeleteEditPhoto(idx) {
@@ -3004,20 +3008,32 @@ function renderEditPhotosGrid() {
 
           ${activeVariant ? (
             isVariantPhoto ? `
-              <span class="px-1.5 py-0.5 rounded-md bg-[#e72380] text-white font-extrabold text-[8px] shadow-sm flex items-center gap-0.5">
-                🎯 Modelo
+              <span class="px-1.5 py-0.5 rounded-md bg-[#e72380] text-white font-extrabold text-[8px] shadow-sm flex items-center gap-0.5 ring-1 ring-white/40">
+                ✓ Conectada
               </span>
             ` : `
               <button 
                 type="button" 
                 onclick="handleAssignPhotoToVariant('${url}')" 
-                class="px-1.5 py-0.5 rounded-md bg-black/85 hover:bg-[#e72380] text-rose-300 hover:text-white font-bold text-[8px] backdrop-blur-xs transition shadow-sm border border-rose-500/30"
-                title="Asignar esta foto a la variante activa"
+                class="px-1.5 py-0.5 rounded-md bg-black/85 hover:bg-[#e72380] text-rose-300 hover:text-white font-bold text-[8px] backdrop-blur-xs transition shadow-sm border border-rose-500/30 flex items-center gap-0.5"
+                title="Conectar esta foto a la variante activa"
               >
-                🎯 Asignar
+                🎯 Conectar
               </button>
             `
-          ) : ''}
+          ) : (
+            prod && prod.variants ? (() => {
+              const usingVars = prod.variants.filter(v => v.foto_principal === url);
+              if (usingVars.length === 0) return '';
+              const names = usingVars.map(v => cleanVariantName(v.color_modelo || v.codigo_sku)).filter(Boolean);
+              const label = names.length > 0 ? names.join(", ") : `${usingVars.length} mod.`;
+              return `
+                <span class="px-1.5 py-0.5 rounded-md bg-rose-950/90 text-rose-200 font-bold text-[8px] border border-rose-500/30 truncate max-w-[95px]" title="Asignada a: ${label}">
+                  🎨 ${label}
+                </span>
+              `;
+            })() : ''
+          )}
         </div>
 
         <!-- Botones de Reordenar (◀ ▶) táctiles y Eliminar -->
@@ -3242,13 +3258,273 @@ function renderEditVariantPills() {
   }
 }
 
+// ==============================================================================
+// GESTIÓN DE IDENTIFICACIÓN Y FOTO DE VARIANTES (1-CLICK PHOTO PICKER)
+// ==============================================================================
+
+function copyGroupIdToClipboard() {
+  const input = document.getElementById("edit-group-id");
+  if (!input || !input.value) return;
+  const val = input.value.trim();
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(val).then(() => {
+      showToast("Copiado", `ID de grupo "${val}" copiado al portapapeles.`, "info");
+    }).catch(() => {
+      input.select();
+      document.execCommand("copy");
+      showToast("Copiado", `ID de grupo "${val}" copiado.`, "info");
+    });
+  } else {
+    input.select();
+    document.execCommand("copy");
+    showToast("Copiado", `ID de grupo "${val}" copiado.`, "info");
+  }
+}
+
+function handleEditVariantNameInput(val) {
+  const prod = state.currentEditingProduct;
+  if (!prod || !state.currentEditingVariantId || state.currentEditingVariantId === "all") return;
+  const v = (prod.variants || []).find(x => x.id === state.currentEditingVariantId);
+  if (!v) return;
+  v.color_modelo = val.trim();
+
+  const modeBadge = document.getElementById("edit-variant-mode-badge");
+  if (modeBadge) {
+    modeBadge.textContent = `🎨 ${val.trim() || 'Modelo'}`;
+  }
+  renderEditVariantPills();
+}
+
+function handleEditVariantSkuInput(val) {
+  const prod = state.currentEditingProduct;
+  if (!prod || !state.currentEditingVariantId || state.currentEditingVariantId === "all") return;
+  const v = (prod.variants || []).find(x => x.id === state.currentEditingVariantId);
+  if (!v) return;
+  v.codigo_sku = val.trim().toUpperCase();
+
+  const badge = document.getElementById("edit-sku-badge");
+  if (badge) badge.textContent = `SKU: ${v.codigo_sku || 'S/C'}`;
+  renderEditVariantPills();
+}
+
+function renderEditVariantPhotoPicker() {
+  const container = document.getElementById("edit-variant-photo-picker-list");
+  const currentImg = document.getElementById("edit-variant-current-photo-img");
+  const statusEl = document.getElementById("edit-variant-photo-status");
+  if (!container) return;
+
+  const prod = state.currentEditingProduct;
+  if (!prod || !state.currentEditingVariantId || state.currentEditingVariantId === "all") {
+    container.innerHTML = "";
+    return;
+  }
+
+  const v = (prod.variants || []).find(x => x.id === state.currentEditingVariantId) || prod;
+  const currentPhoto = v.foto_principal || prod.foto_principal || (state.currentEditPhotos && state.currentEditPhotos[0]) || "";
+
+  if (currentImg) {
+    currentImg.src = currentPhoto || YAMIKI_FALLBACK_SVG;
+  }
+
+  const photos = state.currentEditPhotos || [];
+
+  if (photos.length === 0) {
+    container.innerHTML = `<span class="text-[10px] text-gray-500 italic">No hay fotos en la galería aún. Sube una a la izquierda.</span>`;
+    return;
+  }
+
+  const isMatched = photos.some(u => u === v.foto_principal);
+  if (statusEl) {
+    if (isMatched) {
+      statusEl.innerHTML = `<i data-lucide="check-circle-2" class="w-3 h-3 text-emerald-400"></i><span class="text-emerald-300">Foto asignada de la galería</span>`;
+    } else {
+      statusEl.innerHTML = `<i data-lucide="alert-circle" class="w-3 h-3 text-amber-400"></i><span class="text-amber-300">Usando foto por defecto</span>`;
+    }
+  }
+
+  container.innerHTML = photos.map((url, idx) => {
+    const isSelected = url === v.foto_principal;
+    return `
+      <button 
+        type="button" 
+        onclick="handleAssignPhotoToVariant('${url}')" 
+        class="group relative w-12 h-12 rounded-xl overflow-hidden shrink-0 border-2 transition-all cursor-pointer ${
+          isSelected 
+            ? 'border-[#e72380] ring-2 ring-[#e72380]/40 scale-105 shadow-md shadow-rose-900/30' 
+            : 'border-white/10 hover:border-rose-400 opacity-60 hover:opacity-100'
+        }"
+        title="Vincular foto #${idx + 1} a este modelo"
+      >
+        <img src="${url}" class="w-full h-full object-cover" onerror="this.onerror=null; this.src='${YAMIKI_FALLBACK_SVG}';" />
+        ${isSelected ? `
+          <div class="absolute inset-0 bg-[#e72380]/30 flex items-center justify-center">
+            <span class="w-5 h-5 rounded-full bg-[#e72380] text-white flex items-center justify-center text-[10px] font-bold shadow-xs">
+              ✓
+            </span>
+          </div>
+        ` : `
+          <div class="absolute bottom-0 inset-x-0 bg-black/75 text-[8px] text-white text-center font-mono opacity-0 group-hover:opacity-100 transition">
+            #${idx + 1}
+          </div>
+        `}
+      </button>
+    `;
+  }).join("");
+
+  safeCreateIcons();
+}
+
+async function handleVariantPhotoUpload(files) {
+  if (!files || !files[0]) return;
+  const prod = state.currentEditingProduct;
+  if (!prod || !state.currentEditingVariantId || state.currentEditingVariantId === "all") return;
+  const v = (prod.variants || []).find(x => x.id === state.currentEditingVariantId);
+  if (!v) return;
+
+  const spinner = document.getElementById("edit-variant-upload-spinner");
+  if (spinner) spinner.classList.remove("hidden");
+
+  try {
+    const file = files[0];
+    const processedBlob = await processImageForUpload(file);
+    const skuCode = (v.codigo_sku || 'item').replace(/[^a-zA-Z0-9_-]/g, "");
+    const filename = `var_${skuCode}_${Date.now()}.jpg`;
+
+    let photoUrl = null;
+    try {
+      const res = await uploadImageWithProgress(processedBlob, filename, () => {});
+      photoUrl = res.url;
+    } catch (uploadErr) {
+      console.warn("Fallo subida con progress, fallback directo:", uploadErr);
+      const { error: directErr } = await supabaseClient.storage
+        .from("joyas")
+        .upload(filename, processedBlob, { upsert: true, contentType: "image/jpeg" });
+      if (!directErr) {
+        photoUrl = `${SUPABASE_URL}/storage/v1/object/public/joyas/${filename}`;
+      }
+    }
+
+    if (!photoUrl) throw new Error("No se pudo obtener la URL pública de la foto subida.");
+
+    if (!state.currentEditPhotos) state.currentEditPhotos = [];
+    if (!state.currentEditPhotos.includes(photoUrl)) {
+      state.currentEditPhotos.push(photoUrl);
+    }
+
+    v.foto_principal = photoUrl;
+
+    renderEditPhotosGrid();
+    renderEditVariantPills();
+    renderEditVariantPhotoPicker();
+
+    const vName = cleanVariantName(v.color_modelo || v.codigo_sku) || "este modelo";
+    showToast("Foto Subida", `Nueva foto subida y vinculada al modelo "${vName}".`, "success");
+
+  } catch (err) {
+    logAndShowError("ERR_VARIANT_PHOTO_UPLOAD", "No se pudo subir la foto del modelo.", err);
+  } finally {
+    if (spinner) spinner.classList.add("hidden");
+    const input = document.getElementById("edit-variant-upload-input");
+    if (input) input.value = "";
+  }
+}
+
+function renderEditGroupVariantsSummary() {
+  const container = document.getElementById("edit-group-variants-summary");
+  if (!container) return;
+
+  const prod = state.currentEditingProduct;
+  if (!prod || !prod.variants || prod.variants.length <= 1) {
+    container.innerHTML = "";
+    container.classList.add("hidden");
+    return;
+  }
+
+  container.classList.remove("hidden");
+  let html = `
+    <div class="p-3 rounded-2xl bg-black/40 border border-white/10 space-y-2.5">
+      <div class="flex items-center justify-between">
+        <span class="text-xs font-bold text-white flex items-center gap-1.5">
+          <i data-lucide="layers" class="w-3.5 h-3.5 text-[#e72380]"></i>
+          <span>Modelos y Variantes del Grupo (${prod.variants.length})</span>
+        </span>
+        <span class="text-[10px] text-gray-400">Haz clic en Editar para cambiar el nombre o foto de cada modelo</span>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-[220px] overflow-y-auto pr-1">
+  `;
+
+  prod.variants.forEach((v, idx) => {
+    const vPhoto = v.foto_principal || prod.foto_principal || YAMIKI_FALLBACK_SVG;
+    const vName = cleanVariantName(v.color_modelo || v.codigo_sku) || `Modelo ${idx + 1}`;
+    const vSku = v.codigo_sku || "S/C";
+    const vPrice = Math.round(v.precio_venta || prod.precio_venta || 0);
+
+    html += `
+      <div class="flex items-center justify-between p-2 rounded-xl bg-black/60 border border-white/5 hover:border-[#e72380]/40 transition group">
+        <div class="flex items-center gap-2.5 min-w-0">
+          <div class="relative w-10 h-10 rounded-lg overflow-hidden border border-white/10 shrink-0 bg-black/40">
+            <img src="${vPhoto}" class="w-full h-full object-cover" onerror="this.onerror=null; this.src='${YAMIKI_FALLBACK_SVG}';" />
+          </div>
+          <div class="min-w-0">
+            <div class="text-xs font-bold text-white truncate group-hover:text-rose-300 transition">
+              ${vName}
+            </div>
+            <div class="flex items-center gap-1.5 text-[10px] text-gray-400">
+              <span class="font-mono bg-white/5 px-1 py-0.2 rounded text-[9px] text-gray-300 font-bold">${vSku}</span>
+              <span>•</span>
+              <span class="text-emerald-400 font-bold">$${vPrice} MXN</span>
+            </div>
+          </div>
+        </div>
+        <button 
+          type="button" 
+          onclick="selectEditVariant('${v.id}')" 
+          class="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-[#e72380] text-gray-300 hover:text-white text-[11px] font-bold transition border border-white/10 hover:border-[#e72380] shrink-0 flex items-center gap-1"
+        >
+          <i data-lucide="edit-3" class="w-3 h-3"></i>
+          <span>Editar</span>
+        </button>
+      </div>
+    `;
+  });
+
+  html += `
+      </div>
+    </div>
+  `;
+
+  container.innerHTML = html;
+  safeCreateIcons();
+}
+
 function selectEditVariant(variantId) {
-  state.currentEditingVariantId = variantId;
   const prod = state.currentEditingProduct;
   if (!prod) return;
 
-  const skuRow = document.getElementById("edit-variant-sku-row");
-  const skuInput = document.getElementById("edit-variant-sku");
+  // 1. Guardar cambios en memoria de la variante previa si no era 'all'
+  const oldVarId = state.currentEditingVariantId;
+  if (oldVarId && oldVarId !== "all" && prod && prod.variants) {
+    const oldV = prod.variants.find(x => x.id === oldVarId);
+    if (oldV) {
+      const colInp = document.getElementById("edit-variant-color");
+      const skuInp = document.getElementById("edit-variant-sku");
+      const costInp = document.getElementById("edit-costo");
+      const priceInp = document.getElementById("edit-precio");
+      const stockInp = document.getElementById("edit-stock");
+      const tallasInp = document.getElementById("edit-tallas");
+      if (colInp && colInp.value.trim()) oldV.color_modelo = colInp.value.trim();
+      if (skuInp && skuInp.value.trim()) oldV.codigo_sku = skuInp.value.trim().toUpperCase();
+      if (costInp && costInp.value !== "") oldV.costo_real = parseFloat(costInp.value);
+      if (priceInp && priceInp.value !== "") oldV.precio_venta = parseFloat(priceInp.value);
+      if (stockInp && stockInp.value) oldV.estado_stock = stockInp.value;
+      if (tallasInp) oldV.tallas = tallasInp.value.trim();
+    }
+  }
+
+  state.currentEditingVariantId = variantId;
+
+  const groupRow = document.getElementById("edit-group-info-row");
+  const variantCard = document.getElementById("edit-variant-details-card");
   const modeBadge = document.getElementById("edit-variant-mode-badge");
   const tipEl = document.getElementById("edit-variant-tip");
 
@@ -3258,9 +3534,19 @@ function selectEditVariant(variantId) {
   });
 
   if (variantId === "all") {
-    if (skuRow) skuRow.classList.add("hidden");
+    if (groupRow) groupRow.classList.remove("hidden");
+    if (variantCard) variantCard.classList.add("hidden");
+    renderEditGroupVariantsSummary();
+
+    const variantsCount = prod.variants ? prod.variants.length : 1;
+    const countBadge = document.getElementById("edit-group-variants-count-badge");
+    if (countBadge) countBadge.textContent = `${variantsCount} modelo(s)`;
+
+    const groupInput = document.getElementById("edit-group-id");
+    if (groupInput) groupInput.value = prod.id_aliexpress || prod.codigo_sku || "";
+
     if (modeBadge) {
-      modeBadge.textContent = `🌟 Todo el Grupo (${prod.variants ? prod.variants.length : 1} variantes)`;
+      modeBadge.textContent = `🌟 Todo el Grupo (${variantsCount} modelos)`;
       modeBadge.className = "px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-500/20 text-amber-300 border border-amber-500/30";
     }
     if (tipEl) {
@@ -3314,18 +3600,32 @@ function selectEditVariant(variantId) {
     // Modo Variante Específica
     const v = (prod.variants || []).find(x => x.id === variantId) || prod;
 
-    if (skuRow) skuRow.classList.remove("hidden");
-    if (skuInput) skuInput.value = v.codigo_sku || v.color_modelo || "";
+    if (groupRow) groupRow.classList.add("hidden");
+    if (variantCard) variantCard.classList.remove("hidden");
+
+    const vCleanName = cleanVariantName(v.color_modelo || v.codigo_sku) || "Modelo";
+    const vSku = v.codigo_sku || "";
+
+    const colorInput = document.getElementById("edit-variant-color");
+    if (colorInput) colorInput.value = vCleanName;
+
+    const skuInput = document.getElementById("edit-variant-sku");
+    if (skuInput) skuInput.value = vSku;
+
+    const varIdx = (prod.variants || []).findIndex(x => x.id === v.id);
+    const indEl = document.getElementById("edit-variant-active-indicator");
+    if (indEl) indEl.textContent = `Modelo #${varIdx >= 0 ? varIdx + 1 : 1}`;
+
     if (modeBadge) {
-      modeBadge.textContent = `🎨 Variante: ${v.codigo_sku || v.color_modelo || 'Específica'}`;
+      modeBadge.textContent = `🎨 ${vCleanName}`;
       modeBadge.className = "px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-[#e72380]/20 text-[#e72380] border border-[#e72380]/30";
     }
     if (tipEl) {
-      tipEl.textContent = `Editando exclusivamente "${v.codigo_sku || v.color_modelo}". Los cambios de foto, tallas y precio afectarán solo a este modelo.`;
+      tipEl.textContent = `Editando exclusivamente "${vCleanName}". Puedes cambiar su nombre, su SKU y la foto conectada.`;
     }
 
     document.getElementById("edit-product-id").value = v.id;
-    document.getElementById("edit-sku-badge").textContent = `Variante: ${v.codigo_sku || 'S/C'}`;
+    document.getElementById("edit-sku-badge").textContent = `SKU: ${vSku || 'S/C'}`;
     document.getElementById("edit-titulo").value = v.titulo || prod.titulo || "";
     document.getElementById("edit-descripcion").value = v.descripcion || prod.descripcion || "";
     document.getElementById("edit-categoria").value = v.categoria || prod.categoria || "anillos";
@@ -3368,6 +3668,7 @@ function selectEditVariant(variantId) {
     if (inputBadge) inputBadge.value = v.badge && v.badge !== "PLATA S925" ? v.badge : (isOferta ? "-20% OFF" : "");
   }
 
+  renderEditVariantPhotoPicker();
   renderEditPhotosGrid();
   renderEditVariantPills();
   updateEditDiscountNotice();
@@ -3439,9 +3740,13 @@ async function handleEditProductSubmit(e) {
 
     if (state.currentEditingVariantId !== "all") {
       // 1. Guardar exclusivamente variante específica
-      const variantSku = document.getElementById("edit-variant-sku") ? document.getElementById("edit-variant-sku").value.trim() : "";
+      const variantSku = document.getElementById("edit-variant-sku") ? document.getElementById("edit-variant-sku").value.trim().toUpperCase() : "";
+      const variantColor = document.getElementById("edit-variant-color") ? document.getElementById("edit-variant-color").value.trim() : "";
       const v = (prod.variants || []).find(x => x.id === state.currentEditingVariantId);
       if (!v) throw new Error("No se encontró la variante a actualizar.");
+
+      const finalSku = variantSku || v.codigo_sku || "";
+      const finalColor = variantColor || cleanVariantName(v.color_modelo) || v.color_modelo || finalSku || "Modelo Principal";
 
       // Si sólo hay 1 variante en todo el grupo, la foto principal del grupo es la foto de la variante
       const variantPhoto = (prod.variants && prod.variants.length > 1) 
@@ -3462,8 +3767,8 @@ async function handleEditProductSubmit(e) {
         foto_principal: variantPhoto,
         galeria_fotos: newGallery,
         activo: stock === "Agotada" ? false : activo,
-        codigo_sku: variantSku || v.codigo_sku,
-        color_modelo: variantSku || v.color_modelo,
+        codigo_sku: finalSku,
+        color_modelo: finalColor,
         updated_at: new Date().toISOString()
       };
 
@@ -3485,10 +3790,13 @@ async function handleEditProductSubmit(e) {
         prod.precio_venta = Math.min(...prices);
       }
 
-      showToast("Variante Actualizada", `Modelo "${variantSku || v.codigo_sku}" guardado con éxito.`, "success");
+      showToast("Variante Actualizada", `Modelo "${finalColor}" (SKU: ${finalSku}) guardado con éxito.`, "success");
 
     } else {
       // 2. Guardar Grupo Completo
+      const groupIdInput = document.getElementById("edit-group-id");
+      const newGroupId = groupIdInput ? groupIdInput.value.trim() : null;
+
       const updates = {
         titulo: titulo,
         descripcion: descripcion,
@@ -3510,6 +3818,10 @@ async function handleEditProductSubmit(e) {
         updated_at: new Date().toISOString()
       };
 
+      if (newGroupId && newGroupId !== prod.id_aliexpress) {
+        updates.id_aliexpress = newGroupId;
+      }
+
       const targetIds = prod.rowIds && prod.rowIds.length > 0 ? prod.rowIds : [prod.id];
       await adminApi.patch("/productos", { ids: targetIds, updates });
 
@@ -3521,8 +3833,24 @@ async function handleEditProductSubmit(e) {
           categoria: categoria,
           es_novedad: esNovedad,
           activo: updates.activo,
-          estado_stock: updates.estado_stock
+          estado_stock: updates.estado_stock,
+          id_aliexpress: updates.id_aliexpress || v.id_aliexpress
         }));
+
+        // Sincronizar variantes secundarias si cambiaron fotos o nombres en memoria
+        for (const vItem of prod.variants) {
+          if (vItem.id !== prod.id) {
+            await adminApi.patch("/productos", {
+              id: vItem.id,
+              updates: {
+                color_modelo: vItem.color_modelo,
+                codigo_sku: vItem.codigo_sku,
+                foto_principal: vItem.foto_principal,
+                updated_at: new Date().toISOString()
+              }
+            });
+          }
+        }
       }
 
       showToast("Joya Actualizada", `"${titulo.slice(0, 30)}..." se guardó con éxito.`, "success");
@@ -4385,3 +4713,12 @@ window.handleNewVarPriceChange = handleNewVarPriceChange;
 window.updateNewVarProfitBadge = updateNewVarProfitBadge;
 window.handleAddVariantSubmit = handleAddVariantSubmit;
 window.handleDeleteCurrentVariant = handleDeleteCurrentVariant;
+
+window.selectEditVariant = selectEditVariant;
+window.handleAssignPhotoToVariant = handleAssignPhotoToVariant;
+window.handleEditVariantNameInput = handleEditVariantNameInput;
+window.handleEditVariantSkuInput = handleEditVariantSkuInput;
+window.renderEditVariantPhotoPicker = renderEditVariantPhotoPicker;
+window.handleVariantPhotoUpload = handleVariantPhotoUpload;
+window.renderEditGroupVariantsSummary = renderEditGroupVariantsSummary;
+window.copyGroupIdToClipboard = copyGroupIdToClipboard;
